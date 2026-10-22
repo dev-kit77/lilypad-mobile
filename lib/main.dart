@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lilypad/connection/connection.dart';
+import 'package:lilypad/util/api.dart';
 
 void main() {
   runApp(const MainApp());
@@ -17,7 +17,7 @@ class _MainAppState extends State<MainApp> {
 
   @override
   void initState() {
-    testPing().then((result) {
+    APIService.ping().then((result) {
       setState(() {
         success = result.toString();
       });
@@ -30,10 +30,5 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       home: Scaffold(body: Center(child: Text(success))),
     );
-  }
-
-  Future<bool> testPing() async {
-    Connector connect = Connector('localhost:3000');
-    return connect.ping();
   }
 }
