@@ -1,0 +1,35 @@
+name: Lilypad Mobile Continuous Integration
+run-name: ${{ github.actor }} pushed a new commit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Initalize Java Runtime
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter Enviroment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Get Project Dependencies
+        run: flutter pub get
+
+      - name: Check for Code Issues
+        run: flutter analyze
+
+      - name: Run Test Suite
+        run: flutter test
