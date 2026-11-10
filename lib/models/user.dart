@@ -22,17 +22,16 @@ class User {
       uuid: json['userId'] as String?,
       username: json['username'] as String,
       status: json['status'] as String?,
-      bio: json['bio'] as String?
+      bio: json['bio'] as String?,
     );
   }
 
-  @override
   Map<String, Object?> toJson() {
-    return <String, Object?> {
-            "username": "$username",
-            if (status != null) "status" : "$status",
-            if (bio != null) "bio": "$bio"
-          };
+    return <String, Object?>{
+      "username": username,
+      if (status != null) "status": "$status",
+      if (bio != null) "bio": "$bio",
+    };
   }
 
   @override
@@ -45,7 +44,14 @@ class CurrentUser extends User {
   bool dark;
   bool anon;
 
-  CurrentUser({required uuid, required username, status, bio, this.dark = false, this.anon = false}) : super(uuid: uuid, username: username, status: status, bio: bio);
+  CurrentUser({
+    required super.uuid,
+    required super.username,
+    super.status,
+    super.bio,
+    this.dark = false,
+    this.anon = false,
+  });
 
   factory CurrentUser.fromJson(Map<String, Object?> json) {
     Map<String, Object?> settings = jsonDecode('${json['settings']}');
@@ -62,13 +68,16 @@ class CurrentUser extends User {
 
   @override
   Map<String, Object?> toJson() {
-    Map<String, Object?> settings = <String, Object?> {"dark": dark, "anon": anon};
+    Map<String, Object?> settings = <String, Object?>{
+      "dark": dark,
+      "anon": anon,
+    };
 
-    return <String, Object?> {
-            "username": "$username",
-            if (status != null) "status" : "$status",
-            if (bio != null) "bio": "$bio",
-            "settings": settings
-          };
+    return <String, Object?>{
+      "username": username,
+      if (status != null) "status": "$status",
+      if (bio != null) "bio": "$bio",
+      "settings": settings,
+    };
   }
 }
