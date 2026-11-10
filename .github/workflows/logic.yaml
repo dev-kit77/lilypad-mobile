@@ -1,0 +1,27 @@
+name: Lilypad Mobile Logic Integration Tests
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Get Project Dependencies
+        run: dart pub get
+
+      - name: Check for Code Issues
+        run: dart analyze
+
+      - name: Run Test Suite
+        run: dart test
