@@ -175,7 +175,7 @@ void main() {
         expect(response.statusCode, equals(200));
 
         final RecordedRequest recorded = stub.requests.single;
-        expect(recorded.request.method, equals('post'));
+        expect(recorded.request.method, equals('POST'));
         expect(
           recorded.request.url.toString(),
           equals('http://localhost:3000/api/auth/sign-up/email'),
@@ -228,7 +228,7 @@ void main() {
       );
 
       final RecordedRequest recorded = stub.requests.single;
-      expect(recorded.request.method, equals('post'));
+      expect(recorded.request.method, equals('POST'));
       expect(
         recorded.request.url.toString(),
         equals('http://localhost:3000/api/auth/sign-in/email'),
@@ -279,7 +279,7 @@ void main() {
         expect(response.statusCode, equals(200));
 
         final RecordedRequest recorded = stub.requests.single;
-        expect(recorded.request.method, equals('post'));
+        expect(recorded.request.method, equals('GET'));
         expect(
           recorded.request.url.toString(),
           equals('http://localhost:3000/api/auth/get-session'),
@@ -318,7 +318,7 @@ void main() {
       expect(response.statusCode, equals(200));
 
       final RecordedRequest recorded = stub.requests.single;
-      expect(recorded.request.method, equals('post'));
+      expect(recorded.request.method, equals('POST'));
       expect(
         recorded.request.url.toString(),
         equals('http://localhost:3000/api/auth/sign-out'),

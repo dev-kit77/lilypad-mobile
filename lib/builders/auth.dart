@@ -6,12 +6,12 @@ import 'package:lilypad/services/api.dart';
 class AuthRequestBuilder {
   /// POST /api/auth/sign-up/email
   ///
-  /// Request:  { name: string; email: string; password: string }
+  /// Body:  { name: string; email: string; password: string }
   ///           name <= 100 chars, valid email, password >= 8 chars.
   /// Auth:     none
   static Request signUp(String username, String email, String password) {
     //init request
-    Request r = Request('post', APIService.getUri(path: 'auth/sign-up/email'));
+    Request r = Request('POST', APIService.getUri(path: 'auth/sign-up/email'));
 
     //init header
     r.headers.clear();
@@ -32,11 +32,11 @@ class AuthRequestBuilder {
 
   /// POST /api/auth/sign-in/email
   ///
-  /// Request:  { email: string; password: string }
+  /// Body:  { email: string; password: string }
   /// Auth:     none
   static Request signIn(String email, String password) {
     //init request
-    Request r = Request('post', APIService.getUri(path: 'auth/sign-in/email'));
+    Request r = Request('POST', APIService.getUri(path: 'auth/sign-in/email'));
 
     //init header
     r.headers.clear();
@@ -53,11 +53,11 @@ class AuthRequestBuilder {
 
   /// POST /api/auth/sign-out
   ///
-  /// Request:  none
+  /// Body:  none
   /// Auth:     session
   static Request signOut() {
     //init request
-    Request r = Request('post', APIService.getUri(path: 'auth/sign-out'));
+    Request r = Request('POST', APIService.getUri(path: 'auth/sign-out'));
 
     //init header
     r.headers.clear();
@@ -70,11 +70,11 @@ class AuthRequestBuilder {
 
   /// GET /api/auth/get-session
   ///
-  /// Request:  none
+  /// Body:  none
   /// Auth:     session
   static Request sessionRefresh() {
     //init request
-    Request r = Request('post', APIService.getUri(path: 'auth/get-session'));
+    Request r = Request('GET', APIService.getUri(path: 'auth/get-session'));
 
     //init header
     r.headers.clear();

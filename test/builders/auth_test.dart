@@ -11,7 +11,7 @@ void main() {
       "kit@example.com",
       "password123",
     );
-    expect(r.method, equals('post'));
+    expect(r.method, equals('POST'));
     expect(
       r.url.toString(),
       equals('http://localhost:3000/api/auth/sign-up/email'),
@@ -32,11 +32,8 @@ void main() {
   });
 
   test('build sign in post request', () {
-    Request r = AuthRequestBuilder.signIn(
-      "kit@example.com",
-      "password123",
-    );
-    expect(r.method, equals('post'));
+    Request r = AuthRequestBuilder.signIn("kit@example.com", "password123");
+    expect(r.method, equals('POST'));
     expect(
       r.url.toString(),
       equals('http://localhost:3000/api/auth/sign-in/email'),
@@ -57,19 +54,16 @@ void main() {
 
   test('build sign out post request', () {
     Request r = AuthRequestBuilder.signOut();
-    expect(r.method, equals('post'));
-    expect(
-      r.url.toString(),
-      equals('http://localhost:3000/api/auth/sign-out'),
-    );
+    expect(r.method, equals('POST'));
+    expect(r.url.toString(), equals('http://localhost:3000/api/auth/sign-out'));
     expect(r.headers, isEmpty);
     expect(r.body, isEmpty);
     expect(r.encoding, equals(utf8));
   });
 
-  test('build session refresh post request', () {
+  test('build session refresh get request', () {
     Request r = AuthRequestBuilder.sessionRefresh();
-    expect(r.method, equals('post'));
+    expect(r.method, equals('GET'));
     expect(
       r.url.toString(),
       equals('http://localhost:3000/api/auth/get-session'),
