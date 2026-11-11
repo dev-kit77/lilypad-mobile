@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lilypad/services/api.dart';
-import 'package:lilypad/services/dialog.dart';
+import 'package:lilypad/services/UI/dialog.dart';
 import 'package:lilypad/services/log.dart';
 import 'package:lilypad/services/session.dart';
 import 'package:lilypad/util/global.dart';
