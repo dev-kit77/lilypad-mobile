@@ -103,7 +103,7 @@ void main() {
   });
 
   /// Sends request through APIService with the shared stub injected.
-  Future<StreamedResponse> sendViaStub(Request request) =>
+  Future<Response> sendViaStub(Request request) =>
       runWithClient(() => APIService.send(request), () => stub);
 
   /// Pings the server through APIService with the shared stub injected.
@@ -168,7 +168,7 @@ void main() {
           ),
         );
 
-        final StreamedResponse response = await sendViaStub(
+        final Response response = await sendViaStub(
           AuthRequestBuilder.signUp('kit', 'kit@example.com', 'password123'),
         );
 
@@ -217,15 +217,12 @@ void main() {
         'better-auth.session_token=stale-token; Path=/; HttpOnly',
       );
 
-      final StreamedResponse response = await sendViaStub(
+      final Response response = await sendViaStub(
         AuthRequestBuilder.signIn('kit@example.com', 'password123'),
       );
 
       expect(response.statusCode, equals(200));
-      expect(
-        await utf8.decoder.bind(response.stream).join(),
-        equals('{"user":{"id":"123","name":"kit"}}'),
-      );
+      expect(response.body, equals('{"user":{"id":"123","name":"kit"}}'));
 
       final RecordedRequest recorded = stub.requests.single;
       expect(recorded.request.method, equals('POST'));
@@ -272,7 +269,7 @@ void main() {
           'better-auth.session_token=current-token; Path=/; HttpOnly',
         );
 
-        final StreamedResponse response = await sendViaStub(
+        final Response response = await sendViaStub(
           AuthRequestBuilder.sessionRefresh(),
         );
 
@@ -311,9 +308,7 @@ void main() {
         'better-auth.session_token=bye-token; Path=/; HttpOnly',
       );
 
-      final StreamedResponse response = await sendViaStub(
-        AuthRequestBuilder.signOut(),
-      );
+      final Response response = await sendViaStub(AuthRequestBuilder.signOut());
 
       expect(response.statusCode, equals(200));
 
@@ -339,7 +334,7 @@ void main() {
         'better-auth.session_token=expired-token; Path=/; HttpOnly',
       );
 
-      final StreamedResponse response = await sendViaStub(
+      final Response response = await sendViaStub(
         AuthRequestBuilder.sessionRefresh(),
       );
 
@@ -365,7 +360,7 @@ void main() {
         'better-auth.session_token=old-token; Path=/; HttpOnly',
       );
 
-      final StreamedResponse response = await sendViaStub(
+      final Response response = await sendViaStub(
         AuthRequestBuilder.signIn('kit@example.com', 'password123'),
       );
 
@@ -384,7 +379,7 @@ void main() {
           'better-auth.session_token=old-token; Path=/; HttpOnly',
         );
 
-        final StreamedResponse response = await sendViaStub(
+        final Response response = await sendViaStub(
           AuthRequestBuilder.sessionRefresh(),
         );
 
@@ -404,7 +399,7 @@ void main() {
           'better-auth.session_token=old-token; Path=/; HttpOnly',
         );
 
-        final StreamedResponse response = await sendViaStub(
+        final Response response = await sendViaStub(
           AuthRequestBuilder.signIn('kit@example.com', 'password123'),
         );
 

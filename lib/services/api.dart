@@ -1,13 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:lilypad/services/session.dart';
 
 import 'log.dart';
 
-import "package:http/http.dart" as http;
+import "package:http/http.dart";
 
 class APIService {
-  static final http.Client _client = http.Client();
+  static final Client _client = Client();
   static const String _basePath = '/api/';
   static const String _domain = 'localhost:3000';
 
@@ -54,7 +55,7 @@ class APIService {
   }
 
   ///Method to send a request to the server. Returns a response object if server reached or throws upon client error.
-  static Future<http.StreamedResponse> send(http.Request req) async {
+  static Future<Response> send(Request req) async {
     //get cookier header from session
     String? cHeader = SessionService.getCookieHeader();
 
@@ -69,44 +70,50 @@ class APIService {
         src: 'API Service',
       );
       //send request to server
-      final response = await _client.send(req);
+      final responseStream = await _client.send(req);
 
       //check response code
-      if (response.statusCode == 200) {
+      if (responseStream.statusCode == 200) {
+        //capture any set-cookie from request
+        if (responseStream.headers['set-cookie'] != null &&
+            responseStream.headers['set-cookie'] != '') {
+          SessionService.capture(responseStream.headers['set-cookie']!);
+        }
+
+        //await response completion
+        final Response response = await Response.fromStream(responseStream);
+
         LogService.log(
-          '${response.contentLength} Bytes recieved from server.',
+          'Response recieved. Total ${response.contentLength} Bytes recieved from server.',
           src: 'API Service',
         );
-
-        //capture any set-cookie from request
-        if (response.headers['set-cookie'] != null &&
-            response.headers['set-cookie'] != '') {
-          SessionService.capture(response.headers['set-cookie']!);
-        }
 
         return response;
       } else {
-        LogService.log(
-          '${response.contentLength} Bytes recieved from server.',
-          src: 'API Service',
-        );
-
         LogService.err(
-          'HTTP ${response.statusCode} - ${response.reasonPhrase}',
+          'HTTP ${responseStream.statusCode} - ${responseStream.reasonPhrase}',
           src: 'API Service',
         );
 
         //check if session invalid
-        if (response.statusCode == 401) {
+        if (responseStream.statusCode == 401) {
           //clear session cookies
           SessionService.clear();
         } else {
           //capture any set-cookie from request
-          if (response.headers['set-cookie'] != null &&
-              response.headers['set-cookie'] != '') {
-            SessionService.capture(response.headers['set-cookie']!);
+          if (responseStream.headers['set-cookie'] != null &&
+              responseStream.headers['set-cookie'] != '') {
+            SessionService.capture(responseStream.headers['set-cookie']!);
           }
         }
+
+        //await response completion
+        final Response response = await Response.fromStream(responseStream);
+
+        LogService.log(
+          'Response recieved. Total ${response.contentLength} Bytes recieved from server.',
+          src: 'API Service',
+        );
 
         return response;
       }
