@@ -1,224 +1,18 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:geocoder_pro/geocoder_pro.dart' show NetworkException;
-import 'package:http/http.dart';
+import 'package:http/http.dart' show runWithClient;
 import 'package:lilypad/services/geolocation.dart';
 import 'package:location_platform_interface/location_platform_interface.dart';
 import 'package:test/test.dart';
 
-/// A canned geocoder response for GeocoderStub to return.
-class StubResponse {
-  StubResponse(this.body, {this.statusCode = 200});
-
-  final String body;
-  final int statusCode;
-}
-
-/// Stands in for the HTTP client the geocoder creates internally.
-class GeocoderStub extends BaseClient {
-  final List<Uri> requests = <Uri>[];
-  final List<StubResponse> _responses = <StubResponse>[];
-
-  void queueJson(Object body) => _responses.add(StubResponse(jsonEncode(body)));
-
-  void queueStatus(int statusCode) =>
-      _responses.add(StubResponse('', statusCode: statusCode));
-
-  void reset() {
-    requests.clear();
-    _responses.clear();
-  }
-
-  @override
-  Future<StreamedResponse> send(BaseRequest request) async {
-    requests.add(request.url);
-
-    if (_responses.isEmpty) {
-      throw StateError(
-        'GeocoderStub received a request for ${request.url} but no response was queued for it.',
-      );
-    }
-
-    final StubResponse response = _responses.removeAt(0);
-    final List<int> bytes = utf8.encode(response.body);
-
-    return StreamedResponse(
-      Stream<List<int>>.value(bytes),
-      response.statusCode,
-      contentLength: bytes.length,
-      headers: const <String, String>{'content-type': 'application/json'},
-    );
-  }
-}
-
-/// Replaces the method-channel location implementation with an in-memory one.
-class FakeLocationPlatform extends LocationPlatform {
-  LocationData? lastKnownLocation;
-  LocationData? currentLocation;
-  PermissionStatus permissionStatus = PermissionStatus.granted;
-  PermissionStatus permissionStatusAfterRequest = PermissionStatus.granted;
-
-  int getLocationCalls = 0;
-  int hasPermissionCalls = 0;
-  int requestPermissionCalls = 0;
-  int changeSettingsCalls = 0;
-  int enableBackgroundModeCalls = 0;
-  int requestServiceCalls = 0;
-
-  LocationAccuracy? accuracy;
-  int? interval;
-  double? distanceFilter;
-  bool? backgroundModeEnabled;
-
-  final StreamController<LocationData> controller =
-      StreamController<LocationData>.broadcast();
-
-  @override
-  Future<LocationData?> getLastKnownLocation() async => lastKnownLocation;
-
-  @override
-  Future<LocationData> getLocation() async {
-    getLocationCalls++;
-    return currentLocation ??
-        (throw StateError('No current location configured'));
-  }
-
-  @override
-  Future<PermissionStatus> hasPermission() async {
-    hasPermissionCalls++;
-    return permissionStatus;
-  }
-
-  @override
-  Future<PermissionStatus> requestPermission() async {
-    requestPermissionCalls++;
-    return permissionStatusAfterRequest;
-  }
-
-  @override
-  Future<bool> changeSettings({
-    LocationAccuracy? accuracy,
-    int? interval,
-    double? distanceFilter,
-    bool? pausesLocationUpdatesAutomatically,
-    int? backgroundInterval,
-  }) async {
-    changeSettingsCalls++;
-    this.accuracy = accuracy;
-    this.interval = interval;
-    this.distanceFilter = distanceFilter;
-    return true;
-  }
-
-  @override
-  Future<bool> enableBackgroundMode({
-    bool? enable = true,
-    bool requireBackgroundPermission = true,
-  }) async {
-    enableBackgroundModeCalls++;
-    backgroundModeEnabled = enable;
-    return true;
-  }
-
-  @override
-  Future<bool> requestService() async {
-    requestServiceCalls++;
-    return true;
-  }
-
-  @override
-  Stream<LocationData> get onLocationChanged => controller.stream;
-}
-
-/// Builds a [LocationData] with nothing but the coordinates filled in.
-LocationData at(double latitude, double longitude) => LocationData.fromMap(
-  <String, dynamic>{'latitude': latitude, 'longitude': longitude},
-);
-
-/// Builds a Nominatim reverse-geocoding response.
-///
-/// [boundingBox] is ordered the way Nominatim returns it:
-/// south, north, west, east.
-Map<String, dynamic> nominatimResult({
-  required int placeId,
-  required String displayName,
-  required double latitude,
-  required double longitude,
-  required String city,
-  required String state,
-  required String country,
-  required String countryCode,
-  required String postcode,
-  required String houseNumber,
-  required String road,
-  required String suburb,
-  required String county,
-  List<double>? boundingBox,
-}) => <String, dynamic>{
-  'place_id': placeId,
-  'lat': latitude.toString(),
-  'lon': longitude.toString(),
-  'display_name': displayName,
-  if (boundingBox != null)
-    'boundingbox': boundingBox.map((double d) => d.toString()).toList(),
-  'address': <String, dynamic>{
-    'house_number': houseNumber,
-    'road': road,
-    'suburb': suburb,
-    'city': city,
-    'county': county,
-    'state': state,
-    'postcode': postcode,
-    'country': country,
-    'country_code': countryCode.toLowerCase(),
-  },
-};
-
-/// Toronto, with a bounding box around the city.
-Map<String, dynamic> toronto({
-  bool withBounds = true,
-  String displayName = 'Toronto, Ontario, Canada',
-}) => nominatimResult(
-  placeId: 269367963,
-  displayName: displayName,
-  latitude: 43.6532,
-  longitude: -79.3832,
-  city: 'Toronto',
-  state: 'Ontario',
-  country: 'Canada',
-  countryCode: 'CA',
-  postcode: 'M5H 2N2',
-  houseNumber: '100',
-  road: 'King Street West',
-  suburb: 'Downtown Toronto',
-  county: 'Toronto Division',
-  boundingBox: withBounds ? <double>[43.58, 43.85, -79.64, -79.11] : null,
-);
-
-/// Vancouver, with a bounding box around the city.
-Map<String, dynamic> vancouver({bool withBounds = true}) => nominatimResult(
-  placeId: 162443612,
-  displayName: 'Vancouver, British Columbia, Canada',
-  latitude: 49.2827,
-  longitude: -123.1207,
-  city: 'Vancouver',
-  state: 'British Columbia',
-  country: 'Canada',
-  countryCode: 'CA',
-  postcode: 'V6B 1A1',
-  houseNumber: '800',
-  road: 'West Georgia Street',
-  suburb: 'Downtown Vancouver',
-  county: 'Metro Vancouver Regional District',
-  boundingBox: withBounds ? <double>[49.19, 49.31, -123.27, -123.02] : null,
-);
+import '../support/fake_location_platform.dart';
+import '../support/geolocation_fixtures.dart';
+import '../support/http_stub.dart';
 
 void main() {
   final LocationPlatform originalPlatform = LocationPlatform.instance;
 
   late FakeLocationPlatform platform;
-  late GeocoderStub geocoder;
+  late StubClient geocoder;
 
   setUp(() {
     GeolocationService.clear();
@@ -226,7 +20,7 @@ void main() {
     platform = FakeLocationPlatform();
     LocationPlatform.instance = platform;
 
-    geocoder = GeocoderStub();
+    geocoder = StubClient();
   });
 
   tearDown(() {
@@ -234,14 +28,14 @@ void main() {
     platform.controller.close();
   });
 
-  /// Runs GeolocationService.init with the geocoder stub injected.
+  ///geolocationService.init with the geocoder stub injected.
   Future<void> init() => runWithClient(GeolocationService.init, () => geocoder);
 
-  /// Runs GeolocationService.requestUpdate with the geocoder stub injected.
+  ///geolocationService.requestUpdate with the geocoder stub injected.
   Future<void> requestUpdate() =>
       runWithClient(GeolocationService.forceUpdate, () => geocoder);
 
-  /// Pushes a location through the service's location stream.
+  ///pushes a location through the service's location stream.
   Future<void> emit(LocationData location) async {
     platform.controller.add(location);
     await pumpEventQueue();
@@ -353,7 +147,7 @@ void main() {
 
       expect(geocoder.requests, hasLength(1));
 
-      final Uri request = geocoder.requests.single;
+      final Uri request = geocoder.lastRequestUrl!;
       expect(request.host, equals('nominatim.openstreetmap.org'));
       expect(request.path, equals('/reverse'));
       expect(request.queryParameters['lat'], equals('43.6532'));
@@ -435,7 +229,7 @@ void main() {
       expect(platform.getLocationCalls, equals(1));
       expect(geocoder.requests, hasLength(1));
 
-      final Uri request = geocoder.requests.single;
+      final Uri request = geocoder.lastRequestUrl!;
       expect(request.path, equals('/reverse'));
       expect(request.queryParameters['lat'], equals('43.6532'));
       expect(request.queryParameters['lon'], equals('-79.3832'));
@@ -446,7 +240,7 @@ void main() {
         equals(<String, double?>{'lat': 43.6532, 'lon': -79.3832}),
       );
       expect(GeolocationService.locale, equals('Toronto, Ontario'));
-      // A manual update never starts listening to the location stream.
+      //manual update doesnt listenin to the location stream.
       expect(platform.controller.hasListener, isFalse);
     });
 
@@ -516,7 +310,7 @@ void main() {
 
       expect(geocoder.requests, hasLength(2));
 
-      final Uri request = geocoder.requests.last;
+      final Uri request = geocoder.lastRequestUrl!;
       expect(request.queryParameters['lat'], equals('49.2827'));
       expect(request.queryParameters['lon'], equals('-123.1207'));
       expect(request.queryParameters['zoom'], equals('13'));

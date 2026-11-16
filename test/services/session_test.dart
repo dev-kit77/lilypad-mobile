@@ -5,14 +5,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lilypad/services/session.dart';
 import 'package:test/test.dart';
 
-/// Matches the private key used by [SessionService] for its storage entry.
+///private key used by SessionService for its storage entry.
 const String storageKey = 'lilypad_cookies';
 
 void main() {
   setUp(() async {
-    // Fresh in-memory secure storage for every test.
+    //reset secure storage for every test.
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
-    // `_cookies` is static, so clear it between tests too.
     await SessionService.clear();
   });
 
@@ -42,7 +41,6 @@ void main() {
     });
 
     test('splits comma-joined cookies with no space after the comma', () {
-      // package:http joins repeated headers with a bare ','.
       final List<Cookie> cookies = SessionService.parseSetCookie(
         'a=1; Path=/,b=2; Path=/; HttpOnly',
       );
@@ -120,9 +118,6 @@ void main() {
     test('returns null when no cookies are stored', () {
       expect(SessionService.getCookieHeader(), isNull);
     });
-
-    // Cookie formatting (single cookie, joining multiple with '; ') is
-    // covered by the capture group via the same assertions.
   });
 
   group('capture', () {
@@ -254,9 +249,6 @@ void main() {
       expect(SessionService.getCookieHeader(), isNull);
     });
 
-    // Known issue: stored entries are read as dynamic, so a non-string
-    // entry hits String.trim on an int and crashes init.
-    // Re-enable once that is fixed.
     test('non-string entries in storage', () async {
       FlutterSecureStorage.setMockInitialValues(<String, String>{
         storageKey: jsonEncode(<dynamic>[123, true]),
