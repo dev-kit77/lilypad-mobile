@@ -15,6 +15,7 @@ dependencies:
   http: ^1.6.0
   location: ^10.1.0
   geocoder_pro: ^1.1.0
+  background_fetch: ^1.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

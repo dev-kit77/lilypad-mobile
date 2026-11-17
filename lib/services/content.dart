@@ -461,4 +461,6 @@ class ContentService {
     //return new feed separate from one stored in cache
     return List.from(_userFeed);
   }
+
+  static DateTime? get latest => _feed.first.updated ?? _feed.first.created;
 }
