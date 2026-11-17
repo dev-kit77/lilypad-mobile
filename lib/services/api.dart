@@ -90,23 +90,6 @@ class APIService {
 
         return response;
       } else {
-        LogService.err(
-          'HTTP ${responseStream.statusCode} - ${responseStream.reasonPhrase}',
-          src: 'API Service',
-        );
-
-        //check if session invalid
-        if (responseStream.statusCode == 401) {
-          //clear session cookies
-          SessionService.clear();
-        } else {
-          //capture any set-cookie from request
-          if (responseStream.headers['set-cookie'] != null &&
-              responseStream.headers['set-cookie'] != '') {
-            SessionService.capture(responseStream.headers['set-cookie']!);
-          }
-        }
-
         //await response completion
         final Response response = await Response.fromStream(responseStream);
 
@@ -115,7 +98,27 @@ class APIService {
           src: 'API Service',
         );
 
-        return response;
+        LogService.err(
+          'HTTP ${response.statusCode} - ${response.reasonPhrase}',
+          src: 'API Service',
+        );
+
+        //check if session invalid
+        if (response.statusCode == 401) {
+          //clear session cookies
+          SessionService.clear();
+        } else {
+          //capture any set-cookie from request
+          if (response.headers['set-cookie'] != null &&
+              response.headers['set-cookie'] != '') {
+            SessionService.capture(response.headers['set-cookie']!);
+          }
+        }
+
+        throw HttpException(
+          'HTTP ${response.statusCode} - ${jsonDecode(response.body)['error']}',
+          uri: req.url,
+        );
       }
     } on SocketException catch (e) {
       LogService.err(

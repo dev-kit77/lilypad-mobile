@@ -84,6 +84,10 @@ class CacheService {
     }
   }
 
+  static void free(String key) {
+    _cache.remove(key);
+  }
+
   ///Method to clear the cache
   static void clear() {
     _cache.clear();

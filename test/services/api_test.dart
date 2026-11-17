@@ -30,6 +30,32 @@ void main() {
   /// Pings the server through APIService with the shared stub injected.
   Future<bool> pingViaStub() => runWithClient(APIService.ping, () => stub);
 
+  Matcher throwsHttpException(int statusCode) {
+    return throwsA(
+      isA<HttpException>().having(
+        (HttpException e) => e.toString(),
+        'message',
+        contains(statusCode.toString()),
+      ),
+    );
+  }
+
+  void queueHttpError(
+    int statusCode, {
+    String? error,
+    Map<String, Object?>? body,
+  }) {
+    stub.queueResponse(
+      StubResponse(
+        statusCode,
+        headers: const <String, String>{'content-type': 'application/json'},
+        body: jsonEncode(
+          body ?? <String, Object?>{if (error != null) 'error': error},
+        ),
+      ),
+    );
+  }
+
   group('ping', () {
     test('returns true when the server replies 200', () async {
       stub.queueResponse(StubResponse(200, body: 'pong'));
@@ -250,16 +276,28 @@ void main() {
     });
 
     test('clears the session when the server replies 401', () async {
-      stub.queueResponse(StubResponse(401));
+      stub.queueResponse(
+        StubResponse(
+          401,
+          headers: const <String, String>{'content-type': 'application/json'},
+          body: jsonEncode(<String, Object?>{}),
+        ),
+      );
       await SessionService.capture(
         'better-auth.session_token=expired-token; Path=/; HttpOnly',
       );
 
-      final Response response = await sendViaStub(
-        AuthRequestBuilder.sessionRefresh(),
+      await expectLater(
+        sendViaStub(AuthRequestBuilder.sessionRefresh()),
+        throwsA(
+          isA<HttpException>().having(
+            (HttpException e) => e.toString(),
+            'message',
+            contains('401'),
+          ),
+        ),
       );
 
-      expect(response.statusCode, equals(401));
       expect(
         stub.requests.single.request.headers['cookie'],
         equals('better-auth.session_token=expired-token'),
@@ -272,20 +310,30 @@ void main() {
         StubResponse(
           500,
           headers: <String, String>{
+            'content-type': 'application/json',
             'set-cookie':
                 'better-auth.session_token=error-token; Path=/; HttpOnly',
           },
+          body: jsonEncode(<String, Object?>{'error': 'INTERNAL_SERVER'}),
         ),
       );
       await SessionService.capture(
         'better-auth.session_token=old-token; Path=/; HttpOnly',
       );
 
-      final Response response = await sendViaStub(
-        AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+      await expectLater(
+        sendViaStub(
+          AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+        ),
+        throwsA(
+          isA<HttpException>().having(
+            (HttpException e) => e.toString(),
+            'message',
+            contains('500'),
+          ),
+        ),
       );
 
-      expect(response.statusCode, equals(500));
       expect(
         SessionService.getCookieHeader(),
         equals('better-auth.session_token=error-token'),
@@ -315,21 +363,93 @@ void main() {
     test(
       'leaves the session alone when an error has no set-cookie header',
       () async {
-        stub.queueResponse(StubResponse(500));
+        stub.queueResponse(
+          StubResponse(
+            500,
+            headers: const <String, String>{'content-type': 'application/json'},
+            body: jsonEncode(<String, Object?>{'error': 'INTERNAL_SERVER'}),
+          ),
+        );
         await SessionService.capture(
           'better-auth.session_token=old-token; Path=/; HttpOnly',
         );
 
-        final Response response = await sendViaStub(
-          AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+        await expectLater(
+          sendViaStub(
+            AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+          ),
+          throwsA(
+            isA<HttpException>().having(
+              (HttpException e) => e.toString(),
+              'message',
+              contains('500'),
+            ),
+          ),
         );
 
-        expect(response.statusCode, equals(500));
         expect(
           SessionService.getCookieHeader(),
           equals('better-auth.session_token=old-token'),
         );
       },
     );
+
+    test('throws HTTPException on 400 response', () async {
+      queueHttpError(400, error: 'INVALID_FIELD');
+
+      await expectLater(
+        sendViaStub(
+          AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+        ),
+        throwsHttpException(400),
+      );
+    });
+
+    test('throws HTTPException on 401 response', () async {
+      queueHttpError(401);
+
+      await expectLater(
+        sendViaStub(AuthRequestBuilder.sessionRefresh()),
+        throwsHttpException(401),
+      );
+    });
+
+    test('throws HTTPException on 403 response', () async {
+      queueHttpError(403, error: 'INVALID_USER');
+
+      await expectLater(
+        sendViaStub(AuthRequestBuilder.sessionRefresh()),
+        throwsHttpException(403),
+      );
+    });
+
+    test('throws HTTPException on 404 response', () async {
+      queueHttpError(404, error: 'INVALID_ID');
+
+      await expectLater(
+        sendViaStub(AuthRequestBuilder.sessionRefresh()),
+        throwsHttpException(404),
+      );
+    });
+
+    test('throws HTTPException on 500 response', () async {
+      queueHttpError(500, error: 'INTERNAL_SERVER');
+
+      await expectLater(
+        sendViaStub(
+          AuthRequestBuilder.signIn('kit@example.com', 'password123'),
+        ),
+        throwsHttpException(500),
+      );
+    });
+
+    test('throws SocketException when the server cannot be reached', () async {
+      stub.queueResponse(StubResponse.error(const SocketException('refused')));
+
+      await expectLater(
+        sendViaStub(AuthRequestBuilder.sessionRefresh()),
+        throwsA(isA<SocketException>()),
+      );
+    });
   });
 }
