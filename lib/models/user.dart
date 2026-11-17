@@ -10,12 +10,12 @@
 import 'dart:convert';
 
 class User {
-  final String? uuid;
-  String username;
-  String? status;
-  String? bio;
+  final String? _uuid;
+  final String _username;
+  final String? _status;
+  final String? _bio;
 
-  User({this.uuid, required this.username, this.status, this.bio});
+  User({this._uuid, required this._username, this._status, this._bio});
 
   factory User.fromJson(Map<String, Object?> json) {
     return User(
@@ -28,9 +28,9 @@ class User {
 
   Map<String, Object?> toJson() {
     return <String, Object?>{
-      "username": username,
-      if (status != null) "status": "$status",
-      if (bio != null) "bio": "$bio",
+      "username": _username,
+      if (_status != null) "status": _status,
+      if (_bio != null) "bio": _bio,
     };
   }
 
@@ -38,19 +38,24 @@ class User {
   String toString() {
     return jsonEncode(this);
   }
+
+  String? get uuid => _uuid;
+  String get username => _username;
+  String? get status => _status;
+  String? get bio => _bio;
 }
 
 class CurrentUser extends User {
-  bool dark;
-  bool anon;
+  bool _dark;
+  bool _anon;
 
   CurrentUser({
     required super.uuid,
     required super.username,
     super.status,
     super.bio,
-    this.dark = false,
-    this.anon = false,
+    this._dark = false,
+    this._anon = false,
   });
 
   factory CurrentUser.fromJson(Map<String, Object?> json) {
@@ -69,15 +74,20 @@ class CurrentUser extends User {
   @override
   Map<String, Object?> toJson() {
     Map<String, Object?> settings = <String, Object?>{
-      "dark": dark,
-      "anon": anon,
+      "dark": _dark,
+      "anon": _anon,
     };
 
     return <String, Object?>{
-      "username": username,
-      if (status != null) "status": "$status",
-      if (bio != null) "bio": "$bio",
+      "username": _username,
+      if (_status != null) "status": _status,
+      if (_bio != null) "bio": _bio,
       "settings": settings,
     };
   }
+
+  @override
+  String get uuid => _uuid!;
+  bool get dark => _dark;
+  bool get anon => _anon;
 }

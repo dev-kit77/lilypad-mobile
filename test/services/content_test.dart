@@ -76,9 +76,7 @@ void main() {
       StubResponse(
         statusCode,
         headers: const <String, String>{'content-type': 'application/json'},
-        body: jsonEncode(
-          body ?? <String, Object?>{if (error != null) 'error': error},
-        ),
+        body: jsonEncode(body ?? <String, Object?>{'error': ?error}),
       ),
     );
   }
