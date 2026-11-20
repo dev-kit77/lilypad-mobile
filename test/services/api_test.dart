@@ -6,6 +6,7 @@ import 'package:http/http.dart';
 import 'package:lilypad/builders/auth.dart';
 import 'package:lilypad/services/api.dart';
 import 'package:lilypad/services/session.dart';
+import 'package:lilypad/util/api_ex.dart';
 import 'package:test/test.dart';
 
 import '../support/http_stub.dart';
@@ -32,10 +33,10 @@ void main() {
 
   Matcher throwsHttpException(int statusCode) {
     return throwsA(
-      isA<HttpException>().having(
-        (HttpException e) => e.toString(),
-        'message',
-        contains(statusCode.toString()),
+      isA<APIException>().having(
+        (APIException e) => e.statusCode,
+        'statusCode',
+        statusCode,
       ),
     );
   }
@@ -288,10 +289,10 @@ void main() {
       await expectLater(
         sendViaStub(AuthRequestBuilder.sessionRefresh()),
         throwsA(
-          isA<HttpException>().having(
-            (HttpException e) => e.toString(),
-            'message',
-            contains('401'),
+          isA<APIException>().having(
+            (APIException e) => e.statusCode,
+            'statusCode',
+            401,
           ),
         ),
       );
@@ -324,10 +325,10 @@ void main() {
           AuthRequestBuilder.signIn('kit@example.com', 'password123'),
         ),
         throwsA(
-          isA<HttpException>().having(
-            (HttpException e) => e.toString(),
-            'message',
-            contains('500'),
+          isA<APIException>().having(
+            (APIException e) => e.statusCode,
+            'statusCode',
+            500,
           ),
         ),
       );
@@ -377,10 +378,10 @@ void main() {
             AuthRequestBuilder.signIn('kit@example.com', 'password123'),
           ),
           throwsA(
-            isA<HttpException>().having(
-              (HttpException e) => e.toString(),
-              'message',
-              contains('500'),
+            isA<APIException>().having(
+              (APIException e) => e.statusCode,
+              'statusCode',
+              500,
             ),
           ),
         );

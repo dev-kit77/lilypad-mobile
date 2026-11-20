@@ -7,6 +7,7 @@ import 'package:lilypad/models/user.dart';
 import 'package:lilypad/services/cache.dart';
 import 'package:lilypad/services/session.dart';
 import 'package:lilypad/services/user.dart';
+import 'package:lilypad/util/api_ex.dart';
 import 'package:test/test.dart';
 
 import '../support/http_stub.dart';
@@ -43,10 +44,10 @@ void main() {
 
   Matcher throwsHttpException(int statusCode) {
     return throwsA(
-      isA<HttpException>().having(
-        (HttpException e) => e.toString(),
-        'message',
-        contains(statusCode.toString()),
+      isA<APIException>().having(
+        (APIException e) => e.statusCode,
+        'statusCode',
+        statusCode,
       ),
     );
   }
