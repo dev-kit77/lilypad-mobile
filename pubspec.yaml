@@ -16,6 +16,10 @@ dependencies:
   location: ^10.1.0
   geocoder_pro: ^1.1.0
   background_fetch: ^1.7.0
+  google_fonts: ^9.0.0
+  font_awesome_flutter: ^11.0.0
+  flip_card: ^0.7.0
+  easy_debounce: ^2.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

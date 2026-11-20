@@ -1,5 +1,5 @@
 import 'package:background_fetch/background_fetch.dart';
-import 'package:lilypad/services/UI/push.dart';
+import 'package:lilypad/services/ui/push.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/geolocation.dart';
 import 'package:lilypad/services/log.dart';
