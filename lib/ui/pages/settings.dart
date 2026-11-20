@@ -15,9 +15,9 @@ class SettingsWidget extends StatefulWidget {
     String? username,
     String? status,
     String? bio,
-  }) : this.username = username ?? 'devkit',
-       this.status = status ?? 'Developing lilypad',
-       this.bio = bio ?? 'I am the lilypad guy!';
+  }) : username = username ?? 'devkit',
+       status = status ?? 'Developing lilypad',
+       bio = bio ?? 'I am the lilypad guy!';
 
   final String username;
   final String status;
@@ -89,11 +89,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
-      body: Container(
+      body: SizedBox(
         width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height,
-        decoration: BoxDecoration(),
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: MediaQuery.sizeOf(context).height,
           child: Stack(
@@ -306,7 +305,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                         switchValue1 = newValue,
                                                   );
                                                 },
-                                                activeColor: AppTheme.of(
+                                                activeThumbColor: AppTheme.of(
                                                   context,
                                                 ).primary,
                                                 activeTrackColor: AppTheme.of(
@@ -354,7 +353,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Expanded(
-                                                child: Container(
+                                                child: SizedBox(
                                                   width: double.infinity,
                                                   child: TextFormField(
                                                     controller:
@@ -516,7 +515,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Expanded(
-                                                child: Container(
+                                                child: SizedBox(
                                                   width: double.infinity,
                                                   child: TextFormField(
                                                     controller:
@@ -704,7 +703,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Expanded(
-                                                child: Container(
+                                                child: SizedBox(
                                                   width: double.infinity,
                                                   child: TextFormField(
                                                     controller:
@@ -976,7 +975,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                         switchValue2 = newValue,
                                                   );
                                                 },
-                                                activeColor: AppTheme.of(
+                                                activeThumbColor: AppTheme.of(
                                                   context,
                                                 ).primary,
                                                 activeTrackColor: AppTheme.of(
@@ -1031,7 +1030,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                         switchValue3 = newValue,
                                                   );
                                                 },
-                                                activeColor: AppTheme.of(
+                                                activeThumbColor: AppTheme.of(
                                                   context,
                                                 ).primary,
                                                 activeTrackColor: AppTheme.of(

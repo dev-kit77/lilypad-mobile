@@ -130,12 +130,12 @@ extension AppTextStyleOverride on TextStyle {
     // style — notably fontSize, which Google Fonts styles leave unset.
     final base = font ?? this;
     return base.copyWith(
-      color: color ?? this.color,
-      fontSize: fontSize ?? this.fontSize,
-      fontWeight: fontWeight ?? this.fontWeight,
-      fontStyle: fontStyle ?? this.fontStyle,
-      letterSpacing: letterSpacing ?? this.letterSpacing,
-      height: lineHeight ?? this.height,
+      color: color ?? color,
+      fontSize: fontSize ?? fontSize,
+      fontWeight: fontWeight ?? fontWeight,
+      fontStyle: fontStyle ?? fontStyle,
+      letterSpacing: letterSpacing ?? letterSpacing,
+      height: lineHeight ?? height,
     );
   }
 }

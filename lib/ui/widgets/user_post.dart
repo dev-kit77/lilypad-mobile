@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/log.dart';
 import '../pages/edit_post.dart' show EditPostWidget;
 import '../pages/post_view.dart' show PostViewWidget;
 import '../theme/theme.dart';
@@ -157,7 +158,7 @@ class _UserPostWidgetState extends State<UserPostWidget> {
             children: [
               AppButton(
                 onPressed: () {
-                  print('upvoteButton pressed ...');
+                  LogService.dbg('upvoteButton pressed ...', src: 'UserPostWidget');
                 },
                 text: formatNumber(
                   widget.noUpvotes,

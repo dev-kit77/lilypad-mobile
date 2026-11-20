@@ -57,11 +57,10 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
       backgroundColor: AppTheme.of(context).primaryBackground,
       body: Stack(
         children: [
-          Container(
+          SizedBox(
             width: MediaQuery.sizeOf(context).width,
             height: MediaQuery.sizeOf(context).height,
-            decoration: BoxDecoration(),
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               height: MediaQuery.sizeOf(context).height,
               child: Stack(
@@ -237,9 +236,6 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                           Tab(text: 'Latest'),
                                         ],
                                         controller: feedTabsController,
-                                        onTap: (i) async {
-                                          [() async {}, () async {}][i]();
-                                        },
                                       ),
                                     ),
                                     Expanded(

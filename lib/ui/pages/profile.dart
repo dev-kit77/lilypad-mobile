@@ -15,9 +15,9 @@ class ProfileWidget extends StatefulWidget {
     String? username,
     String? status,
     String? bio,
-  }) : this.username = username ?? 'devkit',
-       this.status = status ?? 'Developing lilypad',
-       this.bio = bio ?? 'I am the lilypad guy!';
+  }) : username = username ?? 'devkit',
+       status = status ?? 'Developing lilypad',
+       bio = bio ?? 'I am the lilypad guy!';
 
   final String username;
   final String status;
@@ -61,11 +61,10 @@ class _ProfileWidgetState extends State<ProfileWidget>
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
-      body: Container(
+      body: SizedBox(
         width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height,
-        decoration: BoxDecoration(),
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: MediaQuery.sizeOf(context).height,
           child: Stack(
