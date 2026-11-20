@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:lilypad/services/session.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import 'log.dart';
 
@@ -69,6 +70,9 @@ class APIService {
         '${req.method} at ${req.url.toString()}',
         src: 'API Service',
       );
+      LogService.log('Request Headers=${req.headers}', src: 'API Service');
+      LogService.log('Request Headers=${req.body}', src: 'API Service');
+
       //send request to server
       final responseStream = await _client.send(req);
 
@@ -81,43 +85,47 @@ class APIService {
         }
 
         //await response completion
-        final Response response = await Response.fromStream(responseStream);
+        final Response res = await Response.fromStream(responseStream);
 
         LogService.log(
-          'Response recieved. Total ${response.contentLength} Bytes recieved from server.',
+          'Response recieved. Total ${res.contentLength} Bytes recieved from server.',
           src: 'API Service',
         );
+        LogService.log('Response Headers=${res.headers}', src: 'API Service');
+        LogService.log('Response Headers=${res.body}', src: 'API Service');
 
-        return response;
+        return res;
       } else {
         //await response completion
-        final Response response = await Response.fromStream(responseStream);
+        final Response res = await Response.fromStream(responseStream);
 
         LogService.log(
-          'Response recieved. Total ${response.contentLength} Bytes recieved from server.',
+          'Response recieved. Total ${res.contentLength} Bytes recieved from server.',
           src: 'API Service',
         );
-
+        LogService.log('Response Headers=${res.headers}', src: 'API Service');
+        LogService.log('Response Headers=${res.body}', src: 'API Service');
         LogService.err(
-          'HTTP ${response.statusCode} - ${response.reasonPhrase}',
+          'HTTP ${res.statusCode} - ${res.reasonPhrase}',
           src: 'API Service',
         );
 
         //check if session invalid
-        if (response.statusCode == 401) {
+        if (res.statusCode == 401) {
           //clear session cookies
           SessionService.clear();
         } else {
           //capture any set-cookie from request
-          if (response.headers['set-cookie'] != null &&
-              response.headers['set-cookie'] != '') {
-            SessionService.capture(response.headers['set-cookie']!);
+          if (res.headers['set-cookie'] != null &&
+              res.headers['set-cookie'] != '') {
+            SessionService.capture(res.headers['set-cookie']!);
           }
         }
 
-        throw HttpException(
-          'HTTP ${response.statusCode} - ${jsonDecode(response.body)['error']}',
+        throw APIException(
+          '${jsonDecode(res.body)['error'] ?? jsonDecode(res.body)['message']}',
           uri: req.url,
+          statusCode: res.statusCode,
         );
       }
     } on SocketException catch (e) {

@@ -1,31 +1,24 @@
-import '../widgets/logo.dart';
+import 'dart:io';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lilypad/services/ui/dialog.dart';
+import 'package:lilypad/services/user.dart';
+import 'package:lilypad/util/api_ex.dart';
+import 'package:material_ui/material_ui.dart';
 
-import '../theme/theme.dart';
 import '../../util/ui.dart';
+import '../theme/theme.dart';
 import '../widgets/buttons.dart';
+import '../widgets/logo.dart';
 import 'feed.dart' show FeedWidget;
 
 class LandingWidget extends StatefulWidget {
-  const LandingWidget({
-    super.key,
-    String? username,
-    String? status,
-    String? bio,
-  }) : this.username = username ?? 'devkit',
-       this.status = status ?? 'Developing lilypad',
-       this.bio = bio ?? 'I am the lilypad guy!';
-
-  final String username;
-  final String status;
-  final String bio;
-
   static String routeName = 'landing';
+
   static String routePath = '/landing';
+  const LandingWidget({super.key});
 
   @override
   State<LandingWidget> createState() => _LandingWidgetState();
@@ -33,86 +26,155 @@ class LandingWidget extends StatefulWidget {
 
 class _LandingWidgetState extends State<LandingWidget>
     with TickerProviderStateMixin {
+  final _signInFormKey = GlobalKey<FormState>();
+  final _signUpFormKey = GlobalKey<FormState>();
+
   // State field(s) for TabBar widget.
   TabController? tabBarController;
+  // State field(s) for emailAddress widget.
+  FocusNode? emailFocusNodeSignIn;
+  TextEditingController? emailTextControllerSignIn;
+  // State field(s) for password widget.
+  late FocusNode passwordVisibilityFocusNodeSignIn;
+  FocusNode? passwordFocusNodeSignIn;
+  TextEditingController? passwordTextControllerSignIn;
+  late bool passwordVisibilitySignIn;
+  // State field(s) for username widget.
+  FocusNode? usernameFocusNode;
+  TextEditingController? usernameTextController;
+  // State field(s) for emailAddress widget.
+  FocusNode? emailAddressFocusNode2;
+  TextEditingController? emailTextControllerSignUp;
+  // State field(s) for password widget.
+  late FocusNode passwordVisibilityFocusNodeSignUp;
+  FocusNode? passwordFocusNodeSignUp;
+  TextEditingController? passwordTextControllerSignUp;
+  late bool passwordVisibilitySignUp;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   int get tabBarCurrentIndex =>
       tabBarController != null ? tabBarController!.index : 0;
   int get tabBarPreviousIndex =>
       tabBarController != null ? tabBarController!.previousIndex : 0;
-  // State field(s) for emailAddress widget.
-  FocusNode? emailAddressFocusNode1;
-  TextEditingController? emailAddressTextController1;
-  String? Function(BuildContext, String?)? emailAddressTextController1Validator;
-  // State field(s) for password widget.
-  late FocusNode passwordPasswordVisibilityFocusNode1;
-  FocusNode? passwordFocusNode1;
-  TextEditingController? passwordTextController1;
-  late bool passwordVisibility1;
-  String? Function(BuildContext, String?)? passwordTextController1Validator;
-  // State field(s) for username widget.
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameTextController;
-  String? Function(BuildContext, String?)? usernameTextControllerValidator;
-  // State field(s) for emailAddress widget.
-  FocusNode? emailAddressFocusNode2;
-  TextEditingController? emailAddressTextController2;
-  String? Function(BuildContext, String?)? emailAddressTextController2Validator;
-  // State field(s) for password widget.
-  late FocusNode passwordPasswordVisibilityFocusNode2;
-  FocusNode? passwordFocusNode2;
-  TextEditingController? passwordTextController2;
-  late bool passwordVisibility2;
-  String? Function(BuildContext, String?)? passwordTextController2Validator;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _emailValidate(String? ipt) {
+    final String email = ipt?.trim() ?? '';
 
-  @override
-  void initState() {
-    super.initState();
-    passwordPasswordVisibilityFocusNode1 = FocusNode();
-    passwordVisibility1 = false;
-    passwordPasswordVisibilityFocusNode2 = FocusNode();
-    passwordVisibility2 = false;
+    if (email.isEmpty) {
+      return 'Email Required.';
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]$').hasMatch(email)) {
+      return 'Enter a valid email address';
+    }
 
-    tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
-      ..addListener(() => setState(() {}));
-
-    emailAddressTextController1 ??= TextEditingController();
-    emailAddressFocusNode1 ??= FocusNode();
-
-    passwordTextController1 ??= TextEditingController();
-    passwordFocusNode1 ??= FocusNode();
-
-    usernameTextController ??= TextEditingController();
-    usernameFocusNode ??= FocusNode();
-
-    emailAddressTextController2 ??= TextEditingController();
-    emailAddressFocusNode2 ??= FocusNode();
-
-    passwordTextController2 ??= TextEditingController();
-    passwordFocusNode2 ??= FocusNode();
+    return null;
   }
 
-  @override
-  void dispose() {
-    tabBarController?.dispose();
-    emailAddressFocusNode1?.dispose();
-    emailAddressTextController1?.dispose();
+  String? _passwordValidate(String? ipt) {
+    final String password = ipt?.trim() ?? '';
 
-    passwordFocusNode1?.dispose();
-    passwordTextController1?.dispose();
-    passwordPasswordVisibilityFocusNode1.dispose();
-    usernameFocusNode?.dispose();
-    usernameTextController?.dispose();
+    if (password.isEmpty) {
+      return 'Password Required.';
+    } else if (password.length < 8) {
+      return 'Password must at least 8 characters.';
+    }
 
-    emailAddressFocusNode2?.dispose();
-    emailAddressTextController2?.dispose();
+    return null;
+  }
 
-    passwordFocusNode2?.dispose();
-    passwordTextController2?.dispose();
-    passwordPasswordVisibilityFocusNode2.dispose();
+  String? _usernameValidate(String? ipt) {
+    final String username = ipt?.trim() ?? '';
 
-    super.dispose();
+    if (username.isEmpty) {
+      return 'Username Required.';
+    } else if (username.length > 64) {
+      return 'Username too long.';
+    }
+
+    return null;
+  }
+
+  void _signIn() async {
+    if (_signInFormKey.currentState?.validate() ?? false) {
+      bool login = false;
+      try {
+        login = await UserService.login(
+          emailTextControllerSignIn!.text,
+          passwordTextControllerSignIn!.text,
+        );
+      } on APIException catch (e) {
+        if (e.statusCode == 400) {
+          DialogService.showAlert(
+            'Sign In Error',
+            'Invalid Email format. Please Check Email then try again.',
+          );
+        } else if (e.statusCode == 401) {
+          DialogService.showAlert(
+            'Sign In Error',
+            'Incorrect Credentials. Please Check Email & Password then try again.',
+          );
+        } else {
+          DialogService.showAlert(
+            'Sign In Error',
+            '${e.statusCode} - ${e.message}',
+          );
+        }
+        return;
+      } on SocketException catch (e) {
+        DialogService.showAlert('Sign In Error', e.message);
+        return;
+      } catch (e) {
+        DialogService.showAlert('Sign In Error', 'Unexpected error: $e');
+        return;
+      }
+
+      if (mounted && login) {
+        Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+      } else if (mounted) {
+        DialogService.showAlert('Sign In Error', 'Unknown Error');
+      }
+    }
+  }
+
+  void _signUp() async {
+    if (_signUpFormKey.currentState?.validate() ?? false) {
+      bool created = false;
+      try {
+        created = await UserService.createAccount(
+          usernameTextController!.text,
+          emailTextControllerSignUp!.text,
+          passwordTextControllerSignUp!.text,
+        );
+      } on APIException catch (e) {
+        if (e.statusCode == 400) {
+          DialogService.showAlert(
+            'Sign In Error',
+            'Invalid Email format. Please Check Email then try again.',
+          );
+        } else if (e.statusCode == 422) {
+          DialogService.showAlert(
+            'Sign In Error',
+            'Email/Username Taken. Please try a different option then try again.',
+          );
+        } else {
+          DialogService.showAlert(
+            'Sign In Error',
+            '${e.statusCode} - ${e.message}',
+          );
+        }
+        return;
+      } on SocketException catch (e) {
+        DialogService.showAlert('Sign In Error', e.message);
+        return;
+      } catch (e) {
+        DialogService.showAlert('Sign Up Error', 'Unexpected error: $e');
+        return;
+      }
+
+      if (mounted && created) {
+        Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+      } else if (mounted) {
+        DialogService.showAlert('Sign Up Error', 'Unknown Error');
+      }
+    }
   }
 
   @override
@@ -124,7 +186,7 @@ class _LandingWidgetState extends State<LandingWidget>
         width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height,
         decoration: BoxDecoration(),
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: MediaQuery.sizeOf(context).height,
           child: Stack(
@@ -299,363 +361,154 @@ class _LandingWidgetState extends State<LandingWidget>
                                     Tab(text: 'Sign Up'),
                                   ],
                                   controller: tabBarController,
-                                  onTap: (i) async {
-                                    [() async {}, () async {}][i]();
-                                  },
                                 ),
                               ),
                               Expanded(
                                 child: TabBarView(
                                   controller: tabBarController,
                                   children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                        16,
-                                        0,
-                                        16,
-                                        0,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Welcome back! Please fill out your login Information below.',
-                                            style: AppTheme.of(context)
-                                                .labelMedium
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.playfairDisplay(
+                                    Form(
+                                      key: _signInFormKey,
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                          16,
+                                          0,
+                                          16,
+                                          0,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Welcome back! Please fill out your login Information below.',
+                                              style: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .override(
+                                                    font:
+                                                        GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: AppTheme.of(
+                                                      context,
+                                                    ).labelMedium.fontWeight,
+                                                    fontStyle: AppTheme.of(
+                                                      context,
+                                                    ).labelMedium.fontStyle,
+                                                  ),
+                                            ),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: TextFormField(
+                                                controller:
+                                                    emailTextControllerSignIn,
+                                                validator: _emailValidate,
+                                                autovalidateMode:
+                                                    AutovalidateMode
+                                                        .onUserInteraction,
+                                                focusNode: emailFocusNodeSignIn,
+                                                autofocus: true,
+                                                enabled: true,
+                                                autofillHints: [
+                                                  AutofillHints.email,
+                                                ],
+                                                obscureText: false,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Email',
+                                                  labelStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).labelLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(context)
-                                                                .labelMedium
-                                                                .fontWeight,
+                                                            FontWeight.w500,
                                                         fontStyle: AppTheme.of(
                                                           context,
-                                                        ).labelMedium.fontStyle,
+                                                        ).labelLarge.fontStyle,
                                                       ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: AppTheme.of(
-                                                    context,
-                                                  ).labelMedium.fontWeight,
-                                                  fontStyle: AppTheme.of(
-                                                    context,
-                                                  ).labelMedium.fontStyle,
-                                                ),
-                                          ),
-                                          Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller:
-                                                  emailAddressTextController1,
-                                              focusNode: emailAddressFocusNode1,
-                                              autofocus: true,
-                                              enabled: true,
-                                              autofillHints: [
-                                                AutofillHints.email,
-                                              ],
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                labelText: 'Email',
-                                                labelStyle: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).alternate,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).primary,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: AppTheme.of(context)
-                                                        .error,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).error,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                filled: true,
-                                                fillColor: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                contentPadding: EdgeInsets.all(
-                                                  24,
-                                                ),
-                                              ),
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontStyle,
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).alternate,
+                                                          width: 2,
                                                         ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontStyle,
-                                                  ),
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              cursorColor: AppTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller:
-                                                  passwordTextController1,
-                                              focusNode: passwordFocusNode1,
-                                              autofocus: false,
-                                              enabled: true,
-                                              autofillHints: [
-                                                AutofillHints.password,
-                                              ],
-                                              obscureText: !passwordVisibility1,
-                                              decoration: InputDecoration(
-                                                labelText: 'Password',
-                                                labelStyle: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).alternate,
-                                                        width: 2,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
                                                       ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).primary,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: AppTheme.of(context)
-                                                        .error,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).error,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                filled: true,
-                                                fillColor: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                contentPadding: EdgeInsets.all(
-                                                  24,
-                                                ),
-                                                suffixIcon: InkWell(
-                                                  onTap: () async {
-                                                    setState(
-                                                      () => passwordVisibility1 =
-                                                          !passwordVisibility1,
-                                                    );
-                                                  },
-                                                  focusNode:
-                                                      passwordPasswordVisibilityFocusNode1
-                                                        ..skipTraversal =
-                                                            !(false),
-                                                  child: Icon(
-                                                    passwordVisibility1
-                                                        ? Icons
-                                                              .visibility_outlined
-                                                        : Icons
-                                                              .visibility_off_outlined,
-                                                    color: AppTheme.of(context)
-                                                        .secondaryText,
-                                                    size: 24,
-                                                  ),
-                                                ),
-                                              ),
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontStyle,
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).primary,
+                                                          width: 2,
                                                         ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontStyle,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      width: 2,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          40,
+                                                        ),
                                                   ),
-                                              cursorColor: AppTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: AlignmentDirectional(
-                                              0,
-                                              0,
-                                            ),
-                                            child: AppButton(
-                                              onPressed: () async {
-                                                Navigator.of(context)
-                                                    .popAndPushNamed(
-                                                      FeedWidget.routePath,
-                                                    );
-                                              },
-                                              text: 'Sign In',
-                                              icon: FaIcon(
-                                                FaIconData(
-                                                  const IconData(
-                                                    /* signInAlt */ 0xf2f6,
-                                                    fontFamily:
-                                                        'FontAwesomeSolid',
-                                                    fontPackage:
-                                                        'font_awesome_flutter',
-                                                  ),
+                                                  focusedErrorBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).error,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: AppTheme.of(
+                                                    context,
+                                                  ).secondaryBackground,
+                                                  contentPadding:
+                                                      EdgeInsets.all(24),
                                                 ),
-                                                size: 24,
-                                              ),
-                                              options: AppButtonOptions(
-                                                width: 230,
-                                                height: 52,
-                                                padding:
-                                                    EdgeInsetsDirectional.fromSTEB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                    ),
-                                                iconAlignment:
-                                                    IconAlignment.end,
-                                                iconPadding:
-                                                    EdgeInsetsDirectional.fromSTEB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                    ),
-                                                color: AppTheme.of(context)
-                                                    .primary,
-                                                textStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                style: AppTheme.of(context)
+                                                    .bodyLarge
                                                     .override(
                                                       font:
                                                           GoogleFonts.playfairDisplay(
@@ -663,86 +516,550 @@ class _LandingWidgetState extends State<LandingWidget>
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .bodyLarge
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .bodyLarge
                                                                     .fontStyle,
                                                           ),
-                                                      color: Colors.white,
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontWeight,
+                                                      ).bodyLarge.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontStyle,
+                                                      ).bodyLarge.fontStyle,
                                                     ),
-                                                elevation: 3,
-                                                borderSide: BorderSide(
-                                                  color: Colors.transparent,
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(40),
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                cursorColor: AppTheme.of(
+                                                  context,
+                                                ).primary,
                                               ),
                                             ),
-                                          ),
-                                        ].divide(SizedBox(height: 16)).around(SizedBox(height: 16)),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: TextFormField(
+                                                controller:
+                                                    passwordTextControllerSignIn,
+                                                focusNode:
+                                                    passwordFocusNodeSignIn,
+                                                validator: _passwordValidate,
+                                                autovalidateMode:
+                                                    AutovalidateMode
+                                                        .onUserInteraction,
+                                                enabled: true,
+                                                autofillHints: [
+                                                  AutofillHints.password,
+                                                ],
+                                                obscureText:
+                                                    !passwordVisibilitySignIn,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Password',
+                                                  labelStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).labelLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontStyle: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontStyle,
+                                                      ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).alternate,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).primary,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      width: 2,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          40,
+                                                        ),
+                                                  ),
+                                                  focusedErrorBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).error,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: AppTheme.of(
+                                                    context,
+                                                  ).secondaryBackground,
+                                                  contentPadding:
+                                                      EdgeInsets.all(24),
+                                                  suffixIcon: InkWell(
+                                                    onTap: () async {
+                                                      setState(
+                                                        () => passwordVisibilitySignIn =
+                                                            !passwordVisibilitySignIn,
+                                                      );
+                                                    },
+                                                    focusNode:
+                                                        passwordVisibilityFocusNodeSignIn
+                                                          ..skipTraversal =
+                                                              !(false),
+                                                    child: Icon(
+                                                      passwordVisibilitySignIn
+                                                          ? Icons
+                                                                .visibility_outlined
+                                                          : Icons
+                                                                .visibility_off_outlined,
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).secondaryText,
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                                style: AppTheme.of(context)
+                                                    .bodyLarge
+                                                    .override(
+                                                      font:
+                                                          GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: AppTheme.of(
+                                                        context,
+                                                      ).bodyLarge.fontWeight,
+                                                      fontStyle: AppTheme.of(
+                                                        context,
+                                                      ).bodyLarge.fontStyle,
+                                                    ),
+                                                cursorColor: AppTheme.of(
+                                                  context,
+                                                ).primary,
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: AlignmentDirectional(
+                                                0,
+                                                0,
+                                              ),
+                                              child: AppButton(
+                                                onPressed: () async =>
+                                                    _signIn(),
+                                                text: 'Sign In',
+                                                icon: FaIcon(
+                                                  FaIconData(
+                                                    const IconData(
+                                                      /* signInAlt */ 0xf2f6,
+                                                      fontFamily:
+                                                          'FontAwesomeSolid',
+                                                      fontPackage: 'font_awesome_flutter',
+                                                    ),
+                                                  ),
+                                                  size: 24,
+                                                ),
+                                                options: AppButtonOptions(
+                                                  width: 230,
+                                                  height: 52,
+                                                  padding:
+                                                      EdgeInsetsDirectional.fromSTEB(
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0,
+                                                      ),
+                                                  iconAlignment:
+                                                      IconAlignment.end,
+                                                  iconPadding:
+                                                      EdgeInsetsDirectional.fromSTEB(
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0,
+                                                      ),
+                                                  color: AppTheme.of(context)
+                                                      .primary,
+                                                  textStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).titleMedium.override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: Colors.white,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .titleMedium
+                                                                .fontWeight,
+                                                        fontStyle: AppTheme.of(
+                                                          context,
+                                                        ).titleMedium.fontStyle,
+                                                      ),
+                                                  elevation: 3,
+                                                  borderSide: BorderSide(
+                                                    color: Colors.transparent,
+                                                    width: 1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(40),
+                                                ),
+                                              ),
+                                            ),
+                                          ].divide(SizedBox(height: 16)).around(SizedBox(height: 16)),
+                                        ),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                        16,
-                                        0,
-                                        16,
-                                        0,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Welcome to lilypad! Please enter a unique Username, Email and Password.',
-                                            style: AppTheme.of(context)
-                                                .labelMedium
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.playfairDisplay(
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .labelMedium
-                                                                .fontWeight,
+                                    Form(
+                                      key: _signUpFormKey,
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                          16,
+                                          0,
+                                          16,
+                                          0,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Welcome to lilypad! Please enter a unique Username, Email and Password.',
+                                              style: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .override(
+                                                    font:
+                                                        GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: AppTheme.of(
+                                                      context,
+                                                    ).labelMedium.fontWeight,
+                                                    fontStyle: AppTheme.of(
+                                                      context,
+                                                    ).labelMedium.fontStyle,
+                                                  ),
+                                            ),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: TextFormField(
+                                                controller:
+                                                    usernameTextController,
+                                                focusNode: usernameFocusNode,
+                                                validator: _usernameValidate,
+                                                enabled: true,
+                                                obscureText: false,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Username',
+                                                  labelStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).labelLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontWeight,
                                                         fontStyle: AppTheme.of(
                                                           context,
-                                                        ).labelMedium.fontStyle,
+                                                        ).labelLarge.fontStyle,
                                                       ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: AppTheme.of(
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).alternate,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).primary,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      width: 2,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          40,
+                                                        ),
+                                                  ),
+                                                  focusedErrorBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).error,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: AppTheme.of(
                                                     context,
-                                                  ).labelMedium.fontWeight,
-                                                  fontStyle: AppTheme.of(
+                                                  ).secondaryBackground,
+                                                  contentPadding:
+                                                      EdgeInsets.all(24),
+                                                ),
+                                                style: AppTheme.of(context)
+                                                    .bodyLarge
+                                                    .override(
+                                                      font:
+                                                          GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: AppTheme.of(
+                                                        context,
+                                                      ).bodyLarge.fontWeight,
+                                                      fontStyle: AppTheme.of(
+                                                        context,
+                                                      ).bodyLarge.fontStyle,
+                                                    ),
+                                                maxLength: 64,
+                                                maxLengthEnforcement:
+                                                    MaxLengthEnforcement
+                                                        .enforced,
+                                                buildCounter: (
+                                                  context, {
+                                                  required currentLength,
+                                                  required isFocused,
+                                                  maxLength,
+                                                }) => null,
+                                                keyboardType:
+                                                    TextInputType.text,
+                                                cursorColor: AppTheme.of(
+                                                  context,
+                                                ).primary,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: TextFormField(
+                                                controller:
+                                                    emailTextControllerSignUp,
+                                                validator: _emailValidate,
+                                                autovalidateMode:
+                                                    AutovalidateMode
+                                                        .onUserInteraction,
+                                                focusNode:
+                                                    emailAddressFocusNode2,
+                                                enabled: true,
+                                                autofillHints: [
+                                                  AutofillHints.email,
+                                                ],
+                                                obscureText: false,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Email',
+                                                  labelStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).labelLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontWeight,
+                                                        fontStyle: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontStyle,
+                                                      ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).alternate,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).primary,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      width: 2,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          40,
+                                                        ),
+                                                  ),
+                                                  focusedErrorBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).error,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: AppTheme.of(
                                                     context,
-                                                  ).labelMedium.fontStyle,
+                                                  ).secondaryBackground,
+                                                  contentPadding:
+                                                      EdgeInsets.all(24),
                                                 ),
-                                          ),
-                                          Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller:
-                                                  usernameTextController,
-                                              focusNode: usernameFocusNode,
-                                              autofocus: true,
-                                              enabled: true,
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                labelText: 'Username',
-                                                labelStyle: AppTheme.of(context)
-                                                    .labelLarge
+                                                style: AppTheme.of(context)
+                                                    .bodyLarge
                                                     .override(
                                                       font:
                                                           GoogleFonts.playfairDisplay(
@@ -750,134 +1067,158 @@ class _LandingWidgetState extends State<LandingWidget>
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .labelLarge
+                                                                    .bodyLarge
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .labelLarge
+                                                                    .bodyLarge
                                                                     .fontStyle,
                                                           ),
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).labelLarge.fontWeight,
+                                                      ).bodyLarge.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).labelLarge.fontStyle,
+                                                      ).bodyLarge.fontStyle,
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).alternate,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).primary,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: AppTheme.of(context)
-                                                        .error,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).error,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                filled: true,
-                                                fillColor: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                contentPadding: EdgeInsets.all(
-                                                  24,
-                                                ),
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                cursorColor: AppTheme.of(
+                                                  context,
+                                                ).primary,
                                               ),
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
+                                            ),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: TextFormField(
+                                                controller:
+                                                    passwordTextControllerSignUp,
+                                                focusNode:
+                                                    passwordFocusNodeSignUp,
+                                                validator: _passwordValidate,
+                                                autovalidateMode:
+                                                    AutovalidateMode
+                                                        .onUserInteraction,
+                                                enabled: true,
+                                                autofillHints: [
+                                                  AutofillHints.password,
+                                                ],
+                                                obscureText:
+                                                    !passwordVisibilitySignUp,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Password',
+                                                  labelStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).labelLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
                                                           fontWeight:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontStyle,
                                                         ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontStyle,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontWeight,
+                                                        fontStyle: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontStyle,
+                                                      ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).alternate,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).primary,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      width: 2,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          40,
+                                                        ),
                                                   ),
-                                              maxLength: 64,
-                                              maxLengthEnforcement:
-                                                  MaxLengthEnforcement.enforced,
-                                              buildCounter: (
-                                                context, {
-                                                required currentLength,
-                                                required isFocused,
-                                                maxLength,
-                                              }) => null,
-                                              keyboardType: TextInputType.text,
-                                              cursorColor: AppTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller:
-                                                  emailAddressTextController2,
-                                              focusNode: emailAddressFocusNode2,
-                                              autofocus: true,
-                                              enabled: true,
-                                              autofillHints: [
-                                                AutofillHints.email,
-                                              ],
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                labelText: 'Email',
-                                                labelStyle: AppTheme.of(context)
-                                                    .labelLarge
+                                                  focusedErrorBorder:
+                                                      OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: AppTheme.of(
+                                                            context,
+                                                          ).error,
+                                                          width: 2,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              40,
+                                                            ),
+                                                      ),
+                                                  filled: true,
+                                                  fillColor: AppTheme.of(
+                                                    context,
+                                                  ).secondaryBackground,
+                                                  contentPadding:
+                                                      EdgeInsets.all(24),
+                                                  suffixIcon: InkWell(
+                                                    onTap: () async {
+                                                      setState(
+                                                        () => passwordVisibilitySignUp =
+                                                            !passwordVisibilitySignUp,
+                                                      );
+                                                    },
+                                                    focusNode:
+                                                        passwordVisibilityFocusNodeSignUp
+                                                          ..skipTraversal =
+                                                              !(false),
+                                                    child: Icon(
+                                                      passwordVisibilitySignUp
+                                                          ? Icons
+                                                                .visibility_outlined
+                                                          : Icons
+                                                                .visibility_off_outlined,
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).secondaryText,
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                                style: AppTheme.of(context)
+                                                    .bodyLarge
                                                     .override(
                                                       font:
                                                           GoogleFonts.playfairDisplay(
@@ -885,341 +1226,108 @@ class _LandingWidgetState extends State<LandingWidget>
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .labelLarge
+                                                                    .bodyLarge
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .labelLarge
+                                                                    .bodyLarge
                                                                     .fontStyle,
                                                           ),
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).labelLarge.fontWeight,
+                                                      ).bodyLarge.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).labelLarge.fontStyle,
+                                                      ).bodyLarge.fontStyle,
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).alternate,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).primary,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: AppTheme.of(context)
-                                                        .error,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).error,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                filled: true,
-                                                fillColor: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                contentPadding: EdgeInsets.all(
-                                                  24,
-                                                ),
+                                                cursorColor: AppTheme.of(
+                                                  context,
+                                                ).primary,
                                               ),
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
+                                            ),
+                                            Align(
+                                              alignment: AlignmentDirectional(
+                                                0,
+                                                0,
+                                              ),
+                                              child: AppButton(
+                                                onPressed: () async =>
+                                                    _signUp(),
+                                                text: 'Sign Up',
+                                                icon: FaIcon(
+                                                  FaIconData(
+                                                    const IconData(
+                                                      /* userAlt */ 0xf007,
+                                                      fontFamily:
+                                                          'FontAwesomeRegular',
+                                                      fontPackage: 'font_awesome_flutter',
+                                                    ),
+                                                  ),
+                                                  size: 24,
+                                                ),
+                                                options: AppButtonOptions(
+                                                  width: 230,
+                                                  height: 52,
+                                                  padding:
+                                                      EdgeInsetsDirectional.fromSTEB(
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0,
+                                                      ),
+                                                  iconAlignment:
+                                                      IconAlignment.end,
+                                                  iconPadding:
+                                                      EdgeInsetsDirectional.fromSTEB(
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        0,
+                                                      ),
+                                                  color: AppTheme.of(context)
+                                                      .primary,
+                                                  textStyle:
+                                                      AppTheme.of(
+                                                        context,
+                                                      ).titleLarge.override(
+                                                        font: GoogleFonts.playfairDisplay(
                                                           fontWeight:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .titleLarge
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .titleLarge
                                                                   .fontStyle,
                                                         ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontStyle,
-                                                  ),
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              cursorColor: AppTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller:
-                                                  passwordTextController2,
-                                              focusNode: passwordFocusNode2,
-                                              autofocus: false,
-                                              enabled: true,
-                                              autofillHints: [
-                                                AutofillHints.password,
-                                              ],
-                                              obscureText: !passwordVisibility2,
-                                              decoration: InputDecoration(
-                                                labelText: 'Password',
-                                                labelStyle: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontWeight,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
+                                                        color: Colors.white,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: AppTheme.of(
                                                           context,
-                                                        ).alternate,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
+                                                        ).titleLarge.fontWeight,
+                                                        fontStyle: AppTheme.of(
                                                           context,
-                                                        ).primary,
-                                                        width: 2,
+                                                        ).titleLarge.fontStyle,
                                                       ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                errorBorder: OutlineInputBorder(
+                                                  elevation: 3,
                                                   borderSide: BorderSide(
-                                                    color: AppTheme.of(context)
-                                                        .error,
-                                                    width: 2,
+                                                    color: Colors.transparent,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(40),
                                                 ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: AppTheme.of(
-                                                          context,
-                                                        ).error,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            40,
-                                                          ),
-                                                    ),
-                                                filled: true,
-                                                fillColor: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                contentPadding: EdgeInsets.all(
-                                                  24,
-                                                ),
-                                                suffixIcon: InkWell(
-                                                  onTap: () async {
-                                                    setState(
-                                                      () => passwordVisibility2 =
-                                                          !passwordVisibility2,
-                                                    );
-                                                  },
-                                                  focusNode:
-                                                      passwordPasswordVisibilityFocusNode2
-                                                        ..skipTraversal =
-                                                            !(false),
-                                                  child: Icon(
-                                                    passwordVisibility2
-                                                        ? Icons
-                                                              .visibility_outlined
-                                                        : Icons
-                                                              .visibility_off_outlined,
-                                                    color: AppTheme.of(context)
-                                                        .secondaryText,
-                                                    size: 24,
-                                                  ),
-                                                ),
-                                              ),
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).bodyLarge.fontStyle,
-                                                  ),
-                                              cursorColor: AppTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: AlignmentDirectional(
-                                              0,
-                                              0,
-                                            ),
-                                            child: AppButton(
-                                              onPressed: () async {
-                                                Navigator.of(context)
-                                                    .popAndPushNamed(
-                                                      FeedWidget.routePath,
-                                                    );
-                                              },
-                                              text: 'Sign Up',
-                                              icon: FaIcon(
-                                                FaIconData(
-                                                  const IconData(
-                                                    /* userAlt */ 0xf007,
-                                                    fontFamily:
-                                                        'FontAwesomeRegular',
-                                                    fontPackage:
-                                                        'font_awesome_flutter',
-                                                  ),
-                                                ),
-                                                size: 24,
-                                              ),
-                                              options: AppButtonOptions(
-                                                width: 230,
-                                                height: 52,
-                                                padding:
-                                                    EdgeInsetsDirectional.fromSTEB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                    ),
-                                                iconAlignment:
-                                                    IconAlignment.end,
-                                                iconPadding:
-                                                    EdgeInsetsDirectional.fromSTEB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                    ),
-                                                color: AppTheme.of(context)
-                                                    .primary,
-                                                textStyle: AppTheme.of(context)
-                                                    .titleLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      color: Colors.white,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: AppTheme.of(
-                                                        context,
-                                                      ).titleLarge.fontWeight,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).titleLarge.fontStyle,
-                                                    ),
-                                                elevation: 3,
-                                                borderSide: BorderSide(
-                                                  color: Colors.transparent,
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(40),
                                               ),
                                             ),
-                                          ),
-                                        ].divide(SizedBox(height: 16)).around(SizedBox(height: 16)),
+                                          ].divide(SizedBox(height: 16)).around(SizedBox(height: 16)),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1251,5 +1359,54 @@ class _LandingWidgetState extends State<LandingWidget>
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    tabBarController?.dispose();
+    emailFocusNodeSignIn?.dispose();
+    emailTextControllerSignIn?.dispose();
+
+    passwordFocusNodeSignIn?.dispose();
+    passwordTextControllerSignIn?.dispose();
+    passwordVisibilityFocusNodeSignIn.dispose();
+    usernameFocusNode?.dispose();
+    usernameTextController?.dispose();
+
+    emailAddressFocusNode2?.dispose();
+    emailTextControllerSignUp?.dispose();
+
+    passwordFocusNodeSignUp?.dispose();
+    passwordTextControllerSignUp?.dispose();
+    passwordVisibilityFocusNodeSignUp.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    passwordVisibilityFocusNodeSignIn = FocusNode();
+    passwordVisibilitySignIn = false;
+    passwordVisibilityFocusNodeSignUp = FocusNode();
+    passwordVisibilitySignUp = false;
+
+    tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
+      ..addListener(() => setState(() {}));
+
+    emailTextControllerSignIn ??= TextEditingController();
+    emailFocusNodeSignIn ??= FocusNode();
+
+    passwordTextControllerSignIn ??= TextEditingController();
+    passwordFocusNodeSignIn ??= FocusNode();
+
+    usernameTextController ??= TextEditingController();
+    usernameFocusNode ??= FocusNode();
+
+    emailTextControllerSignUp ??= TextEditingController();
+    emailAddressFocusNode2 ??= FocusNode();
+
+    passwordTextControllerSignUp ??= TextEditingController();
+    passwordFocusNodeSignUp ??= FocusNode();
   }
 }
