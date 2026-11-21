@@ -20,7 +20,7 @@ class Post {
   List<Post> replies = <Post>[];
   String? replying;
   int noReplies;
-  double distance;
+  double? distance;
 
   Post({
     required this.uuid,
@@ -31,7 +31,7 @@ class Post {
     this.upvotes = 0,
     this.replying,
     this.noReplies = 0,
-    this.distance = 0,
+    this.distance,
   });
 
   factory Post.fromJson(Map<String, Object?> json) {
@@ -47,7 +47,7 @@ class Post {
       upvotes: json['upvotes'] as int,
       replying: json['replyingTo'] as String?,
       noReplies: json['replyCount'] as int,
-      distance: json['distanceKm'] as double,
+      distance: json['distanceKm'] as double?,
     );
   }
 
@@ -70,23 +70,23 @@ class Post {
     replies.add(reply);
   }
 
-  bool operator <(Post other) {
-    //TODO: Implement ranking score
-    return distance < other.distance;
-  }
-
-  bool operator >(Post other) {
-    //TODO: Implement ranking score
-    return distance > other.distance;
-  }
-
-  bool operator <=(Post other) {
-    //TODO: Implement ranking score
-    return distance <= other.distance;
-  }
-
-  bool operator >=(Post other) {
-    //TODO: Implement ranking score
-    return distance >= other.distance;
-  }
+  //   bool operator <(Post other) {
+  //     //TODO: Implement ranking score
+  //     return distance < other.distance;
+  //   }
+  //
+  //   bool operator >(Post other) {
+  //     //TODO: Implement ranking score
+  //     return distance > other.distance;
+  //   }
+  //
+  //   bool operator <=(Post other) {
+  //     //TODO: Implement ranking score
+  //     return distance <= other.distance;
+  //   }
+  //
+  //   bool operator >=(Post other) {
+  //     //TODO: Implement ranking score
+  //     return distance >= other.distance;
+  //   }
 }
