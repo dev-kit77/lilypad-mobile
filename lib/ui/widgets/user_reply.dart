@@ -23,7 +23,7 @@ class UserReplyWidget extends StatefulWidget {
 }
 
 class _UserReplyWidgetState extends State<UserReplyWidget> {
-  late final Post? fetchedReply;
+  late final Post? fetchedReplying;
 
   @override
   void initState() {
@@ -32,11 +32,11 @@ class _UserReplyWidgetState extends State<UserReplyWidget> {
     if (widget.replying == null) {
       ContentService.fetchPost(widget.post.replying!).then(
         (r) => setState(() {
-          fetchedReply = r;
+          fetchedReplying = r;
         }),
       );
     } else {
-      fetchedReply = widget.replying;
+      fetchedReplying = widget.replying;
     }
   }
 
@@ -62,12 +62,14 @@ class _UserReplyWidgetState extends State<UserReplyWidget> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) =>
-                              PostViewWidget(post: widget.post),
-                        ),
-                      );
+                      if (fetchedReplying != null) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (context) =>
+                                PostViewWidget(post: fetchedReplying!),
+                          ),
+                        );
+                      }
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -126,7 +128,7 @@ class _UserReplyWidgetState extends State<UserReplyWidget> {
                                 ),
                               ),
                               Text(
-                                fetchedReply?.user.username ?? 'Unknown',
+                                fetchedReplying?.user.username ?? 'Unknown',
                                 style: AppTheme.of(context).bodyMedium.override(
                                   font: GoogleFonts.playfairDisplay(
                                     fontWeight: AppTheme.of(context)
@@ -276,7 +278,10 @@ class _UserReplyWidgetState extends State<UserReplyWidget> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (context) => PostViewWidget(post: widget.post),
+                      builder: (context) => PostViewWidget(
+                        post: widget.post,
+                        replying: fetchedReplying,
+                      ),
                     ),
                   );
                 },

@@ -1,6 +1,6 @@
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
-import 'package:lilypad/ui/widgets/base_reply.dart';
+import 'package:lilypad/ui/widgets/user_reply.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -351,7 +351,7 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                                       post: r,
                                                       replying: widget.post,
                                                     )
-                                                  : BaseReplyWidget(
+                                                  : UserReplyWidget(
                                                       post: r,
                                                       replying: widget.post,
                                                     ),
