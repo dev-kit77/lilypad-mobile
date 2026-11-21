@@ -19,7 +19,7 @@ void main() {
     expect(post.replies, isEmpty);
     expect(post.replying, isNull);
     expect(post.noReplies, equals(0));
-    expect(post.distance, equals(0));
+    expect(post.distance, isNull);
   });
 
   test('init post with details', () {
