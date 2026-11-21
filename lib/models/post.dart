@@ -51,7 +51,7 @@ class Post {
       upvotes: postMap['upvotes'] as int,
       replying: postMap['replyingTo'] as String?,
       noReplies: postMap['replyCount'] as int,
-      distance: postMap['distanceKm'] as double?,
+      distance: num.tryParse(postMap['distanceKm'].toString())?.toDouble(),
     );
   }
 
@@ -67,7 +67,7 @@ class Post {
     updated = DateTime.parse(postMap['updated'] as String);
     upvotes = postMap['upvotes'] as int;
     noReplies = postMap['replyCount'] as int;
-    distance = postMap['distanceKm'] as double;
+    distance = num.tryParse(postMap['distanceKm'].toString())?.toDouble();
 
     return this;
   }
@@ -85,7 +85,7 @@ class Post {
       upvotes: postMap['upvotes'] as int,
       replying: postMap['replyingTo'] as String?,
       noReplies: postMap['replyCount'] as int,
-      distance: postMap['distanceKm'] as double?,
+      distance: num.tryParse(postMap['distanceKm'].toString())?.toDouble(),
     );
   }
 
