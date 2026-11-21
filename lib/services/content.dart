@@ -12,7 +12,8 @@ import 'package:lilypad/services/log.dart';
 
 class ContentService {
   static List<Post> _feed = <Post>[];
-  static List<Post> _userFeed = <Post>[];
+  static List<Post> _userPosts = <Post>[];
+  static List<Post> _userReplies = <Post>[];
 
   ContentService._();
 
@@ -64,7 +65,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    List<Post> newFeed = _parseFeed(res);
+    List<Post> newFeed = _parseFeed(res)['posts']!;
 
     //cache our new feed data
     CacheService.store(o: newFeed, key: req.url.toString());
@@ -76,7 +77,7 @@ class ContentService {
     return List.from(_feed);
   }
 
-  static List<Post> _parseFeed(Response r) {
+  static Map<String, List<Post>> _parseFeed(Response r) {
     //decode json and convert to lists of posts and replies
     List<Post> posts = List.from(
       jsonDecode(r.body)['posts'].map((p) => Post.fromJson(p)),
@@ -99,8 +100,9 @@ class ContentService {
       allByID[reply.replying]?.linkReply(reply);
     }
 
-    //return posts list as stem of tree
-    return posts;
+    //return posts list as stem of tree and replies so user replies can be separated as these may not have accompaning post
+    //replies could contain orphaned replies but these should be discarded in main feed
+    return {'posts': posts, 'replies': replies};
   }
 
   /// Retrieves a single post by its ID.
@@ -425,13 +427,15 @@ class ContentService {
   ///   comments: PostItem[]   // current user's replies
   /// }
   /// Expected 401: no session.
-  static Future<List<Post>> fetchUserContent({bool noCache = false}) async {
+  static Future<Map<String, List<Post>>> fetchUserContent({
+    bool noCache = false,
+  }) async {
     //build request
     Request req = UserRequestBuilder.getContent();
 
     //retrieve feed cache if any
-    List<Post>? userCache =
-        CacheService.fetch(req.url.toString()) as List<Post>?;
+    Map<String, List<Post>>? userCache =
+        CacheService.fetch(req.url.toString()) as Map<String, List<Post>>?;
 
     //check feed cache to see if we have a pre-prepared feed
     if (userCache != null && noCache == false) {
@@ -450,16 +454,21 @@ class ContentService {
     }
 
     //parse the response from the api
-    List<Post> newUserFeed = _parseFeed(res);
+    List<Post> newUserPosts = _parseFeed(res)['posts']!;
+    List<Post> newUserReplies = _parseFeed(res)['replies']!;
 
     //cache our new feed data
-    CacheService.store(o: newUserFeed, key: req.url.toString());
+    CacheService.store(
+      o: {'posts': newUserPosts, 'replies': newUserReplies},
+      key: req.url.toString(),
+    );
 
     //init feed variable
-    _userFeed = List.from(newUserFeed);
+    _userPosts = List.from(newUserPosts);
+    _userReplies = List.from(newUserReplies);
 
     //return new feed separate from one stored in cache
-    return List.from(_userFeed);
+    return {'posts': List.from(_userPosts), 'replies': List.from(_userReplies)};
   }
 
   static DateTime? get latest => _feed.first.updated ?? _feed.first.created;
