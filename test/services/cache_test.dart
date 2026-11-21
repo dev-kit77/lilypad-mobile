@@ -31,6 +31,56 @@ void main() {
     });
   });
 
+  group('ignore', () {
+    // ignore() pushes a one-shot token that the next fetch() consumes. clear()
+    // discards any pending tokens, so setUp starts each test with an empty stack.
+
+    test('makes the next fetch return null for a cached entry', () {
+      CacheService.store(o: 'value', key: 'k');
+
+      CacheService.ignore();
+
+      expect(CacheService.fetch('k'), isNull);
+    });
+
+    test('applies to the next fetch regardless of the key requested', () {
+      CacheService.store(o: 'value', key: 'k');
+
+      CacheService.ignore();
+
+      expect(CacheService.fetch('unrelated-key'), isNull);
+      expect(CacheService.fetch('k'), equals('value'));
+    });
+
+    test('is one-shot and leaves the cached entry available', () {
+      CacheService.store(o: 'value', key: 'k');
+
+      CacheService.ignore();
+      expect(CacheService.fetch('k'), isNull);
+      expect(CacheService.fetch('k'), equals('value'));
+    });
+
+    test('one fetch is ignored for each call to ignore', () {
+      CacheService.store(o: 'value', key: 'k');
+
+      CacheService.ignore();
+      CacheService.ignore();
+
+      expect(CacheService.fetch('k'), isNull);
+      expect(CacheService.fetch('k'), isNull);
+      expect(CacheService.fetch('k'), equals('value'));
+    });
+
+    test('does not affect caching after the ignore stack is consumed', () {
+      CacheService.ignore();
+      expect(CacheService.fetch('k'), isNull);
+
+      CacheService.store(o: 'value', key: 'k');
+
+      expect(CacheService.fetch('k'), equals('value'));
+    });
+  });
+
   group('store with derived key', () {
     test('stores a User using uuid as key', () {
       final user = User(uuid: 'user-123', username: 'alice');
@@ -87,6 +137,16 @@ void main() {
 
       expect(CacheService.fetch('a'), isNull);
       expect(CacheService.fetch('b'), isNull);
+    });
+
+    test('discards pending ignore tokens', () {
+      CacheService.store(o: 'value', key: 'k');
+      CacheService.ignore();
+
+      CacheService.clear();
+      CacheService.store(o: 'value', key: 'k');
+
+      expect(CacheService.fetch('k'), equals('value'));
     });
   });
 

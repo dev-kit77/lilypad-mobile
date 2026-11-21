@@ -14,6 +14,7 @@ class CacheObject {
 
 class CacheService {
   static final Map<String, CacheObject> _cache = <String, CacheObject>{};
+  static final List<bool> _ignore = [];
 
   CacheService._();
 
@@ -58,8 +59,18 @@ class CacheService {
     }
   }
 
-  ///Method to retrieve an object from the cache. Returns the object if cache is valid or null otherwise.
+  ///Method to add a single ignore to the ignore stack.
+  static void ignore() {
+    _ignore.add(true);
+  }
+
+  ///Method to retrieve an object from the cache. Returns the object if cache is valid and not ignore at top of stack or null otherwise.
   static Object? fetch(String key) {
+    //ignore cache if items on remove stack
+    if (_ignore.isNotEmpty && _ignore.removeLast() == true) {
+      return null;
+    }
+
     ///get cache
     CacheObject? entry = _cache[key];
 
@@ -88,9 +99,10 @@ class CacheService {
     _cache.remove(key);
   }
 
-  ///Method to clear the cache
+  ///Method to clear the cache and ignore stack
   static void clear() {
     _cache.clear();
+    _ignore.clear();
   }
 
   ///Method to free invalid entries
