@@ -1,3 +1,4 @@
+import 'package:lilypad/models/post.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,20 +10,9 @@ import '../../util/ui.dart';
 import '../widgets/buttons.dart';
 
 class BasePostWidget extends StatefulWidget {
-  const BasePostWidget({
-    super.key,
-    this.username,
-    this.content,
-    this.lastModified,
-    this.noUpvotes,
-    this.noReplies,
-  });
+  const BasePostWidget({super.key, required this.post});
 
-  final String? username;
-  final String? content;
-  final String? lastModified;
-  final int? noUpvotes;
-  final int? noReplies;
+  final Post post;
 
   @override
   State<BasePostWidget> createState() => _BasePostWidgetState();
@@ -53,7 +43,7 @@ class _BasePostWidgetState extends State<BasePostWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        widget.username ?? 'Anonymous',
+                        widget.post.user.username,
                         style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.playfairDisplay(
                             fontWeight: AppTheme.of(context)
@@ -107,8 +97,7 @@ class _BasePostWidgetState extends State<BasePostWidget> {
                           clipBehavior: Clip.none,
                           children: [
                             Text(
-                              widget.content ?? 'Lorem ipsum',
-
+                              widget.post.content,
                               textAlign: TextAlign.start,
                               style: AppTheme.of(context).bodyLarge.override(
                                 font: GoogleFonts.playfairDisplay(
@@ -135,7 +124,9 @@ class _BasePostWidgetState extends State<BasePostWidget> {
                     ],
                   ),
                   Text(
-                    widget.lastModified ?? '1st Jan. 1970 - 5:59',
+                    widget.post.updated == null
+                        ? widget.post.created.toLocal().toString()
+                        : 'Edited ${widget.post.updated!.toLocal().toString()}',
                     style: AppTheme.of(context).bodySmall.override(
                       font: GoogleFonts.playfairDisplay(
                         fontWeight: AppTheme.of(context).bodySmall.fontWeight,
@@ -158,10 +149,13 @@ class _BasePostWidgetState extends State<BasePostWidget> {
             children: [
               AppButton(
                 onPressed: () {
-                  LogService.dbg('upvoteButton pressed ...', src: 'BasePostWidget');
+                  LogService.dbg(
+                    'upvoteButton pressed ...',
+                    src: 'BasePostWidget',
+                  );
                 },
                 text: formatNumber(
-                  widget.noUpvotes,
+                  widget.post.upvotes,
                   formatType: NumberFormatType.compact,
                 ),
                 icon: FaIcon(
@@ -196,10 +190,14 @@ class _BasePostWidgetState extends State<BasePostWidget> {
               ),
               AppButton(
                 onPressed: () async {
-                  Navigator.of(context).pushNamed(PostViewWidget.routePath);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => PostViewWidget(post: widget.post),
+                    ),
+                  );
                 },
                 text: formatNumber(
-                  widget.noReplies,
+                  widget.post.noReplies,
                   formatType: NumberFormatType.compact,
                 ),
                 icon: FaIcon(

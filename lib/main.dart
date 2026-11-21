@@ -13,14 +13,14 @@ import 'package:lilypad/util/global.dart';
 import 'package:lilypad/ui/pages/landing.dart';
 import 'package:lilypad/ui/pages/feed.dart';
 import 'package:lilypad/ui/pages/new_post.dart';
-import 'package:lilypad/ui/pages/edit_post.dart';
 import 'package:lilypad/ui/pages/profile.dart';
 import 'package:lilypad/ui/pages/settings.dart';
-import 'package:lilypad/ui/pages/post_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SessionService.init();
+  //TODO: REMOVE WHEN AUTOLOGIN COMPLETED
+  SessionService.clear();
   await GeolocationService.init();
   if (Platform.isAndroid || Platform.isIOS) {
     await BackgroundService.init();
@@ -51,10 +51,8 @@ class MainApp extends StatelessWidget {
         LandingWidget.routePath: (_) => const LandingWidget(),
         FeedWidget.routePath: (_) => const FeedWidget(),
         NewPostWidget.routePath: (_) => const NewPostWidget(),
-        EditPostWidget.routePath: (_) => const EditPostWidget(),
         ProfileWidget.routePath: (_) => const ProfileWidget(),
         SettingsWidget.routePath: (_) => const SettingsWidget(),
-        PostViewWidget.routePath: (_) => const PostViewWidget(),
       },
     );
   }

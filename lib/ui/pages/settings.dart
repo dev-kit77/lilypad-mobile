@@ -1,3 +1,6 @@
+import 'package:lilypad/models/user.dart';
+import 'package:lilypad/services/user.dart';
+
 import '../widgets/logo.dart';
 
 import 'package:easy_debounce/easy_debounce.dart';
@@ -10,18 +13,7 @@ import '../../util/ui.dart';
 import '../widgets/navbar.dart';
 
 class SettingsWidget extends StatefulWidget {
-  const SettingsWidget({
-    super.key,
-    String? username,
-    String? status,
-    String? bio,
-  }) : username = username ?? 'devkit',
-       status = status ?? 'Developing lilypad',
-       bio = bio ?? 'I am the lilypad guy!';
-
-  final String username;
-  final String status;
-  final String bio;
+  const SettingsWidget({super.key});
 
   static String routeName = 'settings';
   static String routePath = '/settings';
@@ -32,7 +24,7 @@ class SettingsWidget extends StatefulWidget {
 
 class _SettingsWidgetState extends State<SettingsWidget> {
   // State field(s) for Switch widget.
-  bool? switchValue1;
+  bool? anonSwitchValue;
   // State field(s) for username widget.
   FocusNode? usernameFocusNode;
   TextEditingController? usernameTextController;
@@ -46,28 +38,43 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   TextEditingController? bioTextController;
   String? Function(BuildContext, String?)? bioTextControllerValidator;
   // State field(s) for Switch widget.
-  bool? switchValue2;
+  bool? darkSwitchValue;
   // State field(s) for Switch widget.
-  bool? switchValue3;
+  bool? pushSwitchValue;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late final CurrentUser? currUser;
 
   @override
   void initState() {
     super.initState();
 
-    switchValue1 = false;
-    usernameTextController ??= TextEditingController(text: widget.username);
+    usernameTextController ??= TextEditingController();
     usernameFocusNode ??= FocusNode();
 
-    statusTextController ??= TextEditingController(text: widget.status);
+    statusTextController ??= TextEditingController();
     statusFocusNode ??= FocusNode();
 
-    bioTextController ??= TextEditingController(text: widget.bio);
+    bioTextController ??= TextEditingController();
     bioFocusNode ??= FocusNode();
 
-    switchValue2 = false;
-    switchValue3 = false;
+    anonSwitchValue = false;
+    darkSwitchValue = false;
+    pushSwitchValue = false;
+
+    UserService.fetch().then(
+      (u) => {
+        setState(() {
+          currUser = u;
+          anonSwitchValue = u.anon;
+          usernameTextController!.text = u.username;
+          statusTextController!.text = u.status ?? '';
+          bioTextController!.text = u.bio ?? '';
+          darkSwitchValue = u.dark;
+        }),
+      },
+    );
   }
 
   @override
@@ -298,11 +305,11 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Switch.adaptive(
-                                                value: switchValue1!,
+                                                value: anonSwitchValue!,
                                                 onChanged: (newValue) async {
                                                   setState(
-                                                    () =>
-                                                        switchValue1 = newValue,
+                                                    () => anonSwitchValue =
+                                                        newValue,
                                                   );
                                                 },
                                                 activeThumbColor: AppTheme.of(
@@ -968,11 +975,11 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Switch.adaptive(
-                                                value: switchValue2!,
+                                                value: darkSwitchValue!,
                                                 onChanged: (newValue) async {
                                                   setState(
-                                                    () =>
-                                                        switchValue2 = newValue,
+                                                    () => darkSwitchValue =
+                                                        newValue,
                                                   );
                                                 },
                                                 activeThumbColor: AppTheme.of(
@@ -1023,11 +1030,11 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Switch.adaptive(
-                                                value: switchValue3!,
+                                                value: pushSwitchValue!,
                                                 onChanged: (newValue) async {
                                                   setState(
-                                                    () =>
-                                                        switchValue3 = newValue,
+                                                    () => pushSwitchValue =
+                                                        newValue,
                                                   );
                                                 },
                                                 activeThumbColor: AppTheme.of(

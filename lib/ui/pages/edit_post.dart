@@ -1,3 +1,5 @@
+import 'package:lilypad/models/post.dart';
+
 import '../widgets/logo.dart';
 
 import 'package:easy_debounce/easy_debounce.dart';
@@ -11,18 +13,9 @@ import '../../util/ui.dart';
 import '../widgets/buttons.dart';
 
 class EditPostWidget extends StatefulWidget {
-  const EditPostWidget({
-    super.key,
-    String? username,
-    String? status,
-    String? bio,
-  }) : username = username ?? 'devkit',
-       status = status ?? 'Developing lilypad',
-       bio = bio ?? 'I am the lilypad guy!';
+  const EditPostWidget({super.key, required this.post});
 
-  final String username;
-  final String status;
-  final String bio;
+  final Post post;
 
   static String routeName = 'editPost';
   static String routePath = '/editPost';
@@ -43,7 +36,7 @@ class _EditPostWidgetState extends State<EditPostWidget> {
   void initState() {
     super.initState();
 
-    usernameTextController ??= TextEditingController();
+    usernameTextController ??= TextEditingController(text: widget.post.content);
     usernameFocusNode ??= FocusNode();
   }
 

@@ -1,3 +1,7 @@
+import 'package:lilypad/models/post.dart';
+import 'package:lilypad/services/content.dart';
+import 'package:lilypad/ui/widgets/base_reply.dart';
+
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
 import '../widgets/reply.dart';
@@ -12,9 +16,10 @@ import '../widgets/buttons.dart';
 import 'new_post.dart' show NewPostWidget;
 
 class PostViewWidget extends StatefulWidget {
-  const PostViewWidget({super.key, this.username});
+  const PostViewWidget({super.key, required this.post, this.replying});
 
-  final String? username;
+  final Post post;
+  final Post? replying;
 
   static String routeName = 'postView';
   static String routePath = '/postView';
@@ -25,6 +30,17 @@ class PostViewWidget extends StatefulWidget {
 
 class _PostViewWidgetState extends State<PostViewWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    ContentService.fetchReplies(widget.post.uuid).then(
+      (r) => setState(() {
+        widget.post.replies = r;
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +126,14 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                                 ],
                                               ),
                                               LogoWidget(),
-                                              PostWidget(),
+                                              widget.replying == null
+                                                  ? PostWidget(
+                                                      post: widget.post,
+                                                    )
+                                                  : ReplyWidget(
+                                                      post: widget.post,
+                                                      replying: widget.replying,
+                                                    ),
                                             ],
                                           ),
                                         ),
@@ -237,7 +260,7 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                         4,
                                       ),
                                       child: Text(
-                                        widget.username ?? 'Anonymous',
+                                        widget.post.user.username,
                                         textAlign: TextAlign.start,
                                         style: AppTheme.of(context).titleMedium
                                             .override(
@@ -321,32 +344,20 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                         primary: false,
                                         shrinkWrap: true,
                                         scrollDirection: Axis.vertical,
-                                        children: [
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                          ReplyWidget(
-                                            replyUser:
-                                                widget.username ?? 'Anonymous',
-                                          ),
-                                        ].divide(SizedBox(height: 12)),
+                                        children: widget.post.replies
+                                            .map(
+                                              (r) => r.user.uuid != null
+                                                  ? ReplyWidget(
+                                                      post: r,
+                                                      replying: widget.post,
+                                                    )
+                                                  : BaseReplyWidget(
+                                                      post: r,
+                                                      replying: widget.post,
+                                                    ),
+                                            )
+                                            .toList()
+                                            .divide(SizedBox(height: 12)),
                                       ),
                                     ].addToEnd(SizedBox(height: 12)),
                                   ),

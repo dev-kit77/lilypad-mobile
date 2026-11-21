@@ -61,7 +61,10 @@ class _LandingWidgetState extends State<LandingWidget>
 
     if (email.isEmpty) {
       return 'Email Required.';
-    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]$').hasMatch(email)) {
+    } else if (!RegExp(
+      r'^(([^<>()[\]\.,;:\s@"]+(\.[^<>()[\]\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\.,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,})$',
+      caseSensitive: false,
+    ).hasMatch(email)) {
       return 'Enter a valid email address';
     }
 

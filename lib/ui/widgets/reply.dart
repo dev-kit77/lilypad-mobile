@@ -1,3 +1,6 @@
+import 'package:lilypad/models/post.dart';
+import 'package:lilypad/services/content.dart';
+
 import 'base_reply.dart';
 import 'user.dart';
 
@@ -7,28 +10,10 @@ import 'package:material_ui/material_ui.dart';
 
 /// Component to take post data in and display
 class ReplyWidget extends StatefulWidget {
-  const ReplyWidget({
-    super.key,
-    this.noReplies,
-    this.noUpvotes,
-    this.content,
-    this.username,
-    this.lastUpdated,
-    this.userStatus,
-    this.userBio,
-    this.lastModified,
-    required this.replyUser,
-  });
+  const ReplyWidget({super.key, required this.post, this.replying});
 
-  final int? noReplies;
-  final int? noUpvotes;
-  final String? content;
-  final String? username;
-  final String? lastUpdated;
-  final String? userStatus;
-  final String? userBio;
-  final String? lastModified;
-  final String? replyUser;
+  final Post post;
+  final Post? replying;
 
   @override
   State<ReplyWidget> createState() => _ReplyWidgetState();
@@ -44,22 +29,20 @@ class _ReplyWidgetState extends State<ReplyWidget> {
     return FlipCard(
       fill: Fill.fillBack,
       controller: flippableCardController,
-      onFlip: () => flippableCardIsFront = !flippableCardIsFront,
+      onFlip: () async => {
+        if (widget.post.user.uuid != null)
+          {
+            widget.post.user = await ContentService.fetchUser(
+              widget.post.user.uuid!,
+            ),
+          },
+
+        flippableCardIsFront = !flippableCardIsFront,
+      },
       direction: FlipDirection.VERTICAL,
       speed: 400,
-      front: BaseReplyWidget(
-        username: widget.username,
-        content: widget.content,
-        lastModified: widget.lastUpdated,
-        noUpvotes: widget.noUpvotes,
-        noReplies: widget.noReplies,
-        replyUsername: widget.replyUser!,
-      ),
-      back: UserWidget(
-        username: widget.username,
-        userStatus: widget.userStatus,
-        userBio: widget.userBio,
-      ),
+      front: BaseReplyWidget(post: widget.post, replying: widget.replying),
+      back: UserWidget(user: widget.post.user),
     );
   }
 }

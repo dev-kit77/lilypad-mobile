@@ -1,6 +1,9 @@
+import 'package:lilypad/services/content.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lilypad/models/post.dart';
 
 import '../../services/log.dart';
 import '../pages/post_view.dart' show PostViewWidget;
@@ -9,28 +12,33 @@ import '../../util/ui.dart';
 import '../widgets/buttons.dart';
 
 class BaseReplyWidget extends StatefulWidget {
-  const BaseReplyWidget({
-    super.key,
-    this.username,
-    this.content,
-    this.lastModified,
-    this.noUpvotes,
-    this.noReplies,
-    required this.replyUsername,
-  });
+  const BaseReplyWidget({super.key, required this.post, this.replying});
 
-  final String? username;
-  final String? content;
-  final String? lastModified;
-  final int? noUpvotes;
-  final int? noReplies;
-  final String? replyUsername;
+  final Post post;
+  final Post? replying;
 
   @override
   State<BaseReplyWidget> createState() => _BaseReplyWidgetState();
 }
 
 class _BaseReplyWidgetState extends State<BaseReplyWidget> {
+  late final Post? fetchedReply;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.replying == null) {
+      ContentService.fetchPost(widget.post.replying!).then(
+        (r) => setState(() {
+          fetchedReply = r;
+        }),
+      );
+    } else {
+      fetchedReply = widget.replying;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -51,101 +59,111 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Wrap(
-                          spacing: 0,
-                          runSpacing: 0,
-                          alignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          direction: Axis.horizontal,
-                          runAlignment: WrapAlignment.start,
-                          verticalDirection: VerticalDirection.down,
-                          clipBehavior: Clip.none,
-                          children: [
-                            Text(
-                              widget.username ?? 'Anonymous',
-                              style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.playfairDisplay(
-                                  fontWeight: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                                color: AppTheme.of(context).primaryText,
-                                letterSpacing: 0.0,
-                                fontWeight: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              ' replied to ',
-                              style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.playfairDisplay(
-                                  fontWeight: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                                letterSpacing: 0.0,
-                                fontWeight: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                            ),
-                            Text(
-                              widget.replyUsername ?? 'Anonymous',
-                              style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.playfairDisplay(
-                                  fontWeight: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                                color: AppTheme.of(context).primaryText,
-                                letterSpacing: 0.0,
-                                fontWeight: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                4,
-                                0,
-                                0,
-                                0,
-                              ),
-                              child: Icon(
-                                Icons.reply,
-                                color: AppTheme.of(context).secondaryText,
-                                size: 20,
-                              ),
-                            ),
-                          ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) =>
+                              PostViewWidget(post: widget.post),
                         ),
-                      ),
-                    ],
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Wrap(
+                            spacing: 0,
+                            runSpacing: 0,
+                            alignment: WrapAlignment.start,
+                            crossAxisAlignment: WrapCrossAlignment.start,
+                            direction: Axis.horizontal,
+                            runAlignment: WrapAlignment.start,
+                            verticalDirection: VerticalDirection.down,
+                            clipBehavior: Clip.none,
+                            children: [
+                              Text(
+                                widget.post.user.username,
+                                style: AppTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.playfairDisplay(
+                                    fontWeight: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: AppTheme.of(context).primaryText,
+                                  letterSpacing: 0.0,
+                                  fontWeight: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                ' replied to ',
+                                style: AppTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.playfairDisplay(
+                                    fontWeight: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                              ),
+                              Text(
+                                fetchedReply?.user.username ?? 'Unknown',
+                                style: AppTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.playfairDisplay(
+                                    fontWeight: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: AppTheme.of(context).primaryText,
+                                  letterSpacing: 0.0,
+                                  fontWeight: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: AppTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                  4,
+                                  0,
+                                  0,
+                                  0,
+                                ),
+                                child: Icon(
+                                  Icons.reply,
+                                  color: AppTheme.of(context).secondaryText,
+                                  size: 20,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.max,
@@ -162,7 +180,7 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
                           clipBehavior: Clip.none,
                           children: [
                             Text(
-                              widget.content ?? 'Lorem ipsum',
+                              widget.post.content,
                               textAlign: TextAlign.start,
                               style: AppTheme.of(context).bodyLarge.override(
                                 font: GoogleFonts.playfairDisplay(
@@ -189,7 +207,9 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
                     ],
                   ),
                   Text(
-                    widget.lastModified ?? '1st Jan. 1970 - 5:59',
+                    widget.post.updated == null
+                        ? widget.post.created.toLocal().toString()
+                        : 'Edited ${widget.post.updated!.toLocal().toString()}',
                     style: AppTheme.of(context).bodySmall.override(
                       font: GoogleFonts.playfairDisplay(
                         fontWeight: AppTheme.of(context).bodySmall.fontWeight,
@@ -212,10 +232,13 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
             children: [
               AppButton(
                 onPressed: () {
-                  LogService.dbg('upvoteButton pressed ...', src: 'BaseReplyWidget');
+                  LogService.dbg(
+                    'upvoteButton pressed ...',
+                    src: 'BaseReplyWidget',
+                  );
                 },
                 text: formatNumber(
-                  widget.noUpvotes,
+                  widget.post.upvotes,
                   formatType: NumberFormatType.compact,
                 ),
                 icon: FaIcon(
@@ -250,10 +273,14 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
               ),
               AppButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(PostViewWidget.routePath);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => PostViewWidget(post: widget.post),
+                    ),
+                  );
                 },
                 text: formatNumber(
-                  widget.noReplies,
+                  widget.post.noReplies,
                   formatType: NumberFormatType.compact,
                 ),
                 icon: FaIcon(

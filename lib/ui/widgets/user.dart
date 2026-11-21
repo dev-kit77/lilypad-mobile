@@ -1,15 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lilypad/models/user.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
 
 class UserWidget extends StatefulWidget {
-  const UserWidget({super.key, this.username, this.userStatus, this.userBio});
+  const UserWidget({super.key, required this.user});
 
-  final String? username;
-  final String? userStatus;
-  final String? userBio;
+  final User user;
 
   @override
   State<UserWidget> createState() => _UserWidgetState();
@@ -35,7 +34,7 @@ class _UserWidgetState extends State<UserWidget> {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  widget.username ?? 'Anonymous',
+                  widget.user.username,
                   style: AppTheme.of(context).bodyLarge.override(
                     font: GoogleFonts.playfairDisplay(
                       fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
@@ -47,7 +46,7 @@ class _UserWidgetState extends State<UserWidget> {
                   ),
                 ),
                 Text(
-                  widget.userStatus ?? 'I am on lilypad',
+                  widget.user.status ?? 'I am on lilypad',
                   style: AppTheme.of(context).bodySmall.override(
                     font: GoogleFonts.playfairDisplay(
                       fontWeight: AppTheme.of(context).bodySmall.fontWeight,
@@ -59,7 +58,7 @@ class _UserWidgetState extends State<UserWidget> {
                   ),
                 ),
                 Text(
-                  widget.userBio ?? 'lilypad User',
+                  widget.user.bio ?? 'lilypad User',
                   style: AppTheme.of(context).bodyMedium.override(
                     font: GoogleFonts.playfairDisplay(
                       fontWeight: AppTheme.of(context).bodyMedium.fontWeight,

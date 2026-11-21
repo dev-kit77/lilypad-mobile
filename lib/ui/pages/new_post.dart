@@ -1,3 +1,5 @@
+import 'package:lilypad/services/content.dart';
+
 import '../widgets/logo.dart';
 
 import 'package:easy_debounce/easy_debounce.dart';
@@ -11,18 +13,7 @@ import '../../util/ui.dart';
 import '../widgets/buttons.dart';
 
 class NewPostWidget extends StatefulWidget {
-  const NewPostWidget({
-    super.key,
-    String? username,
-    String? status,
-    String? bio,
-  }) : username = username ?? 'devkit',
-       status = status ?? 'Developing lilypad',
-       bio = bio ?? 'I am the lilypad guy!';
-
-  final String username;
-  final String status;
-  final String bio;
+  const NewPostWidget({super.key});
 
   static String routeName = 'newPost';
   static String routePath = '/newPost';
@@ -33,9 +24,9 @@ class NewPostWidget extends StatefulWidget {
 
 class _NewPostWidgetState extends State<NewPostWidget> {
   // State field(s) for username widget.
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameTextController;
-  String? Function(BuildContext, String?)? usernameTextControllerValidator;
+  FocusNode? contentFocusNode;
+  TextEditingController? contentTextController;
+  String? Function(BuildContext, String?)? contentTextControllerValidator;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -43,14 +34,14 @@ class _NewPostWidgetState extends State<NewPostWidget> {
   void initState() {
     super.initState();
 
-    usernameTextController ??= TextEditingController();
-    usernameFocusNode ??= FocusNode();
+    contentTextController ??= TextEditingController();
+    contentFocusNode ??= FocusNode();
   }
 
   @override
   void dispose() {
-    usernameFocusNode?.dispose();
-    usernameTextController?.dispose();
+    contentFocusNode?.dispose();
+    contentTextController?.dispose();
 
     super.dispose();
   }
@@ -258,8 +249,8 @@ class _NewPostWidgetState extends State<NewPostWidget> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
-                                    controller: usernameTextController,
-                                    focusNode: usernameFocusNode,
+                                    controller: contentTextController,
+                                    focusNode: contentFocusNode,
                                     onChanged: (_) => EasyDebounce.debounce(
                                       'usernameTextController',
                                       Duration(milliseconds: 2000),
@@ -322,12 +313,10 @@ class _NewPostWidgetState extends State<NewPostWidget> {
                                           .secondaryBackground,
                                       contentPadding: EdgeInsets.all(24),
                                       suffixIcon:
-                                          usernameTextController!
-                                              .text
-                                              .isNotEmpty
+                                          contentTextController!.text.isNotEmpty
                                           ? InkWell(
                                               onTap: () async {
-                                                usernameTextController?.clear();
+                                                contentTextController?.clear();
                                                 setState(() {});
                                               },
                                               child: Icon(
@@ -371,7 +360,13 @@ class _NewPostWidgetState extends State<NewPostWidget> {
                                   alignment: AlignmentDirectional(1, 0),
                                   child: AppButton(
                                     onPressed: () async {
-                                      Navigator.of(context).pop();
+                                      await ContentService.newPost(
+                                        contentTextController!.text,
+                                      );
+
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
                                     },
                                     text: 'Post',
                                     icon: FaIcon(

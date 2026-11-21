@@ -1,3 +1,6 @@
+import 'package:lilypad/models/post.dart';
+import 'package:lilypad/services/content.dart';
+
 import 'base_post.dart';
 import 'user.dart';
 
@@ -7,26 +10,9 @@ import 'package:material_ui/material_ui.dart';
 
 /// Component to take post data in and display
 class PostWidget extends StatefulWidget {
-  const PostWidget({
-    super.key,
-    this.noReplies,
-    this.noUpvotes,
-    this.content,
-    this.username,
-    this.lastUpdated,
-    this.userStatus,
-    this.userBio,
-    this.lastModified,
-  });
+  const PostWidget({super.key, required this.post});
 
-  final int? noReplies;
-  final int? noUpvotes;
-  final String? content;
-  final String? username;
-  final String? lastUpdated;
-  final String? userStatus;
-  final String? userBio;
-  final String? lastModified;
+  final Post post;
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -42,21 +28,20 @@ class _PostWidgetState extends State<PostWidget> {
     return FlipCard(
       fill: Fill.fillBack,
       controller: flippableCardController,
-      onFlip: () => flippableCardIsFront = !flippableCardIsFront,
+      onFlip: () async => {
+        if (widget.post.user.uuid != null)
+          {
+            widget.post.user = await ContentService.fetchUser(
+              widget.post.user.uuid!,
+            ),
+          },
+
+        flippableCardIsFront = !flippableCardIsFront,
+      },
       direction: FlipDirection.VERTICAL,
       speed: 400,
-      front: BasePostWidget(
-        username: widget.username,
-        content: widget.content,
-        lastModified: widget.lastModified,
-        noUpvotes: widget.noUpvotes,
-        noReplies: widget.noReplies,
-      ),
-      back: UserWidget(
-        username: widget.username,
-        userStatus: widget.userStatus,
-        userBio: widget.userBio,
-      ),
+      front: BasePostWidget(post: widget.post),
+      back: UserWidget(user: widget.post.user),
     );
   }
 }
