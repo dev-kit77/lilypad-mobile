@@ -17,6 +17,17 @@ class ContentService {
 
   ContentService._();
 
+  ///getter for newestFeed. returns a new list containing all items from the feed sorted by updated if exists or creation
+  static List<Post> get newestFeed {
+    final List<Post> sorted = List.from(_feed);
+    sorted.sort((Post a, Post b) {
+      final DateTime aDate = a.updated ?? a.created;
+      final DateTime bDate = b.updated ?? b.created;
+      return bDate.compareTo(aDate);
+    });
+    return sorted;
+  }
+
   /// Retrieves the nearby content feed for the current location.
   ///
   /// GET /api/feed-spatial?lat=&lon=

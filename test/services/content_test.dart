@@ -916,6 +916,65 @@ void main() {
     });
   });
 
+  group('newestFeed', () {
+    test('returns posts sorted by newest created date first', () async {
+      await givenLocation();
+      api.queueJson(<String, Object>{
+        'posts': <Object>[
+          postJson(id: 'older', time: '2026-01-01T12:00:00.000Z'),
+          postJson(id: 'newer', time: '2026-01-02T12:00:00.000Z'),
+          postJson(id: 'middle', time: '2026-01-01T18:00:00.000Z'),
+        ],
+        'replies': <Object>[],
+      });
+
+      await withApi(ContentService.fetchFeed);
+
+      final List<Post> newest = ContentService.newestFeed;
+
+      expect(newest.map((Post p) => p.uuid), equals(<String>['newer', 'middle', 'older']));
+    });
+
+    test('uses updated time when present for sorting', () async {
+      await givenLocation();
+      api.queueJson(<String, Object>{
+        'posts': <Object>[
+          postJson(
+            id: 'old-updated',
+            time: '2026-01-01T12:00:00.000Z',
+            updated: '2026-01-03T12:00:00.000Z',
+          ),
+          postJson(id: 'new-created', time: '2026-01-02T12:00:00.000Z'),
+        ],
+        'replies': <Object>[],
+      });
+
+      await withApi(ContentService.fetchFeed);
+
+      final List<Post> newest = ContentService.newestFeed;
+
+      expect(newest.map((Post p) => p.uuid), equals(<String>['old-updated', 'new-created']));
+    });
+
+    test('returns a copy without mutating the feed order', () async {
+      await givenLocation();
+      api.queueJson(<String, Object>{
+        'posts': <Object>[
+          postJson(id: 'older', time: '2026-01-01T12:00:00.000Z'),
+          postJson(id: 'newer', time: '2026-01-02T12:00:00.000Z'),
+        ],
+        'replies': <Object>[],
+      });
+
+      final List<Post> feed = await withApi(ContentService.fetchFeed);
+      final List<Post> newest = ContentService.newestFeed;
+
+      expect(newest.map((Post p) => p.uuid), equals(<String>['newer', 'older']));
+      expect(feed.map((Post p) => p.uuid), equals(<String>['older', 'newer']));
+      expect(identical(feed, newest), isFalse);
+    });
+  });
+
   group('fetchUserContent', () {
     test('requests the current user content and returns posts and replies', () async {
       api.queueJson(<String, Object>{
