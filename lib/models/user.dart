@@ -17,12 +17,23 @@ class User {
 
   User({this._uuid, required this._username, this._status, this._bio});
 
-  factory User.fromJson(Map<String, Object?> json) {
+  factory User.fromJson(String json) {
+    Map<String, Object?> userMap = jsonDecode(json);
+
     return User(
-      uuid: json['userId'] as String?,
-      username: json['username'] as String,
-      status: json['status'] as String?,
-      bio: json['bio'] as String?,
+      uuid: userMap['userId'] as String?,
+      username: userMap['username'] as String,
+      status: userMap['status'] as String?,
+      bio: userMap['bio'] as String?,
+    );
+  }
+
+  factory User.fromMap(Map<String, Object?> userMap) {
+    return User(
+      uuid: userMap['userId'] as String?,
+      username: userMap['username'] as String,
+      status: userMap['status'] as String?,
+      bio: userMap['bio'] as String?,
     );
   }
 
@@ -58,14 +69,28 @@ class CurrentUser extends User {
     this._anon = false,
   });
 
-  factory CurrentUser.fromJson(Map<String, Object?> json) {
-    Map<String, Object?> settings = jsonDecode('${json['settings']}');
+  factory CurrentUser.fromJson(String json) {
+    Map<String, Object?> userMap = jsonDecode(json);
+    Map<String, Object?> settings = userMap['settings'] as Map<String, Object?>;
 
     return CurrentUser(
-      uuid: json['userId'] as String,
-      username: json['username'] as String,
-      status: json['status'] as String?,
-      bio: json['bio'] as String?,
+      uuid: userMap['userId'] as String,
+      username: userMap['username'] as String,
+      status: userMap['status'] as String?,
+      bio: userMap['bio'] as String?,
+      dark: (settings['dark'].toString().toLowerCase() == 'true'),
+      anon: (settings['anon'].toString().toLowerCase() == 'true'),
+    );
+  }
+
+  factory CurrentUser.fromMap(Map<String, Object?> userMap) {
+    Map<String, Object?> settings = userMap['settings'] as Map<String, Object?>;
+
+    return CurrentUser(
+      uuid: userMap['userId'] as String,
+      username: userMap['username'] as String,
+      status: userMap['status'] as String?,
+      bio: userMap['bio'] as String?,
       dark: (settings['dark'].toString().toLowerCase() == 'true'),
       anon: (settings['anon'].toString().toLowerCase() == 'true'),
     );

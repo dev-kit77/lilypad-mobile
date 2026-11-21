@@ -146,16 +146,16 @@ class UserService {
     }
 
     //get user json to create user objects
-    Map<String, dynamic> userJSON = jsonDecode(res.body)['user'];
+    Map<String, dynamic> jsonMap = jsonDecode(res.body)['user'];
 
     //create new user
-    CurrentUser newUser = CurrentUser.fromJson(userJSON);
+    CurrentUser newUser = CurrentUser.fromMap(jsonMap);
 
     //cache new user
     CacheService.store(o: newUser);
 
     //update current user
-    _user = CurrentUser.fromJson(userJSON);
+    _user = CurrentUser.fromMap(jsonMap);
 
     return newUser;
   }
@@ -202,16 +202,16 @@ class UserService {
     }
 
     //get user json to create user objects
-    Map<String, dynamic> userJSON = jsonDecode(res.body)['user'];
+    Map<String, dynamic> jsonMap = jsonDecode(res.body)['user'];
 
     //create new user
-    CurrentUser newUser = CurrentUser.fromJson(userJSON);
+    CurrentUser newUser = CurrentUser.fromMap(jsonMap);
 
     //cache new user
     CacheService.store(o: newUser);
 
     //update current user
-    _user = CurrentUser.fromJson(userJSON);
+    _user = CurrentUser.fromMap(jsonMap);
 
     return newUser;
   }

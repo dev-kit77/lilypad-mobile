@@ -8,6 +8,8 @@
 // replyingTo: t.Optional(t.String()),
 // replyCount: t.Number(),
 // distanceKm: t.Number(),
+import 'dart:convert';
+
 import 'user.dart';
 
 class Post {
@@ -34,36 +36,57 @@ class Post {
     this.distance,
   });
 
-  factory Post.fromJson(Map<String, Object?> json) {
+  factory Post.fromJson(String json) {
+    Map<String, Object?> postMap = jsonDecode(json);
+
     return Post(
-      uuid: json['id'] as String,
-      content: json['content'] as String,
+      uuid: postMap['id'] as String,
+      content: postMap['content'] as String,
       user: User(
-        uuid: json['userID'] as String?,
-        username: json['username'] as String,
+        uuid: postMap['userID'] as String?,
+        username: postMap['username'] as String,
       ),
-      created: DateTime.parse(json['time'] as String),
-      updated: DateTime.tryParse(json['updated'].toString()),
-      upvotes: json['upvotes'] as int,
-      replying: json['replyingTo'] as String?,
-      noReplies: json['replyCount'] as int,
-      distance: json['distanceKm'] as double?,
+      created: DateTime.parse(postMap['time'] as String),
+      updated: DateTime.tryParse(postMap['updated'].toString()),
+      upvotes: postMap['upvotes'] as int,
+      replying: postMap['replyingTo'] as String?,
+      noReplies: postMap['replyCount'] as int,
+      distance: postMap['distanceKm'] as double?,
     );
   }
 
-  Post refreshFromJson(Map<String, Object?> json) {
-    content = json['content'] as String;
+  Post refreshFromJson(String json) {
+    Map<String, Object?> postMap = jsonDecode(json);
+
+    content = postMap['content'] as String;
     user = User(
-      uuid: json['userID'] as String?,
-      username: json['username'] as String,
+      uuid: postMap['userID'] as String?,
+      username: postMap['username'] as String,
     );
-    created = DateTime.parse(json['time'] as String);
-    updated = DateTime.parse(json['updated'] as String);
-    upvotes = json['upvotes'] as int;
-    noReplies = json['replyCount'] as int;
-    distance = json['distanceKm'] as double;
+    created = DateTime.parse(postMap['time'] as String);
+    updated = DateTime.parse(postMap['updated'] as String);
+    upvotes = postMap['upvotes'] as int;
+    noReplies = postMap['replyCount'] as int;
+    distance = postMap['distanceKm'] as double;
 
     return this;
+  }
+
+  factory Post.fromMap(Map<String, Object?> postMap) {
+    return Post(
+      uuid: postMap['id'] as String,
+      content: postMap['content'] as String,
+      user: User(
+        uuid: postMap['userID'] as String?,
+        username: postMap['username'] as String,
+      ),
+      created: DateTime.parse(postMap['time'] as String),
+      updated: DateTime.tryParse(postMap['updated'].toString()),
+      upvotes: postMap['upvotes'] as int,
+      replying: postMap['replyingTo'] as String?,
+      noReplies: postMap['replyCount'] as int,
+      distance: postMap['distanceKm'] as double?,
+    );
   }
 
   void linkReply(Post reply) {

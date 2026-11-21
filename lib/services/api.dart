@@ -71,7 +71,7 @@ class APIService {
         src: 'API Service',
       );
       LogService.log('Request Headers=${req.headers}', src: 'API Service');
-      LogService.log('Request Headers=${req.body}', src: 'API Service');
+      LogService.log('Request Body=${req.body}', src: 'API Service');
 
       //send request to server
       final responseStream = await _client.send(req);
@@ -92,7 +92,7 @@ class APIService {
           src: 'API Service',
         );
         LogService.log('Response Headers=${res.headers}', src: 'API Service');
-        LogService.log('Response Headers=${res.body}', src: 'API Service');
+        LogService.log('Response Body=${res.body}', src: 'API Service');
 
         return res;
       } else {

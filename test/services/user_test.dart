@@ -39,7 +39,7 @@ void main() {
     'username': username,
     'status': ?status,
     'bio': ?bio,
-    'settings': jsonEncode(<String, bool>{'dark': dark, 'anon': anon}),
+    'settings': <String, Object?>{'dark': dark, 'anon': anon},
   };
 
   Matcher throwsHttpException(int statusCode) {

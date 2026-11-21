@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:lilypad/models/user.dart';
 
@@ -39,13 +41,13 @@ void main() {
     );
   });
 
-  test('init anonymous user from json', () {
-    User usr = User.fromJson(<String, Object?>{"username": "Anonymous"});
+  test('init anonymous user from Map', () {
+    User usr = User.fromMap(<String, Object?>{"username": "Anonymous"});
     expect(usr.toString(), equals('{"username":"Anonymous"}'));
   });
 
-  test('init other user from json', () {
-    User usr = User.fromJson(<String, Object?>{
+  test('init other user from Map', () {
+    User usr = User.fromMap(<String, Object?>{
       "userId": "this is a uuid",
       "username": "aiden",
       "status": "i am eating a sandwiches",
@@ -59,14 +61,52 @@ void main() {
     );
   });
 
-  test('init current user from json', () {
-    User usr = CurrentUser.fromJson(<String, Object?>{
+  test('init current user from Map', () {
+    User usr = CurrentUser.fromMap(<String, Object?>{
       "userId": "this is a uuid",
       "username": "ewan",
       "status": "i am NOT eating a sandwiches",
       "bio": "general crazed lunatic",
-      "settings": '{ "dark": "false", "anon": "true" }',
+      "settings": <String, Object?>{"dark": "false", "anon": "true"},
     });
+    expect(
+      usr.toString(),
+      equals(
+        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true}}',
+      ),
+    );
+  });
+
+  test('init anonymous user from json', () {
+    User usr = User.fromJson(
+      jsonEncode(<String, Object?>{"username": "Anonymous"}),
+    );
+    expect(usr.toString(), equals('{"username":"Anonymous"}'));
+  });
+
+  test('init other user from json', () {
+    User usr = User.fromJson(jsonEncode(<String, Object?>{
+      "userId": "this is a uuid",
+      "username": "aiden",
+      "status": "i am eating a sandwiches",
+      "bio": "xbox nerd",
+    }));
+    expect(
+      usr.toString(),
+      equals(
+        '{"username":"aiden","status":"i am eating a sandwiches","bio":"xbox nerd"}',
+      ),
+    );
+  });
+
+  test('init current user from json', () {
+    User usr = CurrentUser.fromJson(jsonEncode(<String, Object?>{
+      "userId": "this is a uuid",
+      "username": "ewan",
+      "status": "i am NOT eating a sandwiches",
+      "bio": "general crazed lunatic",
+      "settings": <String, Object?>{"dark": "false", "anon": "true"},
+    }));
     expect(
       usr.toString(),
       equals(

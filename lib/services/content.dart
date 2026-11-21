@@ -91,10 +91,10 @@ class ContentService {
   static Map<String, List<Post>> _parseFeed(Response r) {
     //decode json and convert to lists of posts and replies
     List<Post> posts = List.from(
-      jsonDecode(r.body)['posts'].map((p) => Post.fromJson(p)),
+      jsonDecode(r.body)['posts'].map((p) => Post.fromMap(p)),
     );
     List<Post> replies = List.from(
-      jsonDecode(r.body)['replies'].map((r) => Post.fromJson(r)),
+      jsonDecode(r.body)['replies'].map((r) => Post.fromMap(r)),
     );
 
     //create a union indexing all posts for adding replies to all posts including sub-replys
@@ -148,7 +148,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    Post fetchedPost = Post.fromJson(jsonDecode(res.body)['post']);
+    Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
     //cache our new feed data
     CacheService.store(o: fetchedPost);
@@ -195,7 +195,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    Post fetchedPost = Post.fromJson(jsonDecode(res.body)['post']);
+    Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
     //cache our new feed data
     CacheService.store(o: fetchedPost);
@@ -229,7 +229,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    Post fetchedPost = Post.fromJson(jsonDecode(res.body)['post']);
+    Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
     //remove cache of original inaccurate post
     CacheService.free(postId);
@@ -267,7 +267,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    Post fetchedPost = Post.fromJson(jsonDecode(res.body)['post']);
+    Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
     //cache our new feed data
     CacheService.store(o: fetchedPost);
@@ -334,7 +334,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    Post fetchedPost = Post.fromJson(jsonDecode(res.body)['post']);
+    Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
     //cache our new feed data
     CacheService.store(o: fetchedPost);
@@ -379,7 +379,7 @@ class ContentService {
 
     //parse the response from the api
     List<Post> replies = List.from(
-      jsonDecode(res.body)['replies'].map((p) => Post.fromJson(p)),
+      jsonDecode(res.body)['replies'].map((p) => Post.fromMap(p)),
     );
 
     //cache our new feed data
@@ -420,7 +420,7 @@ class ContentService {
     }
 
     //parse the response from the api
-    User fetchedUser = User.fromJson(jsonDecode(res.body)['user']);
+    User fetchedUser = User.fromMap(jsonDecode(res.body)['user']);
 
     //cache our new feed data
     CacheService.store(o: fetchedUser);

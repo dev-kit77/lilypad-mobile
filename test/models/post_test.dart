@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/models/user.dart';
@@ -45,8 +47,8 @@ void main() {
     expect(post.distance, equals(1.5));
   });
 
-  test('init post from json + detail', () {
-    Post post = Post.fromJson(<String, Object?>{
+  test('init post from Map + detail', () {
+    Post post = Post.fromMap(<String, dynamic>{
       "id": "this is a uuid",
       "content": "i am eating a sandwiches",
       "userID": "this is a user uuid",
@@ -70,8 +72,8 @@ void main() {
     expect(post.distance, equals(1.5));
   });
 
-  test('init post from json', () {
-    Post post = Post.fromJson(<String, Object?>{
+  test('init post from Map', () {
+    Post post = Post.fromMap(<String, Object?>{
       "id": "this is a uuid",
       "content": "hello world",
       "username": "Anonymous",
@@ -99,7 +101,7 @@ void main() {
       user: User(username: "Anonymous"),
       created: DateTime.parse("2026-01-01T12:00:00.000Z"),
     );
-    post.refreshFromJson(<String, Object?>{
+    post.refreshFromJson(jsonEncode(<String, Object?>{
       "id": "this is a uuid",
       "content": "i am NOT eating a sandwiches",
       "userID": "this is a user uuid",
@@ -109,7 +111,7 @@ void main() {
       "upvotes": 7,
       "replyCount": 4,
       "distanceKm": 2.5,
-    });
+    }));
     expect(post.content, equals("i am NOT eating a sandwiches"));
     expect(post.user.uuid, equals("this is a user uuid"));
     expect(post.user.username, equals("ewan"));
@@ -151,8 +153,8 @@ void main() {
     expect(post.distance, isNull);
   });
 
-  test('init post from json with null distance', () {
-    Post post = Post.fromJson(<String, Object?>{
+  test('init post from Map with null distance', () {
+    Post post = Post.fromMap(<String, Object?>{
       "id": "this is a uuid",
       "content": "hello world",
       "username": "Anonymous",
@@ -161,6 +163,44 @@ void main() {
       "replyCount": 0,
       "distanceKm": null,
     });
+    expect(post.distance, isNull);
+  });
+
+  test('init post from json', () {
+    Post post = Post.fromJson(jsonEncode(<String, Object?>{
+      "id": "this is a uuid",
+      "content": "hello world",
+      "userID": "this is a user uuid",
+      "username": "aiden",
+      "time": "2026-01-01T12:00:00.000Z",
+      "updated": "2026-01-02T12:00:00.000Z",
+      "upvotes": 3,
+      "replyingTo": "this is another uuid",
+      "replyCount": 2,
+      "distanceKm": 1.5,
+    }));
+    expect(post.uuid, equals("this is a uuid"));
+    expect(post.content, equals("hello world"));
+    expect(post.user.uuid, equals("this is a user uuid"));
+    expect(post.user.username, equals("aiden"));
+    expect(post.created, equals(DateTime.parse("2026-01-01T12:00:00.000Z")));
+    expect(post.updated, equals(DateTime.parse("2026-01-02T12:00:00.000Z")));
+    expect(post.upvotes, equals(3));
+    expect(post.replying, equals("this is another uuid"));
+    expect(post.noReplies, equals(2));
+    expect(post.distance, equals(1.5));
+  });
+
+  test('init post from json with null distance', () {
+    Post post = Post.fromJson(jsonEncode(<String, Object?>{
+      "id": "this is a uuid",
+      "content": "hello world",
+      "username": "Anonymous",
+      "time": "2026-01-01T12:00:00.000Z",
+      "upvotes": 0,
+      "replyCount": 0,
+      "distanceKm": null,
+    }));
     expect(post.distance, isNull);
   });
 
