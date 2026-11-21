@@ -17,7 +17,10 @@ import 'package:lilypad/ui/pages/profile.dart';
 import 'package:lilypad/ui/pages/settings.dart';
 
 void main() async {
+  //bind widgets so we can run pre-ui startup code
   WidgetsFlutterBinding.ensureInitialized();
+
+  //start services
   await SessionService.init();
   //TODO: REMOVE WHEN AUTOLOGIN COMPLETED
   SessionService.clear();
@@ -25,6 +28,7 @@ void main() async {
   if (Platform.isAndroid || Platform.isIOS) {
     await BackgroundService.init();
   }
+
   LogService.log('Starting UI...');
   runApp(const MainApp());
 }
@@ -45,6 +49,9 @@ class MainApp extends StatelessWidget {
 
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,
+      initialRoute: SessionService.activeSession
+          ? FeedWidget.routePath
+          : LandingWidget.routePath,
       home: const LandingWidget(),
       theme: AppTheme.of(context).themeData,
       routes: {
