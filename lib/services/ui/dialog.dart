@@ -14,6 +14,23 @@ class DialogService {
       builder: (_) => AppAlert(header: title, content: msg),
     );
   }
+
+  static Future<void> getConfirmation(
+    String title,
+    String msg,
+    VoidCallback runOnConfirmation,
+  ) async {
+    final context = AppGlobal.navigatorKey.currentContext!;
+
+    await showDialog(
+      context: context,
+      builder: (_) => AppConfirmation(
+        header: title,
+        content: msg,
+        callback: runOnConfirmation,
+      ),
+    );
+  }
 }
 
 class AppAlert extends StatelessWidget {
@@ -50,6 +67,66 @@ class AppAlert extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
+              ),
+            ],
+          );
+  }
+}
+
+class AppConfirmation extends StatelessWidget {
+  final String header;
+  final String content;
+  final VoidCallback callback;
+
+  const AppConfirmation({
+    super.key,
+    required this.header,
+    required this.content,
+    required this.callback,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Platform.isAndroid
+        ? AlertDialog(
+            title: Text(header),
+            content: SingleChildScrollView(
+              child: ListBody(children: <Widget>[Text(content)]),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  callback.call();
+                },
+                child: Text('Yes'),
+              ),
+            ],
+          )
+        : CupertinoAlertDialog(
+            title: Text(header),
+            content: SingleChildScrollView(
+              child: ListBody(children: <Widget>[Text(content)]),
+            ),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel'),
+              ),
+              CupertinoDialogAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                  callback.call();
+                },
+                child: Text('Yes'),
               ),
             ],
           );
