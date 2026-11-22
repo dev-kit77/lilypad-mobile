@@ -60,9 +60,10 @@ class APIService {
     //get cookier header from session
     String? cHeader = SessionService.getCookieHeader();
 
-    //append cookies to header if not null
+    //append to header if cookies not null
     if (cHeader != null) {
       req.headers['Cookie'] = cHeader;
+      req.headers['Origin'] = 'http://$_domain';
     }
 
     try {
