@@ -360,9 +360,14 @@ class _NewPostWidgetState extends State<NewPostWidget> {
                                   alignment: AlignmentDirectional(1, 0),
                                   child: AppButton(
                                     onPressed: () async {
-                                      await ContentService.newPost(
-                                        contentTextController!.text,
-                                      );
+                                      if (contentTextController != null &&
+                                          contentTextController!.text
+                                              .trim()
+                                              .isNotEmpty) {
+                                        await ContentService.newPost(
+                                          contentTextController!.text.trim(),
+                                        );
+                                      }
 
                                       if (context.mounted) {
                                         Navigator.of(context).pop();

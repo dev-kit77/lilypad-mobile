@@ -1,4 +1,5 @@
 import 'package:lilypad/models/post.dart';
+import 'package:lilypad/services/content.dart';
 
 import '../widgets/logo.dart';
 
@@ -26,8 +27,8 @@ class EditPostWidget extends StatefulWidget {
 
 class _EditPostWidgetState extends State<EditPostWidget> {
   // State field(s) for username widget.
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameTextController;
+  FocusNode? contentFocusNode;
+  TextEditingController? contentTextController;
   String? Function(BuildContext, String?)? usernameTextControllerValidator;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -36,14 +37,14 @@ class _EditPostWidgetState extends State<EditPostWidget> {
   void initState() {
     super.initState();
 
-    usernameTextController ??= TextEditingController(text: widget.post.content);
-    usernameFocusNode ??= FocusNode();
+    contentTextController ??= TextEditingController(text: widget.post.content);
+    contentFocusNode ??= FocusNode();
   }
 
   @override
   void dispose() {
-    usernameFocusNode?.dispose();
-    usernameTextController?.dispose();
+    contentFocusNode?.dispose();
+    contentTextController?.dispose();
 
     super.dispose();
   }
@@ -251,8 +252,8 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: TextFormField(
-                                    controller: usernameTextController,
-                                    focusNode: usernameFocusNode,
+                                    controller: contentTextController,
+                                    focusNode: contentFocusNode,
                                     onChanged: (_) => EasyDebounce.debounce(
                                       'usernameTextController',
                                       Duration(milliseconds: 2000),
@@ -315,12 +316,10 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                           .secondaryBackground,
                                       contentPadding: EdgeInsets.all(24),
                                       suffixIcon:
-                                          usernameTextController!
-                                              .text
-                                              .isNotEmpty
+                                          contentTextController!.text.isNotEmpty
                                           ? InkWell(
                                               onTap: () async {
-                                                usernameTextController?.clear();
+                                                contentTextController?.clear();
                                                 setState(() {});
                                               },
                                               child: Icon(
@@ -364,9 +363,23 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                   alignment: AlignmentDirectional(1, 0),
                                   child: AppButton(
                                     onPressed: () async {
-                                      Navigator.of(context).pop();
+                                      if (contentTextController != null &&
+                                          contentTextController!.text
+                                              .trim()
+                                              .isNotEmpty &&
+                                          contentTextController!.text !=
+                                              widget.post.content) {
+                                        await ContentService.modifyPost(
+                                          widget.post.uuid,
+                                          contentTextController!.text.trim(),
+                                        );
+                                      }
+
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
                                     },
-                                    text: 'Update',
+                                    text: 'Update Post',
                                     icon: FaIcon(
                                       FaIconData(
                                         const IconData(
@@ -378,7 +391,7 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                       size: 15,
                                     ),
                                     options: AppButtonOptions(
-                                      width: 120,
+                                      width: 180,
                                       height: 52,
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                         0,
