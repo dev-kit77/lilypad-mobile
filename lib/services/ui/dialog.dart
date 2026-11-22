@@ -6,10 +6,10 @@ import 'dart:io';
 import 'package:lilypad/util/global.dart';
 
 class DialogService {
-  static Future<void> showAlert(String title, String msg) {
+  static Future<void> showAlert(String title, String msg) async {
     final context = AppGlobal.navigatorKey.currentContext!;
 
-    return showDialog(
+    return await showDialog(
       context: context,
       builder: (_) => AppAlert(header: title, content: msg),
     );
