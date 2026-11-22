@@ -17,7 +17,7 @@ void main() {
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
-    await SessionService.clear();
+    await SessionService.invalidate();
     CacheService.clear();
     api.reset();
   });

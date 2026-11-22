@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:lilypad/services/cache.dart';
+import 'package:lilypad/services/content.dart';
+import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/theme/theme.dart';
 import 'package:lilypad/services/background.dart';
 import 'package:material_ui/material_ui.dart';
@@ -20,17 +23,34 @@ void main() async {
   //bind widgets so we can run pre-ui startup code
   WidgetsFlutterBinding.ensureInitialized();
 
-  //start services
+  //start session service and link invaliation callback
   await SessionService.init();
-  //TODO: REMOVE WHEN AUTOLOGIN COMPLETED
-  SessionService.clear();
+  SessionService.onSessionInvalidated = sessionInvalidCallback;
+
+  //start Geolocation
+  //TODO: Guard application for not initalized due to permissions
   await GeolocationService.init();
+
+  //start background service for push notifications on mobile
   if (Platform.isAndroid || Platform.isIOS) {
     await BackgroundService.init();
   }
 
   LogService.log('Starting UI...');
   runApp(const MainApp());
+}
+
+void sessionInvalidCallback() async {
+  ContentService.clear();
+  UserService.clear();
+  CacheService.clear();
+
+  await DialogService.showAlert('Session Logout', 'You have been logged out.');
+
+  await AppGlobal.navigatorKey.currentState?.pushNamedAndRemoveUntil(
+    LandingWidget.routePath,
+    (_) => false,
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -52,7 +72,6 @@ class MainApp extends StatelessWidget {
       initialRoute: SessionService.activeSession
           ? FeedWidget.routePath
           : LandingWidget.routePath,
-      home: const LandingWidget(),
       theme: AppTheme.of(context).themeData,
       routes: {
         LandingWidget.routePath: (_) => const LandingWidget(),

@@ -27,7 +27,7 @@ void main() {
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
-    await SessionService.clear();
+    await SessionService.invalidate();
     CacheService.clear();
     GeolocationService.clear();
 
@@ -932,7 +932,10 @@ void main() {
 
       final List<Post> newest = ContentService.newestFeed;
 
-      expect(newest.map((Post p) => p.uuid), equals(<String>['newer', 'middle', 'older']));
+      expect(
+        newest.map((Post p) => p.uuid),
+        equals(<String>['newer', 'middle', 'older']),
+      );
     });
 
     test('uses updated time when present for sorting', () async {
@@ -953,7 +956,10 @@ void main() {
 
       final List<Post> newest = ContentService.newestFeed;
 
-      expect(newest.map((Post p) => p.uuid), equals(<String>['old-updated', 'new-created']));
+      expect(
+        newest.map((Post p) => p.uuid),
+        equals(<String>['old-updated', 'new-created']),
+      );
     });
 
     test('returns a copy without mutating the feed order', () async {
@@ -969,42 +975,49 @@ void main() {
       final List<Post> feed = await withApi(ContentService.fetchFeed);
       final List<Post> newest = ContentService.newestFeed;
 
-      expect(newest.map((Post p) => p.uuid), equals(<String>['newer', 'older']));
+      expect(
+        newest.map((Post p) => p.uuid),
+        equals(<String>['newer', 'older']),
+      );
       expect(feed.map((Post p) => p.uuid), equals(<String>['older', 'newer']));
       expect(identical(feed, newest), isFalse);
     });
   });
 
   group('fetchUserContent', () {
-    test('requests the current user content and returns posts and replies', () async {
-      api.queueJson(<String, Object>{
-        'posts': <Object>[postJson(id: 'root')],
-        'replies': <Object>[postJson(id: 'reply', replyingTo: 'root')],
-      });
+    test(
+      'requests the current user content and returns posts and replies',
+      () async {
+        api.queueJson(<String, Object>{
+          'posts': <Object>[postJson(id: 'root')],
+          'replies': <Object>[postJson(id: 'reply', replyingTo: 'root')],
+        });
 
-      final Map<String, List<Post>> content =
-          await withApi(ContentService.fetchUserContent);
+        final Map<String, List<Post>> content = await withApi(
+          ContentService.fetchUserContent,
+        );
 
-      final RecordedRequest recorded = api.requests.single;
-      expect(recorded.request.method, equals('GET'));
-      expect(
-        recorded.request.url.toString(),
-        equals('http://localhost:3000/api/content'),
-      );
+        final RecordedRequest recorded = api.requests.single;
+        expect(recorded.request.method, equals('GET'));
+        expect(
+          recorded.request.url.toString(),
+          equals('http://localhost:3000/api/content'),
+        );
 
-      expect(content['posts'], hasLength(1));
-      expect(content['posts']!.single.uuid, equals('root'));
-      expect(content['replies'], hasLength(1));
-      expect(content['replies']!.single.uuid, equals('reply'));
+        expect(content['posts'], hasLength(1));
+        expect(content['posts']!.single.uuid, equals('root'));
+        expect(content['replies'], hasLength(1));
+        expect(content['replies']!.single.uuid, equals('reply'));
 
-      final Map<String, List<Post>>? cached =
-          CacheService.fetch(recorded.request.url.toString())
-              as Map<String, List<Post>>?;
-      expect(cached, isNotNull);
-      expect(cached!['posts']!.single.uuid, equals('root'));
-      expect(cached['replies']!.single.uuid, equals('reply'));
-      expect(CacheService.fetch('reply'), isA<Post>());
-    });
+        final Map<String, List<Post>>? cached = CacheService.fetch(
+          recorded.request.url.toString(),
+        ) as Map<String, List<Post>>?;
+        expect(cached, isNotNull);
+        expect(cached!['posts']!.single.uuid, equals('root'));
+        expect(cached['replies']!.single.uuid, equals('reply'));
+        expect(CacheService.fetch('reply'), isA<Post>());
+      },
+    );
 
     test('returns cached content without contacting the server', () async {
       api.queueJson(<String, Object>{
@@ -1012,10 +1025,12 @@ void main() {
         'replies': <Object>[],
       });
 
-      final Map<String, List<Post>> first =
-          await withApi(ContentService.fetchUserContent);
-      final Map<String, List<Post>> second =
-          await withApi(ContentService.fetchUserContent);
+      final Map<String, List<Post>> first = await withApi(
+        ContentService.fetchUserContent,
+      );
+      final Map<String, List<Post>> second = await withApi(
+        ContentService.fetchUserContent,
+      );
 
       expect(api.requests, hasLength(1));
       expect(second['posts']!.single.uuid, equals(first['posts']!.single.uuid));

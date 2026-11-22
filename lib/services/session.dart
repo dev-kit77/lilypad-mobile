@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lilypad/services/log.dart';
 
@@ -8,6 +9,8 @@ class SessionService {
   static const _key = 'lilypad_cookies';
   static const _storage = FlutterSecureStorage();
   static final List<Cookie> _cookies = <Cookie>[];
+  static bool _invalidating = false;
+  static VoidCallback? onSessionInvalidated;
 
   SessionService._();
 
@@ -186,7 +189,13 @@ class SessionService {
   }
 
   ///function to clear cookies from memory and storage
-  static Future<void> clear() async {
+  static Future<void> invalidate() async {
+    //guard
+    if (_invalidating == true) return;
+
+    //set guard
+    _invalidating = true;
+
     //clear from memory
     _cookies.clear();
 
@@ -194,5 +203,11 @@ class SessionService {
     await _storage.delete(key: _key);
 
     LogService.log('Cached cookies cleared.', src: 'Session Service');
+
+    //call session invalidation callback
+    onSessionInvalidated?.call();
+
+    //free guard
+    _invalidating = false;
   }
 }

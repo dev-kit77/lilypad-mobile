@@ -12,7 +12,7 @@ void main() {
   setUp(() async {
     //reset secure storage for every test.
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
-    await SessionService.clear();
+    await SessionService.invalidate();
   });
 
   group('parseSetCookie', () {
@@ -175,7 +175,7 @@ void main() {
   group('clear', () {
     test('empties memory and storage', () async {
       await SessionService.capture('token=abc; Path=/');
-      await SessionService.clear();
+      await SessionService.invalidate();
 
       expect(SessionService.getCookieHeader(), isNull);
       expect(await FlutterSecureStorage().read(key: storageKey), isNull);
@@ -183,7 +183,7 @@ void main() {
 
     test('stays empty after a later init', () async {
       await SessionService.capture('token=abc; Path=/');
-      await SessionService.clear();
+      await SessionService.invalidate();
       await SessionService.init();
 
       expect(SessionService.getCookieHeader(), isNull);

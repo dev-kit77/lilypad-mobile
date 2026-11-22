@@ -112,10 +112,7 @@ class APIService {
         );
 
         //check if session invalid
-        if (res.statusCode == 401) {
-          //clear session cookies
-          SessionService.clear();
-        } else {
+        if (res.statusCode != 401) {
           //capture any set-cookie from request
           if (res.headers['set-cookie'] != null &&
               res.headers['set-cookie'] != '') {
@@ -123,8 +120,17 @@ class APIService {
           }
         }
 
+        //decode body
+        Map<String, dynamic> resMap = jsonDecode(res.body);
+
+        //invalidate if user banned
+        if ((res.statusCode == 401 && !req.url.path.contains('/email')) ||
+            resMap['error'] == 'USER_BANNED') {
+          await SessionService.invalidate();
+        }
+
         throw APIException(
-          '${jsonDecode(res.body)['error'] ?? jsonDecode(res.body)['message']}',
+          '${resMap['error'] ?? resMap['message']}',
           uri: req.url,
           statusCode: res.statusCode,
         );

@@ -313,4 +313,9 @@ class UserService {
     //return status based on if token recieved
     return jsonDecode(res.body);
   }
+
+  //function to clear current user data
+  static void clear() {
+    _user = null;
+  }
 }

@@ -19,7 +19,7 @@ void main() {
     // refresh in-memory secure storage for every test.
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     // clear cookies between tests
-    await SessionService.clear();
+    await SessionService.invalidate();
     // drop responses and requests left over from the previous test.
     stub.reset();
   });

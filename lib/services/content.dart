@@ -483,4 +483,10 @@ class ContentService {
   }
 
   static DateTime? get latest => _feed.first.updated ?? _feed.first.created;
+
+  static void clear() {
+    _feed.clear();
+    _userPosts.clear();
+    _userReplies.clear();
+  }
 }
