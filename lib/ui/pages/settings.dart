@@ -1,5 +1,8 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lilypad/models/user.dart';
+import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
+import 'package:lilypad/ui/widgets/buttons.dart';
 
 import '../widgets/logo.dart';
 
@@ -96,140 +99,854 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
-      body: SizedBox(
-        width: MediaQuery.sizeOf(context).width,
-        height: MediaQuery.sizeOf(context).height,
-        child: SizedBox(
-          width: double.infinity,
-          height: MediaQuery.sizeOf(context).height,
-          child: Stack(
-            children: [
-              Align(
-                alignment: AlignmentDirectional(0, -1),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Stack(
+      body: Stack(
+        children: [
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height,
+            child: SizedBox(
+              width: double.infinity,
+              height: MediaQuery.sizeOf(context).height,
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional(0, -1),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                              16,
+                              0,
+                              16,
+                              0,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              textBaseline: TextBaseline.alphabetic,
                               children: [
-                                SafeArea(
-                                  left: false,
-                                  top: false,
-                                  right: false,
-                                  bottom: false,
-                                  child: Container(
-                                    key: ValueKey('header'),
-                                    width: MediaQuery.sizeOf(context).width,
-                                    decoration: BoxDecoration(),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      textBaseline: TextBaseline.alphabetic,
-                                      children: [
-                                        Stack(
+                                Stack(
+                                  children: [
+                                    SafeArea(
+                                      left: false,
+                                      top: false,
+                                      right: false,
+                                      bottom: false,
+                                      child: Container(
+                                        key: ValueKey('header'),
+                                        width: MediaQuery.sizeOf(context).width,
+                                        decoration: BoxDecoration(),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          textBaseline: TextBaseline.alphabetic,
                                           children: [
-                                            SafeArea(
-                                              left: false,
-                                              top: true,
-                                              right: false,
-                                              bottom: false,
-                                              child: Container(
-                                                width: double.infinity,
-                                                height:
-                                                    MediaQuery.sizeOf(context)
-                                                        .height *
-                                                    0,
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.of(context)
-                                                      .secondaryBackground,
+                                            Stack(
+                                              children: [
+                                                SafeArea(
+                                                  left: false,
+                                                  top: true,
+                                                  right: false,
+                                                  bottom: false,
+                                                  child: Container(
+                                                    width: double.infinity,
+                                                    height:
+                                                        MediaQuery.sizeOf(
+                                                          context,
+                                                        ).height *
+                                                        0,
+                                                    decoration: BoxDecoration(
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).secondaryBackground,
+                                                    ),
+                                                  ),
                                                 ),
+                                              ],
+                                            ),
+                                            LogoWidget(),
+                                            Padding(
+                                              padding:
+                                                  EdgeInsetsDirectional.fromSTEB(
+                                                    0,
+                                                    4,
+                                                    0,
+                                                    4,
+                                                  ),
+                                              child: Text(
+                                                'Your Settings.',
+                                                textAlign: TextAlign.start,
+                                                style: AppTheme.of(context)
+                                                    .titleMedium
+                                                    .override(
+                                                      font:
+                                                          GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: AppTheme.of(
+                                                        context,
+                                                      ).titleMedium.fontWeight,
+                                                      fontStyle: AppTheme.of(
+                                                        context,
+                                                      ).titleMedium.fontStyle,
+                                                    ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        LogoWidget(),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                0,
-                                                4,
-                                                0,
-                                                4,
-                                              ),
-                                          child: Text(
-                                            'Your Settings.',
-                                            textAlign: TextAlign.start,
-                                            style: AppTheme.of(context)
-                                                .titleMedium
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.playfairDisplay(
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .titleMedium
-                                                                .fontWeight,
-                                                        fontStyle: AppTheme.of(
-                                                          context,
-                                                        ).titleMedium.fontStyle,
-                                                      ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: AppTheme.of(
-                                                    context,
-                                                  ).titleMedium.fontWeight,
-                                                  fontStyle: AppTheme.of(
-                                                    context,
-                                                  ).titleMedium.fontStyle,
-                                                ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height:
-                            MediaQuery.sizeOf(context).height -
-                            MediaQuery.paddingOf(context).top,
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 90),
-                          child: Container(
-                            height: MediaQuery.sizeOf(context).height,
-                            decoration: BoxDecoration(),
+                          ),
+                          SizedBox(
+                            height:
+                                MediaQuery.sizeOf(context).height -
+                                MediaQuery.paddingOf(context).top,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                12,
                                 0,
-                                12,
                                 0,
+                                0,
+                                90,
                               ),
-                              child: SingleChildScrollView(
-                                primary: false,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Container(
-                                      width: MediaQuery.sizeOf(context).width,
-                                      decoration: BoxDecoration(),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        textBaseline: TextBaseline.alphabetic,
-                                        children: [
-                                          Column(
+                              child: Container(
+                                height: MediaQuery.sizeOf(context).height,
+                                decoration: BoxDecoration(),
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                    12,
+                                    0,
+                                    12,
+                                    0,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    primary: false,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Container(
+                                          width: MediaQuery.sizeOf(context)
+                                              .width,
+                                          decoration: BoxDecoration(),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            textBaseline:
+                                                TextBaseline.alphabetic,
+                                            children: [
+                                              Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                textBaseline:
+                                                    TextBaseline.alphabetic,
+                                                children: [
+                                                  Text(
+                                                    'Profile Settings',
+                                                    style: AppTheme.of(context)
+                                                        .displaySmall
+                                                        .override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .displaySmall
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .displaySmall
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .displaySmall
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .displaySmall
+                                                                  .fontStyle,
+                                                        ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsetsDirectional.fromSTEB(
+                                                          0,
+                                                          4,
+                                                          0,
+                                                          4,
+                                                        ),
+                                                    child: Text(
+                                                      'Here you can update your User profile.',
+                                                      textAlign:
+                                                          TextAlign.start,
+                                                      style: AppTheme.of(context)
+                                                          .titleMedium
+                                                          .override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Switch.adaptive(
+                                                    value: anonSwitchValue!,
+                                                    onChanged: (newValue) async {
+                                                      setState(
+                                                        () => anonSwitchValue =
+                                                            newValue,
+                                                      );
+                                                    },
+                                                    activeThumbColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    activeTrackColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    inactiveTrackColor:
+                                                        AppTheme.of(context)
+                                                            .alternate,
+                                                    inactiveThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
+                                                  ),
+                                                  Text(
+                                                    'Anonymous Profile',
+                                                    style: AppTheme.of(context)
+                                                        .labelLarge
+                                                        .override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Expanded(
+                                                    child: SizedBox(
+                                                      width: double.infinity,
+                                                      child: TextFormField(
+                                                        controller:
+                                                            usernameTextController,
+                                                        focusNode:
+                                                            usernameFocusNode,
+                                                        autofocus: true,
+                                                        enabled: true,
+                                                        obscureText: false,
+                                                        decoration: InputDecoration(
+                                                          labelText: 'Username',
+                                                          labelStyle: AppTheme.of(context).labelLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          enabledBorder: OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                              color:
+                                                                  AppTheme.of(
+                                                                    context,
+                                                                  ).alternate,
+                                                              width: 2,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).primary,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          errorBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      40,
+                                                                    ),
+                                                              ),
+                                                          filled: true,
+                                                          fillColor: AppTheme.of(
+                                                            context,
+                                                          ).secondaryBackground,
+                                                          contentPadding:
+                                                              EdgeInsets.all(
+                                                                24,
+                                                              ),
+                                                        ),
+                                                        style: AppTheme.of(context).bodyLarge.override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        maxLength: 64,
+                                                        maxLengthEnforcement:
+                                                            MaxLengthEnforcement
+                                                                .enforced,
+                                                        buildCounter: (
+                                                          context, {
+                                                          required currentLength,
+                                                          required isFocused,
+                                                          maxLength,
+                                                        }) => null,
+                                                        keyboardType:
+                                                            TextInputType.text,
+                                                        cursorColor:
+                                                            AppTheme.of(context)
+                                                                .primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Expanded(
+                                                    child: SizedBox(
+                                                      width: double.infinity,
+                                                      child: TextFormField(
+                                                        controller:
+                                                            statusTextController,
+                                                        focusNode:
+                                                            statusFocusNode,
+                                                        onChanged: (_) =>
+                                                            EasyDebounce.debounce(
+                                                              'statusTextController',
+                                                              Duration(
+                                                                milliseconds:
+                                                                    2000,
+                                                              ),
+                                                              () => setState(
+                                                                () {},
+                                                              ),
+                                                            ),
+                                                        autofocus: true,
+                                                        enabled: true,
+                                                        obscureText: false,
+                                                        decoration: InputDecoration(
+                                                          labelText: 'Status',
+                                                          labelStyle: AppTheme.of(context).labelLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          enabledBorder: OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                              color:
+                                                                  AppTheme.of(
+                                                                    context,
+                                                                  ).alternate,
+                                                              width: 2,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).primary,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          errorBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      40,
+                                                                    ),
+                                                              ),
+                                                          filled: true,
+                                                          fillColor: AppTheme.of(
+                                                            context,
+                                                          ).secondaryBackground,
+                                                          contentPadding:
+                                                              EdgeInsets.all(
+                                                                24,
+                                                              ),
+                                                          suffixIcon:
+                                                              statusTextController!
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? InkWell(
+                                                                  onTap: () async {
+                                                                    statusTextController
+                                                                        ?.clear();
+                                                                    setState(
+                                                                      () {},
+                                                                    );
+                                                                  },
+                                                                  child: Icon(
+                                                                    Icons.clear,
+                                                                    color: Color(
+                                                                      0xFF757575,
+                                                                    ),
+                                                                    size: 22,
+                                                                  ),
+                                                                )
+                                                              : null,
+                                                        ),
+                                                        style: AppTheme.of(context).bodyLarge.override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        maxLength: 64,
+                                                        maxLengthEnforcement:
+                                                            MaxLengthEnforcement
+                                                                .enforced,
+                                                        buildCounter: (
+                                                          context, {
+                                                          required currentLength,
+                                                          required isFocused,
+                                                          maxLength,
+                                                        }) => null,
+                                                        keyboardType:
+                                                            TextInputType.text,
+                                                        cursorColor:
+                                                            AppTheme.of(context)
+                                                                .primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Expanded(
+                                                    child: SizedBox(
+                                                      width: double.infinity,
+                                                      child: TextFormField(
+                                                        controller:
+                                                            bioTextController,
+                                                        focusNode: bioFocusNode,
+                                                        onChanged: (_) =>
+                                                            EasyDebounce.debounce(
+                                                              'bioTextController',
+                                                              Duration(
+                                                                milliseconds:
+                                                                    2000,
+                                                              ),
+                                                              () => setState(
+                                                                () {},
+                                                              ),
+                                                            ),
+                                                        autofocus: true,
+                                                        enabled: true,
+                                                        obscureText: false,
+                                                        decoration: InputDecoration(
+                                                          labelText: 'Bio',
+                                                          labelStyle: AppTheme.of(context).labelLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          enabledBorder: OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                              color:
+                                                                  AppTheme.of(
+                                                                    context,
+                                                                  ).alternate,
+                                                              width: 2,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).primary,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          errorBorder: OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  40,
+                                                                ),
+                                                          ),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                  color:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).error,
+                                                                  width: 2,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      40,
+                                                                    ),
+                                                              ),
+                                                          filled: true,
+                                                          fillColor: AppTheme.of(
+                                                            context,
+                                                          ).secondaryBackground,
+                                                          contentPadding:
+                                                              EdgeInsets.all(
+                                                                24,
+                                                              ),
+                                                          suffixIcon:
+                                                              bioTextController!
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? InkWell(
+                                                                  onTap: () async {
+                                                                    bioTextController
+                                                                        ?.clear();
+                                                                    setState(
+                                                                      () {},
+                                                                    );
+                                                                  },
+                                                                  child: Icon(
+                                                                    Icons.clear,
+                                                                    color: Color(
+                                                                      0xFF757575,
+                                                                    ),
+                                                                    size: 22,
+                                                                  ),
+                                                                )
+                                                              : null,
+                                                        ),
+                                                        style: AppTheme.of(context).bodyLarge.override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .bodyLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        maxLines: null,
+                                                        minLines: 2,
+                                                        maxLength: 64,
+                                                        maxLengthEnforcement:
+                                                            MaxLengthEnforcement
+                                                                .enforced,
+                                                        buildCounter: (
+                                                          context, {
+                                                          required currentLength,
+                                                          required isFocused,
+                                                          maxLength,
+                                                        }) => null,
+                                                        keyboardType:
+                                                            TextInputType.text,
+                                                        cursorColor:
+                                                            AppTheme.of(context)
+                                                                .primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                            ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
+                                          ),
+                                        ),
+                                        Container(
+                                          decoration: BoxDecoration(),
+                                          child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -237,7 +954,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                 TextBaseline.alphabetic,
                                             children: [
                                               Text(
-                                                'Profile Settings',
+                                                'App Settings',
                                                 style: AppTheme.of(context)
                                                     .displaySmall
                                                     .override(
@@ -269,7 +986,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       4,
                                                     ),
                                                 child: Text(
-                                                  'Here you can update your User profile.',
+                                                  'Change how your app responds.',
                                                   textAlign: TextAlign.start,
                                                   style: AppTheme.of(context)
                                                       .titleMedium
@@ -299,189 +1016,48 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       ),
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Switch.adaptive(
-                                                value: anonSwitchValue!,
-                                                onChanged: (newValue) async {
-                                                  setState(
-                                                    () => anonSwitchValue =
-                                                        newValue,
-                                                  );
-                                                },
-                                                activeThumbColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                activeTrackColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                inactiveTrackColor: AppTheme.of(
-                                                  context,
-                                                ).alternate,
-                                                inactiveThumbColor: AppTheme.of(
-                                                  context,
-                                                ).secondaryBackground,
-                                              ),
-                                              Text(
-                                                'Anonymous Profile',
-                                                style: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontWeight,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                              ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Expanded(
-                                                child: SizedBox(
-                                                  width: double.infinity,
-                                                  child: TextFormField(
-                                                    controller:
-                                                        usernameTextController,
-                                                    focusNode:
-                                                        usernameFocusNode,
-                                                    autofocus: true,
-                                                    enabled: true,
-                                                    obscureText: false,
-                                                    decoration: InputDecoration(
-                                                      labelText: 'Username',
-                                                      labelStyle:
-                                                          AppTheme.of(
-                                                            context,
-                                                          ).labelLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                              color:
-                                                                  AppTheme.of(
-                                                                    context,
-                                                                  ).alternate,
-                                                              width: 2,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).primary,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      errorBorder: OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme.of(
-                                                            context,
-                                                          ).error,
-                                                          width: 2,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              40,
-                                                            ),
-                                                      ),
-                                                      focusedErrorBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).error,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      filled: true,
-                                                      fillColor: AppTheme.of(
-                                                        context,
-                                                      ).secondaryBackground,
-                                                      contentPadding:
-                                                          EdgeInsets.all(24),
-                                                    ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Switch.adaptive(
+                                                    value: darkSwitchValue!,
+                                                    onChanged: (newValue) async {
+                                                      setState(
+                                                        () => darkSwitchValue =
+                                                            newValue,
+                                                      );
+                                                    },
+                                                    activeThumbColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    activeTrackColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    inactiveTrackColor:
+                                                        AppTheme.of(context)
+                                                            .alternate,
+                                                    inactiveThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
+                                                  ),
+                                                  Text(
+                                                    'Dark Mode',
                                                     style: AppTheme.of(context)
-                                                        .bodyLarge
+                                                        .labelLarge
                                                         .override(
                                                           font: GoogleFonts.playfairDisplay(
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .bodyLarge
+                                                                    .labelLarge
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .bodyLarge
+                                                                    .labelLarge
                                                                     .fontStyle,
                                                           ),
                                                           letterSpacing: 0.0,
@@ -489,187 +1065,60 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontStyle,
                                                         ),
-                                                    maxLength: 64,
-                                                    maxLengthEnforcement:
-                                                        MaxLengthEnforcement
-                                                            .enforced,
-                                                    buildCounter: (
-                                                      context, {
-                                                      required currentLength,
-                                                      required isFocused,
-                                                      maxLength,
-                                                    }) => null,
-                                                    keyboardType:
-                                                        TextInputType.text,
-                                                    cursorColor: AppTheme.of(
-                                                      context,
-                                                    ).primary,
                                                   ),
-                                                ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
                                               ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Expanded(
-                                                child: SizedBox(
-                                                  width: double.infinity,
-                                                  child: TextFormField(
-                                                    controller:
-                                                        statusTextController,
-                                                    focusNode: statusFocusNode,
-                                                    onChanged: (_) =>
-                                                        EasyDebounce.debounce(
-                                                          'statusTextController',
-                                                          Duration(
-                                                            milliseconds: 2000,
-                                                          ),
-                                                          () => setState(() {}),
-                                                        ),
-                                                    autofocus: true,
-                                                    enabled: true,
-                                                    obscureText: false,
-                                                    decoration: InputDecoration(
-                                                      labelText: 'Status',
-                                                      labelStyle:
-                                                          AppTheme.of(
-                                                            context,
-                                                          ).labelLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                              color:
-                                                                  AppTheme.of(
-                                                                    context,
-                                                                  ).alternate,
-                                                              width: 2,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).primary,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      errorBorder: OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme.of(
-                                                            context,
-                                                          ).error,
-                                                          width: 2,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              40,
-                                                            ),
-                                                      ),
-                                                      focusedErrorBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).error,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      filled: true,
-                                                      fillColor: AppTheme.of(
-                                                        context,
-                                                      ).secondaryBackground,
-                                                      contentPadding:
-                                                          EdgeInsets.all(24),
-                                                      suffixIcon:
-                                                          statusTextController!
-                                                              .text
-                                                              .isNotEmpty
-                                                          ? InkWell(
-                                                              onTap: () async {
-                                                                statusTextController
-                                                                    ?.clear();
-                                                                setState(() {});
-                                                              },
-                                                              child: Icon(
-                                                                Icons.clear,
-                                                                color: Color(
-                                                                  0xFF757575,
-                                                                ),
-                                                                size: 22,
-                                                              ),
-                                                            )
-                                                          : null,
-                                                    ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Switch.adaptive(
+                                                    value: pushSwitchValue!,
+                                                    onChanged: (newValue) async {
+                                                      setState(
+                                                        () => pushSwitchValue =
+                                                            newValue,
+                                                      );
+                                                    },
+                                                    activeThumbColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    activeTrackColor:
+                                                        AppTheme.of(context)
+                                                            .primary,
+                                                    inactiveTrackColor:
+                                                        AppTheme.of(context)
+                                                            .alternate,
+                                                    inactiveThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
+                                                  ),
+                                                  Text(
+                                                    'Push Notifications',
                                                     style: AppTheme.of(context)
-                                                        .bodyLarge
+                                                        .labelLarge
                                                         .override(
                                                           font: GoogleFonts.playfairDisplay(
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .bodyLarge
+                                                                    .labelLarge
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .bodyLarge
+                                                                    .labelLarge
                                                                     .fontStyle,
                                                           ),
                                                           letterSpacing: 0.0,
@@ -677,439 +1126,47 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .bodyLarge
+                                                                  .labelLarge
                                                                   .fontStyle,
                                                         ),
-                                                    maxLength: 64,
-                                                    maxLengthEnforcement:
-                                                        MaxLengthEnforcement
-                                                            .enforced,
-                                                    buildCounter: (
-                                                      context, {
-                                                      required currentLength,
-                                                      required isFocused,
-                                                      maxLength,
-                                                    }) => null,
-                                                    keyboardType:
-                                                        TextInputType.text,
-                                                    cursorColor: AppTheme.of(
-                                                      context,
-                                                    ).primary,
                                                   ),
-                                                ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
                                               ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                            ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
                                           ),
-                                          Row(
+                                        ),
+                                        Container(
+                                          decoration: BoxDecoration(),
+                                          child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
-                                              Expanded(
-                                                child: SizedBox(
-                                                  width: double.infinity,
-                                                  child: TextFormField(
-                                                    controller:
-                                                        bioTextController,
-                                                    focusNode: bioFocusNode,
-                                                    onChanged: (_) =>
-                                                        EasyDebounce.debounce(
-                                                          'bioTextController',
-                                                          Duration(
-                                                            milliseconds: 2000,
-                                                          ),
-                                                          () => setState(() {}),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Align(
+                                                    alignment:
+                                                        AlignmentDirectional(
+                                                          -1,
+                                                          0,
                                                         ),
-                                                    autofocus: true,
-                                                    enabled: true,
-                                                    obscureText: false,
-                                                    decoration: InputDecoration(
-                                                      labelText: 'Bio',
-                                                      labelStyle:
-                                                          AppTheme.of(
-                                                            context,
-                                                          ).labelLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .labelLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                              color:
-                                                                  AppTheme.of(
-                                                                    context,
-                                                                  ).alternate,
-                                                              width: 2,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).primary,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      errorBorder: OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme.of(
-                                                            context,
-                                                          ).error,
-                                                          width: 2,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              40,
-                                                            ),
-                                                      ),
-                                                      focusedErrorBorder:
-                                                          OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide(
-                                                                  color:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).error,
-                                                                  width: 2,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  40,
-                                                                ),
-                                                          ),
-                                                      filled: true,
-                                                      fillColor: AppTheme.of(
-                                                        context,
-                                                      ).secondaryBackground,
-                                                      contentPadding:
-                                                          EdgeInsets.all(24),
-                                                      suffixIcon:
-                                                          bioTextController!
-                                                              .text
-                                                              .isNotEmpty
-                                                          ? InkWell(
-                                                              onTap: () async {
-                                                                bioTextController
-                                                                    ?.clear();
-                                                                setState(() {});
-                                                              },
-                                                              child: Icon(
-                                                                Icons.clear,
-                                                                color: Color(
-                                                                  0xFF757575,
-                                                                ),
-                                                                size: 22,
-                                                              ),
-                                                            )
-                                                          : null,
-                                                    ),
-                                                    style: AppTheme.of(context)
-                                                        .bodyLarge
-                                                        .override(
-                                                          font: GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .bodyLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                    maxLines: null,
-                                                    minLines: 2,
-                                                    maxLength: 64,
-                                                    maxLengthEnforcement:
-                                                        MaxLengthEnforcement
-                                                            .enforced,
-                                                    buildCounter: (
-                                                      context, {
-                                                      required currentLength,
-                                                      required isFocused,
-                                                      maxLength,
-                                                    }) => null,
-                                                    keyboardType:
-                                                        TextInputType.text,
-                                                    cursorColor: AppTheme.of(
-                                                      context,
-                                                    ).primary,
-                                                  ),
-                                                ),
-                                              ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
-                                          ),
-                                        ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        textBaseline: TextBaseline.alphabetic,
-                                        children: [
-                                          Text(
-                                            'App Settings',
-                                            style: AppTheme.of(context)
-                                                .displaySmall
-                                                .override(
-                                                  font:
-                                                      GoogleFonts.playfairDisplay(
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .displaySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(context)
-                                                                .displaySmall
-                                                                .fontStyle,
-                                                      ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: AppTheme.of(
-                                                    context,
-                                                  ).displaySmall.fontWeight,
-                                                  fontStyle: AppTheme.of(
-                                                    context,
-                                                  ).displaySmall.fontStyle,
-                                                ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                  0,
-                                                  4,
-                                                  0,
-                                                  4,
-                                                ),
-                                            child: Text(
-                                              'Change how your app responds.',
-                                              textAlign: TextAlign.start,
-                                              style: AppTheme.of(context)
-                                                  .titleMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(
-                                                      context,
-                                                    ).titleMedium.fontWeight,
-                                                    fontStyle: AppTheme.of(
-                                                      context,
-                                                    ).titleMedium.fontStyle,
-                                                  ),
-                                            ),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Switch.adaptive(
-                                                value: darkSwitchValue!,
-                                                onChanged: (newValue) async {
-                                                  setState(
-                                                    () => darkSwitchValue =
-                                                        newValue,
-                                                  );
-                                                },
-                                                activeThumbColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                activeTrackColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                inactiveTrackColor: AppTheme.of(
-                                                  context,
-                                                ).alternate,
-                                                inactiveThumbColor: AppTheme.of(
-                                                  context,
-                                                ).secondaryBackground,
-                                              ),
-                                              Text(
-                                                'Dark Mode',
-                                                style: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontWeight,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                              ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Switch.adaptive(
-                                                value: pushSwitchValue!,
-                                                onChanged: (newValue) async {
-                                                  setState(
-                                                    () => pushSwitchValue =
-                                                        newValue,
-                                                  );
-                                                },
-                                                activeThumbColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                activeTrackColor: AppTheme.of(
-                                                  context,
-                                                ).primary,
-                                                inactiveTrackColor: AppTheme.of(
-                                                  context,
-                                                ).alternate,
-                                                inactiveThumbColor: AppTheme.of(
-                                                  context,
-                                                ).secondaryBackground,
-                                              ),
-                                              Text(
-                                                'Push Notifications',
-                                                style: AppTheme.of(context)
-                                                    .labelLarge
-                                                    .override(
-                                                      font:
-                                                          GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontWeight,
-                                                      fontStyle: AppTheme.of(
-                                                        context,
-                                                      ).labelLarge.fontStyle,
-                                                    ),
-                                              ),
-                                            ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
-                                          ),
-                                        ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Align(
-                                                alignment: AlignmentDirectional(
-                                                  -1,
-                                                  0,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  textBaseline:
-                                                      TextBaseline.alphabetic,
-                                                  children: [
-                                                    Text(
-                                                      'App Info',
-                                                      style: AppTheme.of(context)
-                                                          .displaySmall
-                                                          .override(
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      textBaseline: TextBaseline
+                                                          .alphabetic,
+                                                      children: [
+                                                        Text(
+                                                          'App Info',
+                                                          style: AppTheme.of(context).displaySmall.override(
                                                             font: GoogleFonts.playfairDisplay(
                                                               fontWeight:
                                                                   AppTheme.of(
@@ -1138,86 +1195,151 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                     .displaySmall
                                                                     .fontStyle,
                                                           ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional.fromSTEB(
-                                                            0,
-                                                            4,
-                                                            0,
-                                                            4,
-                                                          ),
-                                                      child: Text(
-                                                        'Lilypad Client Version 1.00\nCopyright 2026 Kit Cochrane\nAll Rights Reserved',
-                                                        textAlign:
-                                                            TextAlign.start,
-                                                        style: AppTheme.of(context).titleMedium.override(
-                                                          font: GoogleFonts.playfairDisplay(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontStyle,
                                                         ),
-                                                      ),
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional.fromSTEB(
+                                                                0,
+                                                                4,
+                                                                0,
+                                                                4,
+                                                              ),
+                                                          child: Text(
+                                                            'Lilypad Client Version 1.00\nCopyright 2026 Kit Cochrane\nAll Rights Reserved',
+                                                            textAlign:
+                                                                TextAlign.start,
+                                                            style: AppTheme.of(context).titleMedium.override(
+                                                              font: GoogleFonts.playfairDisplay(
+                                                                fontWeight:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleMedium
+                                                                        .fontWeight,
+                                                                fontStyle:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleMedium
+                                                                        .fontStyle,
+                                                              ),
+                                                              letterSpacing:
+                                                                  0.0,
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontStyle,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
                                                     ),
-                                                  ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
-                                                ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    left: false,
+                    top: false,
+                    right: false,
+                    bottom: false,
+                    child: Container(
+                      width: double.infinity,
+                      height: MediaQuery.paddingOf(context).top,
+                      decoration: BoxDecoration(
+                        color: AppTheme.of(context).primaryBackground,
+                      ),
+                    ),
+                  ),
+                  const NavBarWidget(selectedIndex: 2),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 106),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Material(
+                        color: Colors.transparent,
+                        elevation: 3,
+                        shape: const CircleBorder(),
+                        child: Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(shape: BoxShape.circle),
+                          child: AppIconButton(
+                            borderRadius: 40,
+                            buttonSize: 70,
+                            fillColor: AppTheme.of(context).primary,
+                            icon: FaIcon(
+                              FaIconData(
+                                const IconData(
+                                  /* save */ 0xf0c7,
+                                  fontFamily: 'FontAwesomeSolid',
+                                  fontPackage: 'font_awesome_flutter',
+                                ),
+                              ),
+                              color: AppTheme.of(context).info,
+                              size: 36,
+                            ),
+                            onPressed: () async {
+                              await DialogService.getConfirmation(
+                                'Apply Settings',
+                                'Are You Sure?',
+                                () async {
+                                  await UserService.update(
+                                    username: usernameTextController?.text,
+                                    status: statusTextController?.text,
+                                    bio: bioTextController?.text,
+                                    anon: anonSwitchValue,
+                                    dark: darkSwitchValue,
+                                  );
+
+                                  //update state
+                                  setState(() {});
+                                },
+                              );
+                            },
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              SafeArea(
-                left: false,
-                top: false,
-                right: false,
-                bottom: false,
-                child: Container(
-                  width: double.infinity,
-                  height: MediaQuery.paddingOf(context).top,
-                  decoration: BoxDecoration(
-                    color: AppTheme.of(context).primaryBackground,
-                  ),
-                ),
-              ),
-              const NavBarWidget(selectedIndex: 2),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
