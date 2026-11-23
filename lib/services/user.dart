@@ -314,6 +314,17 @@ class UserService {
     return jsonDecode(res.body);
   }
 
+  static CurrentUser? get currentUser => _user != null
+      ? CurrentUser(
+          uuid: _user!.uuid,
+          username: _user!.username,
+          status: _user!.status,
+          bio: _user!.bio,
+          anon: _user!.anon,
+          dark: _user!.dark,
+        )
+      : null;
+
   //function to clear current user data
   static void clear() {
     _user = null;
