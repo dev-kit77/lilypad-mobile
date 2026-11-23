@@ -1,13 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:lilypad/services/cache.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/theme/theme.dart';
 import 'package:lilypad/services/background.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:lilypad/services/api.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/geolocation.dart';
 import 'package:lilypad/services/log.dart';
@@ -27,12 +25,28 @@ void main() async {
   SessionService.onSessionInvalidated = sessionInvalidCallback;
 
   //start Geolocation
-  //TODO: Guard application for not initalized due to permissions
-  await GeolocationService.init();
+  try {
+    await GeolocationService.init().timeout(const Duration(seconds: 15));
+  } catch (e) {
+    GeolocationService.initializationError ??= 'Location setup failed: $e';
+    LogService.err(
+      'Geolocation init failed, continuing without location: $e',
+      src: 'main',
+      ex: e is Exception ? e : null,
+    );
+  }
 
   //start background service for push notifications on mobile
   if (Platform.isAndroid || Platform.isIOS) {
-    await BackgroundService.init();
+    try {
+      await BackgroundService.init();
+    } catch (e) {
+      LogService.err(
+        'Background service init failed: $e',
+        src: 'main',
+        ex: e is Exception ? e : null,
+      );
+    }
   }
 
   LogService.log('Starting UI...');
@@ -65,13 +79,6 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     LogService.log('Building Core App...', src: 'MainApp');
-
-    //check api connection in debug
-    if (kDebugMode) {
-      APIService.ping().then((result) {
-        DialogService.showAlert('Ping Test', result.toString());
-      });
-    }
 
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,

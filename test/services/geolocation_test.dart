@@ -51,6 +51,40 @@ void main() {
     });
   });
 
+  group('initialization state', () {
+    test('reports ready once usable coordinates are available', () async {
+      platform.lastKnownLocation = at(43.6532, -79.3832);
+      platform.currentLocation = at(43.6532, -79.3832);
+      geocoder.queueJson(toronto());
+
+      await init();
+
+      expect(GeolocationService.initalized, isTrue);
+      expect(GeolocationService.initializationError, isNull);
+    });
+
+    test('reports the failure when no coordinates can be read', () async {
+      await init();
+
+      expect(GeolocationService.initalized, isFalse);
+      expect(GeolocationService.initializationError, isNotNull);
+      //a failed first fix must not prevent later location updates
+      expect(platform.controller.hasListener, isTrue);
+    });
+
+    test('is reset by clear', () async {
+      platform.lastKnownLocation = at(43.6532, -79.3832);
+      geocoder.queueJson(toronto());
+      await init();
+      expect(GeolocationService.initalized, isTrue);
+
+      GeolocationService.clear();
+
+      expect(GeolocationService.initalized, isFalse);
+      expect(GeolocationService.initializationError, isNull);
+    });
+  });
+
   group('init without a cached location', () {
     test('does not geocode anything', () async {
       await init();
@@ -253,7 +287,8 @@ void main() {
 
       await requestUpdate();
 
-      expect(platform.getLocationCalls, equals(1));
+      //one read at init and one from the manual update
+      expect(platform.getLocationCalls, equals(2));
       expect(geocoder.requests, hasLength(1));
       expect(GeolocationService.locale, equals('Toronto, Ontario'));
     });
@@ -268,7 +303,8 @@ void main() {
 
       await requestUpdate();
 
-      expect(platform.getLocationCalls, equals(1));
+      //one read at init and one from the manual update
+      expect(platform.getLocationCalls, equals(2));
       expect(geocoder.requests, hasLength(2));
       expect(
         GeolocationService.location,

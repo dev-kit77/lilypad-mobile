@@ -9,11 +9,25 @@ class GeolocationService {
   static late Stream<LocationData> _locationStream;
   static LocationData? _lastKnown;
   static GeoData? _areaData;
+  static bool initalized = false;
+
+  ///Reason the service could not be initialized, for UI error messages.
+  static String? initializationError;
 
   GeolocationService._();
 
-  //init function to start the location service
+  /// Start the location service.
+  ///
+  /// [initalized] reports whether usable coordinates were obtained and
+  /// [initializationError] records why they were not, so the UI can report a
+  /// location problem instead of waiting forever.
   static Future<void> init() async {
+    initalized = false;
+    initializationError = null;
+    await _start();
+  }
+
+  static Future<void> _start() async {
     //get cached last location
     _lastKnown = await Location.instance.getLastKnownLocation();
 
@@ -39,6 +53,7 @@ class GeolocationService {
       //recheck status
       if (_enabled != PermissionStatus.granted &&
           _enabled != PermissionStatus.grantedLimited) {
+        initializationError = 'Location permission was not granted.';
         LogService.err(
           'Location Permissions not granted! App will fail to Initalize!',
           src: 'Geolocation Service',
@@ -61,17 +76,42 @@ class GeolocationService {
     //init location service
     await Location.instance.requestService();
 
-    //capture location stream
+    //capture location stream and subscribe before the one-shot fix, so a
+    //failed first read (e.g. location services disabled) doesn't stop updates
     _locationStream = Location.instance.onLocationChanged;
-
-    //init callback subscription
     _locationStream.listen(
-      (l) async => await _updateArea(l),
+      (l) async {
+        try {
+          await _updateArea(l);
+          //location became available after a failed startup
+          initalized = true;
+          initializationError = null;
+        } catch (e) {
+          LogService.err(
+            'Unable to update area: $e',
+            src: 'Geolocation Controller',
+          );
+        }
+      },
       onError: ((e) => LogService.err(
         'Unable to retrieve location',
         src: 'Geolocation Controller',
       )),
     );
+
+    //get immediate location (best effort: a cached fix may already be usable)
+    try {
+      await _updateArea(await Location.instance.getLocation());
+    } catch (e) {
+      initializationError = e.toString();
+      LogService.err(
+        'Unable to get current location: $e',
+        src: 'Geolocation Service',
+        ex: e is Exception ? e : null,
+      );
+    }
+
+    initalized = _areaData != null || _lastKnown != null;
   }
 
   //function to push an update to the location i
@@ -81,6 +121,8 @@ class GeolocationService {
 
     //update class data
     await _updateArea(newLocation);
+    initalized = true;
+    initializationError = null;
   }
 
   //listen callback helper for updating the service when new data is recieved
@@ -189,5 +231,7 @@ class GeolocationService {
   static void clear() {
     _lastKnown = null;
     _areaData = null;
+    initalized = false;
+    initializationError = null;
   }
 }
