@@ -15,21 +15,20 @@ class DialogService {
     );
   }
 
-  static Future<void> getConfirmation(
-    String title,
-    String msg,
-    VoidCallback runOnConfirmation,
-  ) async {
+  /// Shows a confirmation dialog and returns true only when the user taps
+  /// "Yes". Cancelling or dismissing the dialog returns false.
+  static Future<bool> getConfirmation(String title, String msg) async {
     final context = AppGlobal.navigatorKey.currentContext!;
 
-    await showDialog(
+    final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AppConfirmation(
         header: title,
         content: msg,
-        callback: runOnConfirmation,
       ),
     );
+
+    return confirmed ?? false;
   }
 }
 
@@ -76,13 +75,11 @@ class AppAlert extends StatelessWidget {
 class AppConfirmation extends StatelessWidget {
   final String header;
   final String content;
-  final VoidCallback callback;
 
   const AppConfirmation({
     super.key,
     required this.header,
     required this.content,
-    required this.callback,
   });
 
   @override
@@ -96,14 +93,13 @@ class AppConfirmation extends StatelessWidget {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context, false);
                 },
                 child: Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  callback.call();
+                  Navigator.pop(context, true);
                 },
                 child: Text('Yes'),
               ),
@@ -117,14 +113,13 @@ class AppConfirmation extends StatelessWidget {
             actions: <Widget>[
               CupertinoDialogAction(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context, false);
                 },
                 child: Text('Cancel'),
               ),
               CupertinoDialogAction(
                 onPressed: () {
-                  Navigator.pop(context);
-                  callback.call();
+                  Navigator.pop(context, true);
                 },
                 child: Text('Yes'),
               ),
