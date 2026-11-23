@@ -332,39 +332,56 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   12,
                                                   0,
                                                 ),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ListView(
-                                                  padding: EdgeInsets.symmetric(
-                                                    vertical: 12,
+                                            child: SingleChildScrollView(
+                                              primary: false,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  ListView(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                        ),
+                                                    primary: false,
+                                                    shrinkWrap: true,
+                                                    scrollDirection:
+                                                        Axis.vertical,
+                                                    children:
+                                                        userPosts
+                                                            ?.map(
+                                                              (p) => PostWidget(
+                                                                post: p,
+                                                              ),
+                                                            )
+                                                            .toList()
+                                                            .divide(
+                                                              SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                            ) ??
+                                                        [],
                                                   ),
-                                                  primary: false,
-                                                  shrinkWrap: true,
-                                                  scrollDirection:
-                                                      Axis.vertical,
-                                                  children:
-                                                      userPosts
-                                                          ?.map(
-                                                            (p) => PostWidget(
-                                                              post: p,
+                                                  userPosts == null
+                                                      ? Text(
+                                                          'Could Not Fetch Posts.',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: AppTheme.of(context).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
                                                             ),
-                                                          )
-                                                          .toList()
-                                                          .divide(
-                                                            SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                          ) ??
-                                                      [],
-                                                ),
-                                                userPosts == null
-                                                    ? Text(
-                                                        'Could Not Fetch Posts.',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: AppTheme.of(context).titleLarge.override(
-                                                          font: GoogleFonts.playfairDisplay(
+                                                            letterSpacing: 0.0,
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
@@ -378,27 +395,27 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .titleLarge
                                                                     .fontStyle,
                                                           ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                      )
-                                                    : Text(
-                                                        'You\'re all caught up!',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: AppTheme.of(context).titleLarge.override(
-                                                          font: GoogleFonts.playfairDisplay(
+                                                        )
+                                                      : Text(
+                                                          'You\'re all caught up!',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: AppTheme.of(context).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
@@ -412,22 +429,9 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .titleLarge
                                                                     .fontStyle,
                                                           ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontStyle,
                                                         ),
-                                                      ),
-                                              ].addToEnd(SizedBox(height: 12)),
+                                                ].addToEnd(SizedBox(height: 12)),
+                                              ),
                                             ),
                                           ),
                                           Padding(
@@ -438,39 +442,56 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   12,
                                                   0,
                                                 ),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ListView(
-                                                  padding: EdgeInsets.symmetric(
-                                                    vertical: 12,
+                                            child: SingleChildScrollView(
+                                              primary: false,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  ListView(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                        ),
+                                                    primary: false,
+                                                    shrinkWrap: true,
+                                                    scrollDirection:
+                                                        Axis.vertical,
+                                                    children:
+                                                        userReplies
+                                                            ?.map(
+                                                              (p) => PostWidget(
+                                                                post: p,
+                                                              ),
+                                                            )
+                                                            .toList()
+                                                            .divide(
+                                                              SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                            ) ??
+                                                        [],
                                                   ),
-                                                  primary: false,
-                                                  shrinkWrap: true,
-                                                  scrollDirection:
-                                                      Axis.vertical,
-                                                  children:
-                                                      userReplies
-                                                          ?.map(
-                                                            (p) => PostWidget(
-                                                              post: p,
+                                                  userReplies == null
+                                                      ? Text(
+                                                          'Could Not Fetch Replies.',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: AppTheme.of(context).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
                                                             ),
-                                                          )
-                                                          .toList()
-                                                          .divide(
-                                                            SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                          ) ??
-                                                      [],
-                                                ),
-                                                userPosts == null
-                                                    ? Text(
-                                                        'Could Not Fetch Replies.',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: AppTheme.of(context).titleLarge.override(
-                                                          font: GoogleFonts.playfairDisplay(
+                                                            letterSpacing: 0.0,
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
@@ -484,27 +505,27 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .titleLarge
                                                                     .fontStyle,
                                                           ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                      )
-                                                    : Text(
-                                                        'You\'re all caught up!',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: AppTheme.of(context).titleLarge.override(
-                                                          font: GoogleFonts.playfairDisplay(
+                                                        )
+                                                      : Text(
+                                                          'You\'re all caught up!',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: AppTheme.of(context).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
@@ -518,22 +539,9 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .titleLarge
                                                                     .fontStyle,
                                                           ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontStyle,
                                                         ),
-                                                      ),
-                                              ].addToEnd(SizedBox(height: 12)),
+                                                ].addToEnd(SizedBox(height: 12)),
+                                              ),
                                             ),
                                           ),
                                         ],
