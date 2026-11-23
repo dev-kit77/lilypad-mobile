@@ -17,10 +17,20 @@ import 'package:material_ui/material_ui.dart';
 
 /// Component to take post data in and display
 class PostWidget extends StatefulWidget {
-  const PostWidget({super.key, required this.post, this.replyingTo});
+  const PostWidget({
+    super.key,
+    required this.post,
+    this.replyingTo,
+    this.onUpdate,
+    this.noCache = false,
+  });
 
+  final Function(Post p)? onUpdate;
   final Post post;
   final Post? replyingTo;
+
+  /// Skip cached data when fetching this widget's content.
+  final bool noCache;
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -31,18 +41,21 @@ class _PostWidgetState extends State<PostWidget> {
   final flippableCardController = FlipCardController();
   bool flippableCardIsFront = true;
 
-  late final Post? fetchedReplyingTo;
+  Post? updatedPost;
+  Post? fetchedReplyingTo;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.replyingTo == null && widget.post.replying != null) {
-      ContentService.fetchPost(widget.post.replying!).then(
-        (r) => setState(() {
-          fetchedReplyingTo = r;
-        }),
-      );
+    updatedPost ??= widget.post;
+    fetchedReplyingTo ??= widget.replyingTo;
+
+    if (fetchedReplyingTo == null && updatedPost!.replying != null) {
+      ContentService.fetchPost(
+        updatedPost!.replying!,
+        noCache: widget.noCache,
+      ).then((r) => setState(() => fetchedReplyingTo = r));
     } else {
       fetchedReplyingTo = widget.replyingTo;
     }
@@ -54,13 +67,14 @@ class _PostWidgetState extends State<PostWidget> {
       fill: Fill.fillBack,
       controller: flippableCardController,
       flipOnTouch:
-          widget.post.user.uuid != null &&
-          widget.post.user.uuid != UserService.currentUser?.uuid,
+          updatedPost!.user.uuid != null &&
+          updatedPost!.user.uuid != UserService.currentUser?.uuid,
       onFlip: () async => {
-        if (widget.post.user.uuid != null)
+        if (updatedPost!.user.uuid != null)
           {
-            widget.post.user = await ContentService.fetchUser(
-              widget.post.user.uuid!,
+            updatedPost!.user = await ContentService.fetchUser(
+              updatedPost!.user.uuid!,
+              noCache: widget.noCache,
             ),
           },
 
@@ -86,7 +100,7 @@ class _PostWidgetState extends State<PostWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    widget.post.replying != null
+                    updatedPost!.replying != null
                         ? GestureDetector(
                             onTap: () {
                               if (fetchedReplyingTo != null) {
@@ -94,6 +108,7 @@ class _PostWidgetState extends State<PostWidget> {
                                   MaterialPageRoute<void>(
                                     builder: (context) => ViewPostWidget(
                                       post: fetchedReplyingTo!,
+                                      noCache: widget.noCache,
                                     ),
                                   ),
                                 );
@@ -115,7 +130,7 @@ class _PostWidgetState extends State<PostWidget> {
                                     clipBehavior: Clip.none,
                                     children: [
                                       Text(
-                                        widget.post.user.username,
+                                        updatedPost!.user.username,
                                         style: AppTheme.of(context).bodyMedium
                                             .override(
                                               font: GoogleFonts.playfairDisplay(
@@ -208,7 +223,7 @@ class _PostWidgetState extends State<PostWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                widget.post.user.username,
+                                updatedPost!.user.username,
                                 style: AppTheme.of(context).bodyMedium.override(
                                   font: GoogleFonts.playfairDisplay(
                                     fontWeight: AppTheme.of(context)
@@ -266,7 +281,7 @@ class _PostWidgetState extends State<PostWidget> {
                             clipBehavior: Clip.none,
                             children: [
                               Text(
-                                widget.post.content,
+                                updatedPost!.content,
                                 textAlign: TextAlign.start,
                                 style: AppTheme.of(context).bodyLarge.override(
                                   font: GoogleFonts.playfairDisplay(
@@ -293,9 +308,9 @@ class _PostWidgetState extends State<PostWidget> {
                       ],
                     ),
                     Text(
-                      widget.post.updated == null
-                          ? widget.post.created.toLocal().toString()
-                          : 'Edited ${widget.post.updated!.toLocal().toString()}',
+                      updatedPost!.updated == null
+                          ? updatedPost!.created.toLocal().toString()
+                          : 'Edited ${updatedPost!.updated!.toLocal().toString()}',
                       style: AppTheme.of(context).bodySmall.override(
                         font: GoogleFonts.playfairDisplay(
                           fontWeight: AppTheme.of(context).bodySmall.fontWeight,
@@ -318,10 +333,15 @@ class _PostWidgetState extends State<PostWidget> {
               children: [
                 AppButton(
                   onPressed: () {
-                    ContentService.upvotePost(widget.post.uuid);
+                    ContentService.upvotePost(updatedPost!.uuid).then(
+                      (p) => setState(() {
+                        widget.onUpdate?.call(p);
+                        updatedPost = p;
+                      }),
+                    );
                   },
                   text: formatNumber(
-                    widget.post.upvotes,
+                    updatedPost!.upvotes,
                     formatType: NumberFormatType.compact,
                   ),
                   icon: FaIcon(
@@ -355,18 +375,25 @@ class _PostWidgetState extends State<PostWidget> {
                   showLoadingIndicator: false,
                 ),
                 AppButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
+                  onPressed: () async {
+                    Post? updated = await Navigator.of(context).push<Post>(
+                      MaterialPageRoute<Post>(
                         builder: (context) => ViewPostWidget(
-                          post: widget.post,
+                          post: updatedPost!,
                           replying: fetchedReplyingTo,
+                          noCache: widget.noCache,
                         ),
                       ),
                     );
+
+                    if (updated != updatedPost! && mounted) {
+                      setState(() {
+                        updatedPost = updated;
+                      });
+                    }
                   },
                   text: formatNumber(
-                    widget.post.noReplies,
+                    updatedPost!.noReplies,
                     formatType: NumberFormatType.compact,
                   ),
                   icon: FaIcon(
@@ -399,15 +426,23 @@ class _PostWidgetState extends State<PostWidget> {
                   ),
                 ),
                 Offstage(
-                  offstage: widget.post.uuid == UserService.currentUser?.uuid,
+                  offstage: updatedPost!.uuid == UserService.currentUser?.uuid,
                   child: AppButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) =>
-                              EditPostWidget(post: widget.post),
-                        ),
-                      );
+                    onPressed: () async {
+                      final Post? updated = await Navigator.of(context)
+                          .push<Post>(
+                            MaterialPageRoute<Post>(
+                              builder: (context) =>
+                                  EditPostWidget(post: updatedPost!),
+                            ),
+                          );
+
+                      if (updated != null && mounted) {
+                        setState(() {
+                          widget.onUpdate?.call(updated);
+                          updatedPost = updated;
+                        });
+                      }
                     },
                     icon: FaIcon(
                       FaIconData(
@@ -447,7 +482,7 @@ class _PostWidgetState extends State<PostWidget> {
           ],
         ),
       ),
-      back: UserWidget(user: widget.post.user),
+      back: UserWidget(user: updatedPost!.user),
     );
   }
 }

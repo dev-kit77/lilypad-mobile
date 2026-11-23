@@ -370,10 +370,12 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
                                           widget.replyingTo.uuid,
                                           contentTextController!.text.trim(),
                                         );
+                                      } else {
+                                        return;
                                       }
 
                                       if (context.mounted) {
-                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop(true);
                                       }
                                     },
                                     text: 'Post',

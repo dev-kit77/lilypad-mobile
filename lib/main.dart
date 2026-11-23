@@ -15,7 +15,6 @@ import 'package:lilypad/services/session.dart';
 import 'package:lilypad/util/global.dart';
 import 'package:lilypad/ui/pages/landing.dart';
 import 'package:lilypad/ui/pages/feed.dart';
-import 'package:lilypad/ui/pages/new_post.dart';
 import 'package:lilypad/ui/pages/profile.dart';
 import 'package:lilypad/ui/pages/settings.dart';
 
@@ -53,6 +52,13 @@ void sessionInvalidCallback() async {
   );
 }
 
+///Reads the `noCache` flag from a named route's arguments.
+bool _noCacheFromRoute(RouteSettings settings) => switch (settings.arguments) {
+  final bool value => value,
+  final Map arguments => arguments['noCache'] == true,
+  _ => false,
+};
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -73,12 +79,28 @@ class MainApp extends StatelessWidget {
           ? FeedWidget.routePath
           : LandingWidget.routePath,
       theme: AppTheme.of(context).themeData,
-      routes: {
-        LandingWidget.routePath: (_) => const LandingWidget(),
-        FeedWidget.routePath: (_) => const FeedWidget(),
-        NewPostWidget.routePath: (_) => const NewPostWidget(),
-        ProfileWidget.routePath: (_) => const ProfileWidget(),
-        SettingsWidget.routePath: (_) => const SettingsWidget(),
+      routes: {LandingWidget.routePath: (_) => const LandingWidget()},
+      onGenerateRoute: (settings) {
+        final noCache = _noCacheFromRoute(settings);
+        if (settings.name == FeedWidget.routePath) {
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => FeedWidget(noCache: noCache),
+          );
+        }
+        if (settings.name == ProfileWidget.routePath) {
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => ProfileWidget(noCache: noCache),
+          );
+        }
+        if (settings.name == SettingsWidget.routePath) {
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => SettingsWidget(noCache: noCache),
+          );
+        }
+        return null;
       },
     );
   }

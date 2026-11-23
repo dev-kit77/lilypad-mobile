@@ -14,10 +14,18 @@ import '../../util/ui.dart';
 import '../widgets/buttons.dart';
 
 class ViewPostWidget extends StatefulWidget {
-  const ViewPostWidget({super.key, required this.post, this.replying});
+  const ViewPostWidget({
+    super.key,
+    required this.post,
+    this.replying,
+    this.noCache = false,
+  });
 
   final Post post;
   final Post? replying;
+
+  /// Skip cached data when fetching this page's content.
+  final bool noCache;
 
   static String routeName = 'postView';
   static String routePath = '/postView';
@@ -29,13 +37,21 @@ class ViewPostWidget extends StatefulWidget {
 class _ViewPostWidgetState extends State<ViewPostWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Post? updatedPost;
+
   @override
   void initState() {
     super.initState();
 
-    ContentService.fetchReplies(widget.post.uuid).then(
+    updatedPost ??= widget.post;
+
+    _loadContent(widget.noCache);
+  }
+
+  void _loadContent(bool refresh) {
+    ContentService.fetchReplies(updatedPost!.uuid, noCache: refresh).then(
       (r) => setState(() {
-        widget.post.replies = r;
+        updatedPost!.replies = r;
       }),
     );
   }
@@ -125,8 +141,16 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                               ),
                                               LogoWidget(),
                                               PostWidget(
-                                                post: widget.post,
+                                                post: updatedPost!,
                                                 replyingTo: widget.replying,
+                                                onUpdate: (p) {
+                                                  setState(() {
+                                                    p.replies =
+                                                        updatedPost!.replies;
+                                                    updatedPost = p;
+                                                  });
+                                                },
+                                                noCache: true,
                                               ),
                                             ],
                                           ),
@@ -141,7 +165,7 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop(updatedPost);
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(),
@@ -254,7 +278,7 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                         4,
                                       ),
                                       child: Text(
-                                        widget.post.user.username,
+                                        updatedPost!.user.username,
                                         textAlign: TextAlign.start,
                                         style: AppTheme.of(context).titleMedium
                                             .override(
@@ -338,11 +362,12 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                         primary: false,
                                         shrinkWrap: true,
                                         scrollDirection: Axis.vertical,
-                                        children: widget.post.replies
+                                        children: updatedPost!.replies
                                             .map(
                                               (r) => PostWidget(
                                                 post: r,
-                                                replyingTo: widget.post,
+                                                replyingTo: updatedPost!,
+                                                noCache: widget.noCache,
                                               ),
                                             )
                                             .toList()
@@ -411,12 +436,18 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                               size: 36,
                             ),
                             onPressed: () async {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (context) =>
-                                      NewReplyWidget(replyingTo: widget.post),
-                                ),
-                              );
+                              final bool newReply =
+                                  await Navigator.of(context).push<bool>(
+                                    MaterialPageRoute<bool>(
+                                      builder: (context) => NewReplyWidget(
+                                        replyingTo: updatedPost!,
+                                      ),
+                                    ),
+                                  ) as bool;
+
+                              if (newReply == true && mounted) {
+                                _loadContent(true);
+                              }
                             },
                           ),
                         ),

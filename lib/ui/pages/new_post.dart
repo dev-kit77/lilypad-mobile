@@ -367,10 +367,12 @@ class _NewPostWidgetState extends State<NewPostWidget> {
                                         await ContentService.newPost(
                                           contentTextController!.text.trim(),
                                         );
+                                      } else {
+                                        return;
                                       }
 
                                       if (context.mounted) {
-                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop(true);
                                       }
                                     },
                                     text: 'Post',

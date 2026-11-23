@@ -17,7 +17,10 @@ import '../../util/ui.dart';
 import '../widgets/navbar.dart';
 
 class SettingsWidget extends StatefulWidget {
-  const SettingsWidget({super.key});
+  const SettingsWidget({super.key, this.noCache = false});
+
+  /// Skip cached data when fetching this page's content.
+  final bool noCache;
 
   static String routeName = 'settings';
   static String routePath = '/settings';
@@ -48,11 +51,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late final CurrentUser? currUser;
+  CurrentUser? currUser;
 
   @override
   void initState() {
     super.initState();
+
+    //load content
+    _loadContent(widget.noCache);
 
     usernameTextController ??= TextEditingController();
     usernameFocusNode ??= FocusNode();
@@ -66,19 +72,6 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     anonSwitchValue = false;
     darkSwitchValue = false;
     pushSwitchValue = false;
-
-    UserService.fetch().then(
-      (u) => {
-        setState(() {
-          currUser = u;
-          anonSwitchValue = u.anon;
-          usernameTextController!.text = u.username;
-          statusTextController!.text = u.status ?? '';
-          bioTextController!.text = u.bio ?? '';
-          darkSwitchValue = u.dark;
-        }),
-      },
-    );
   }
 
   @override
@@ -93,6 +86,22 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     bioTextController?.dispose();
 
     super.dispose();
+  }
+
+  void _loadContent(bool refresh) {
+    UserService.fetch(noCache: refresh).then(
+      (u) => {
+        setState(() {
+          currUser = u;
+          anonSwitchValue = u.anon;
+          usernameTextController!.text = u.username;
+          statusTextController!.text = u.status ?? '';
+          bioTextController!.text = u.bio ?? '';
+          darkSwitchValue = u.dark;
+          refresh = false;
+        }),
+      },
+    );
   }
 
   @override
@@ -1296,7 +1305,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 4,
                                                               ),
                                                           child: Text(
-                                                            'Lilypad Client Version 1.00\nCopyright 2026 Kit Cochrane\nAll Rights Reserved',
+                                                            'Lilypad Client Version 0.90\nCopyright 2026 Kit Cochrane\nAll Rights Reserved',
                                                             textAlign:
                                                                 TextAlign.start,
                                                             style: AppTheme.of(context).titleMedium.override(
@@ -1422,8 +1431,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                     dark: darkSwitchValue,
                                   );
 
-                                  //update state
-                                  setState(() {});
+                                  //update content
+                                  _loadContent(true);
                                 },
                               );
                             },

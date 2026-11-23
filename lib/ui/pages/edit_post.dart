@@ -363,20 +363,24 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                   alignment: AlignmentDirectional(1, 0),
                                   child: AppButton(
                                     onPressed: () async {
+                                      Post? updated;
+
                                       if (contentTextController != null &&
                                           contentTextController!.text
                                               .trim()
                                               .isNotEmpty &&
                                           contentTextController!.text !=
                                               widget.post.content) {
-                                        await ContentService.modifyPost(
-                                          widget.post.uuid,
-                                          contentTextController!.text.trim(),
-                                        );
+                                        updated =
+                                            await ContentService.modifyPost(
+                                              widget.post.uuid,
+                                              contentTextController!.text
+                                                  .trim(),
+                                            );
                                       }
 
-                                      if (context.mounted) {
-                                        Navigator.of(context).pop();
+                                      if (updated != null && context.mounted) {
+                                        Navigator.of(context).pop(updated);
                                       }
                                     },
                                     text: 'Update Post',

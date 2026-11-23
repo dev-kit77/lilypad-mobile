@@ -16,7 +16,10 @@ import '../widgets/navbar.dart';
 import '../widgets/buttons.dart';
 
 class FeedWidget extends StatefulWidget {
-  const FeedWidget({super.key});
+  const FeedWidget({super.key, this.noCache = false});
+
+  /// Skip cached data when fetching this page's content.
+  final bool noCache;
 
   static String routeName = 'feed';
   static String routePath = '/feed';
@@ -35,26 +38,32 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late String currLocale;
-  late final List<Post>? feed;
-  late final List<Post>? newest;
+  String? currLocale;
+  List<Post>? feed;
+  List<Post>? newest;
 
   @override
   void initState() {
     super.initState();
 
+    //fetch content
+    _loadContent(widget.noCache);
+
+    feedTabsController = TabController(vsync: this, length: 2, initialIndex: 0)
+      ..addListener(() => setState(() {}));
+  }
+
+  void _loadContent(bool refresh) {
     currLocale = GeolocationService.locale;
-    ContentService.fetchFeed().then(
+    ContentService.fetchFeed(noCache: refresh).then(
       (f) => {
         setState(() {
+          refresh = false;
           feed = f;
           newest = ContentService.newestFeed;
         }),
       },
     );
-
-    feedTabsController = TabController(vsync: this, length: 2, initialIndex: 0)
-      ..addListener(() => setState(() {}));
   }
 
   @override
@@ -156,7 +165,7 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                   ],
                                 ),
                                 Text(
-                                  currLocale,
+                                  currLocale ?? '',
                                   textAlign: TextAlign.start,
                                   style: AppTheme.of(context).titleMedium
                                       .override(
@@ -546,9 +555,17 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(NewPostWidget.routePath);
+                            onPressed: () async {
+                              final bool newPost =
+                                  await Navigator.of(context).push<bool>(
+                                    MaterialPageRoute<bool>(
+                                      builder: (context) => NewPostWidget(),
+                                    ),
+                                  ) as bool;
+
+                              if (newPost == true && mounted) {
+                                _loadContent(true);
+                              }
                             },
                           ),
                         ),

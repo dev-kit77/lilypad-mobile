@@ -18,7 +18,10 @@ import '../../util/ui.dart';
 import '../widgets/navbar.dart';
 
 class ProfileWidget extends StatefulWidget {
-  const ProfileWidget({super.key});
+  const ProfileWidget({super.key, this.noCache = false});
+
+  /// Skip cached data when fetching this page's content.
+  final bool noCache;
 
   static String routeName = 'profile';
   static String routePath = '/profile';
@@ -37,24 +40,16 @@ class _ProfileWidgetState extends State<ProfileWidget>
       tabBarController != null ? tabBarController!.previousIndex : 0;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  late final CurrentUser? currUser;
-  late final List<Post>? userPosts;
-  late final List<Post>? userReplies;
+
+  CurrentUser? currUser;
+  List<Post>? userPosts;
+  List<Post>? userReplies;
 
   @override
   void initState() {
     super.initState();
 
-    //TODO:TEMP FIX FOR FUNCTIONALITY TESTS
-    UserService.fetch().then(
-      (u) => ContentService.fetchUserContent().then(
-        (f) => setState(() {
-          currUser = u;
-          userPosts = f['posts']!;
-          userReplies = f['replies']!;
-        }),
-      ),
-    );
+    _loadContent(widget.noCache);
 
     tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
       ..addListener(() => setState(() {}));
@@ -65,6 +60,18 @@ class _ProfileWidgetState extends State<ProfileWidget>
     tabBarController?.dispose();
 
     super.dispose();
+  }
+
+  void _loadContent(bool refresh) {
+    UserService.fetch(noCache: refresh).then(
+      (u) => ContentService.fetchUserContent(noCache: refresh).then(
+        (f) => setState(() {
+          currUser = u;
+          userPosts = f['posts']!;
+          userReplies = f['replies']!;
+        }),
+      ),
+    );
   }
 
   @override
@@ -547,9 +554,17 @@ class _ProfileWidgetState extends State<ProfileWidget>
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(NewPostWidget.routePath);
+                            onPressed: () async {
+                              final bool newPost =
+                                  await Navigator.of(context).push<bool>(
+                                    MaterialPageRoute<bool>(
+                                      builder: (context) => NewPostWidget(),
+                                    ),
+                                  ) as bool;
+
+                              if (newPost == true && mounted) {
+                                _loadContent(true);
+                              }
                             },
                           ),
                         ),
