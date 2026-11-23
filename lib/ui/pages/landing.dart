@@ -7,10 +7,10 @@ import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/util/api_ex.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../../util/ui.dart';
 import '../theme/theme.dart';
-import '../widgets/buttons.dart';
 import '../widgets/logo.dart';
 import 'feed.dart' show FeedWidget;
 
@@ -50,6 +50,10 @@ class _LandingWidgetState extends State<LandingWidget>
   FocusNode? passwordFocusNodeSignUp;
   TextEditingController? passwordTextControllerSignUp;
   late bool passwordVisibilitySignUp;
+
+  WigglyButtonState signInButtonState = WigglyButtonState.idle;
+  WigglyButtonState signUpButtonState = WigglyButtonState.idle;
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int get tabBarCurrentIndex =>
       tabBarController != null ? tabBarController!.index : 0;
@@ -96,92 +100,165 @@ class _LandingWidgetState extends State<LandingWidget>
   }
 
   void _signIn() async {
-    if (_signInFormKey.currentState?.validate() ?? false) {
-      bool login = false;
-      try {
-        login = await UserService.login(
-          emailTextControllerSignIn!.text,
-          passwordTextControllerSignIn!.text,
-        );
-      } on APIException catch (e) {
-        if (e.statusCode == 400) {
-          DialogService.showAlert(
-            'Sign In Error',
-            'Invalid Email format. Please Check Email then try again.',
-          );
-        } else if (e.statusCode == 401) {
-          DialogService.showAlert(
-            'Sign In Error',
-            'Incorrect Credentials. Please Check Email & Password then try again.',
-          );
-        } else {
-          DialogService.showAlert(
-            'Sign In Error',
-            '${e.statusCode} - ${e.message}',
-          );
+    //validate form
+    if ((_signInFormKey.currentState?.validate() ?? false) && mounted) {
+      //show error
+      setState(() => signInButtonState = WigglyButtonState.error);
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => signInButtonState = WigglyButtonState.idle);
         }
-        return;
-      } on SocketException catch (e) {
-        DialogService.showAlert('Sign In Error', e.message);
-        return;
-      } catch (e) {
-        DialogService.showAlert('Sign In Error', 'Unexpected error: $e');
-        return;
+      });
+    }
+
+    //set loading state
+    if (mounted) {
+      setState(() => signInButtonState = WigglyButtonState.loading);
+    }
+
+    //init login check
+    bool login = false;
+
+    try {
+      //attempt sign in
+      login = await UserService.login(
+        emailTextControllerSignIn!.text,
+        passwordTextControllerSignIn!.text,
+      );
+    } on APIException catch (e) {
+      if (e.statusCode == 400) {
+        DialogService.showAlert(
+          'Sign In Error',
+          'Invalid Email format. Please Check Email then try again.',
+        );
+      } else if (e.statusCode == 401) {
+        DialogService.showAlert(
+          'Sign In Error',
+          'Incorrect Credentials. Please Check Email & Password then try again.',
+        );
+      } else {
+        DialogService.showAlert(
+          'Sign In Error',
+          '${e.statusCode} - ${e.message}',
+        );
+      }
+      return;
+    } on SocketException catch (e) {
+      DialogService.showAlert('Sign In Error', e.message);
+    } catch (e) {
+      DialogService.showAlert('Sign In Error', 'Unexpected error: $e');
+    }
+
+    //check login status
+    if (login) {
+      //show success
+      if (mounted) {
+        setState(() => signInButtonState = WigglyButtonState.success);
       }
 
-      if (mounted && login) {
-        Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
-      } else if (mounted) {
-        DialogService.showAlert('Sign In Error', 'Unknown Error');
+      //hold state for ui to show
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+        }
+      });
+    } else {
+      //show error
+      if (mounted) {
+        setState(() => signInButtonState = WigglyButtonState.error);
       }
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => signInButtonState = WigglyButtonState.idle);
+        }
+      });
     }
   }
 
   void _signUp() async {
-    if (_signUpFormKey.currentState?.validate() ?? false) {
-      bool created = false;
-      try {
-        created = await UserService.createAccount(
-          usernameTextController!.text,
-          emailTextControllerSignUp!.text,
-          passwordTextControllerSignUp!.text,
-        );
-      } on APIException catch (e) {
-        if (e.statusCode == 400) {
-          DialogService.showAlert(
-            'Sign In Error',
-            'Invalid Email format. Please Check Email then try again.',
-          );
-        } else if (e.statusCode == 422) {
-          DialogService.showAlert(
-            'Sign In Error',
-            'Email/Username Taken. Please try a different option then try again.',
-          );
-        } else {
-          DialogService.showAlert(
-            'Sign In Error',
-            '${e.statusCode} - ${e.message}',
-          );
+    if ((_signUpFormKey.currentState?.validate() ?? false) && mounted) {
+      //show error
+      setState(() => signInButtonState = WigglyButtonState.error);
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => signInButtonState = WigglyButtonState.idle);
         }
-        return;
-      } on SocketException catch (e) {
-        DialogService.showAlert('Sign In Error', e.message);
-        return;
-      } catch (e) {
-        DialogService.showAlert('Sign Up Error', 'Unexpected error: $e');
-        return;
+      });
+    }
+
+    //set loading state
+    if (mounted) {
+      setState(() => signUpButtonState = WigglyButtonState.loading);
+    }
+
+    bool created = false;
+    try {
+      //attempt create account
+      created = await UserService.createAccount(
+        usernameTextController!.text,
+        emailTextControllerSignUp!.text,
+        passwordTextControllerSignUp!.text,
+      );
+    } on APIException catch (e) {
+      if (e.statusCode == 400) {
+        DialogService.showAlert(
+          'Sign In Error',
+          'Invalid Email format. Please Check Email then try again.',
+        );
+      } else if (e.statusCode == 422) {
+        DialogService.showAlert(
+          'Sign In Error',
+          'Email/Username Taken. Please try a different option then try again.',
+        );
+      } else {
+        DialogService.showAlert(
+          'Sign In Error',
+          '${e.statusCode} - ${e.message}',
+        );
+      }
+    } on SocketException catch (e) {
+      DialogService.showAlert('Sign In Error', e.message);
+    } catch (e) {
+      DialogService.showAlert('Sign Up Error', 'Unexpected error: $e');
+    }
+
+    //check user creation
+    if (created) {
+      //show success
+      if (mounted) {
+        setState(() => signUpButtonState = WigglyButtonState.success);
       }
 
-      if (mounted && created) {
-        Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
-      } else if (mounted) {
-        DialogService.showAlert('Sign Up Error', 'Unknown Error');
-      }
+      //hold state for ui to show
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+        }
+      });
+    } else {
+      //show error
+      setState(() => signInButtonState = WigglyButtonState.error);
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => signInButtonState = WigglyButtonState.idle);
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 230);
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
@@ -700,77 +777,93 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 0,
                                                 0,
                                               ),
-                                              child: AppButton(
-                                                onPressed: () async =>
-                                                    _signIn(),
-                                                text: 'Sign In',
-                                                icon: FaIcon(
-                                                  FaIconData(
-                                                    const IconData(
-                                                      /* signInAlt */ 0xf2f6,
-                                                      fontFamily:
-                                                          'FontAwesomeSolid',
-                                                      fontPackage: 'font_awesome_flutter',
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                elevation: 3,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        buttonOptions
+                                                            .borderRadius,
+                                                      ),
+                                                ),
+                                                child: WigglyProgressButton(
+                                                  state: signInButtonState,
+                                                  onPressed: _signIn,
+                                                  width: buttonOptions.width,
+                                                  height: buttonOptions.height,
+                                                  borderRadius: buttonOptions
+                                                      .borderRadius,
+                                                  wiggleAmplitude: buttonOptions
+                                                      .wiggleAmplitudeFor(
+                                                        signInButtonState,
+                                                      ),
+                                                  wiggleCount:
+                                                      buttonOptions.wiggleCount,
+                                                  wiggleDuration: buttonOptions
+                                                      .wiggleDuration,
+                                                  morphDuration: buttonOptions
+                                                      .morphDuration,
+                                                  progressColor: buttonOptions
+                                                      .progressColor,
+                                                  foregroundColor: buttonOptions
+                                                      .foregroundColor,
+                                                  successColor: buttonOptions
+                                                      .successColor,
+                                                  errorColor:
+                                                      buttonOptions.errorColor,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Sign In',
+                                                          style: AppTheme.of(context).titleMedium.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleMedium
+                                                                      .fontStyle,
+                                                            ),
+                                                            color: Colors.white,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                        ),
+                                                        FaIcon(
+                                                          FaIconData(
+                                                            const IconData(
+                                                              /* signInAlt */ 0xf2f6,
+                                                              fontFamily: 'FontAwesomeSolid',
+                                                              fontPackage: 'font_awesome_flutter',
+                                                            ),
+                                                          ),
+                                                          size: 24,
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  size: 24,
-                                                ),
-                                                options: AppButtonOptions(
-                                                  width: 230,
-                                                  height: 52,
-                                                  padding:
-                                                      EdgeInsetsDirectional.fromSTEB(
-                                                        0,
-                                                        0,
-                                                        0,
-                                                        0,
-                                                      ),
-                                                  iconAlignment:
-                                                      IconAlignment.end,
-                                                  iconPadding:
-                                                      EdgeInsetsDirectional.fromSTEB(
-                                                        0,
-                                                        0,
-                                                        0,
-                                                        0,
-                                                      ),
-                                                  color: AppTheme.of(context)
-                                                      .primary,
-                                                  textStyle:
-                                                      AppTheme.of(
-                                                        context,
-                                                      ).titleMedium.override(
-                                                        font: GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: Colors.white,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .titleMedium
-                                                                .fontWeight,
-                                                        fontStyle: AppTheme.of(
-                                                          context,
-                                                        ).titleMedium.fontStyle,
-                                                      ),
-                                                  elevation: 3,
-                                                  borderSide: BorderSide(
-                                                    color: Colors.transparent,
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
                                                 ),
                                               ),
                                             ),
@@ -1256,76 +1349,93 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 0,
                                                 0,
                                               ),
-                                              child: AppButton(
-                                                onPressed: () async =>
-                                                    _signUp(),
-                                                text: 'Sign Up',
-                                                icon: FaIcon(
-                                                  FaIconData(
-                                                    const IconData(
-                                                      /* userAlt */ 0xf007,
-                                                      fontFamily:
-                                                          'FontAwesomeRegular',
-                                                      fontPackage: 'font_awesome_flutter',
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                elevation: 3,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        buttonOptions
+                                                            .borderRadius,
+                                                      ),
+                                                ),
+                                                child: WigglyProgressButton(
+                                                  state: signUpButtonState,
+                                                  onPressed: _signUp,
+                                                  width: buttonOptions.width,
+                                                  height: buttonOptions.height,
+                                                  borderRadius: buttonOptions
+                                                      .borderRadius,
+                                                  wiggleAmplitude: buttonOptions
+                                                      .wiggleAmplitudeFor(
+                                                        signUpButtonState,
+                                                      ),
+                                                  wiggleCount:
+                                                      buttonOptions.wiggleCount,
+                                                  wiggleDuration: buttonOptions
+                                                      .wiggleDuration,
+                                                  morphDuration: buttonOptions
+                                                      .morphDuration,
+                                                  progressColor: buttonOptions
+                                                      .progressColor,
+                                                  foregroundColor: buttonOptions
+                                                      .foregroundColor,
+                                                  successColor: buttonOptions
+                                                      .successColor,
+                                                  errorColor:
+                                                      buttonOptions.errorColor,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Sign Up',
+                                                          style: AppTheme.of(context).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            color: Colors.white,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                        ),
+                                                        FaIcon(
+                                                          FaIconData(
+                                                            const IconData(
+                                                              /* userAlt */ 0xf007,
+                                                              fontFamily: 'FontAwesomeRegular',
+                                                              fontPackage: 'font_awesome_flutter',
+                                                            ),
+                                                          ),
+                                                          size: 24,
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  size: 24,
-                                                ),
-                                                options: AppButtonOptions(
-                                                  width: 230,
-                                                  height: 52,
-                                                  padding:
-                                                      EdgeInsetsDirectional.fromSTEB(
-                                                        0,
-                                                        0,
-                                                        0,
-                                                        0,
-                                                      ),
-                                                  iconAlignment:
-                                                      IconAlignment.end,
-                                                  iconPadding:
-                                                      EdgeInsetsDirectional.fromSTEB(
-                                                        0,
-                                                        0,
-                                                        0,
-                                                        0,
-                                                      ),
-                                                  color: AppTheme.of(context)
-                                                      .primary,
-                                                  textStyle:
-                                                      AppTheme.of(
-                                                        context,
-                                                      ).titleLarge.override(
-                                                        font: GoogleFonts.playfairDisplay(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: Colors.white,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight: AppTheme.of(
-                                                          context,
-                                                        ).titleLarge.fontWeight,
-                                                        fontStyle: AppTheme.of(
-                                                          context,
-                                                        ).titleLarge.fontStyle,
-                                                      ),
-                                                  elevation: 3,
-                                                  borderSide: BorderSide(
-                                                    color: Colors.transparent,
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
                                                 ),
                                               ),
                                             ),

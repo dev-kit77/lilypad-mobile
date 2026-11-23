@@ -6,12 +6,12 @@ import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/pages/new_post.dart';
 import 'package:lilypad/ui/widgets/post.dart';
 
-import '../widgets/buttons.dart';
 import '../widgets/logo.dart';
 import '../widgets/user.dart';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
@@ -45,6 +45,8 @@ class _ProfileWidgetState extends State<ProfileWidget>
   List<Post>? userPosts;
   List<Post>? userReplies;
 
+  WigglyButtonState postButtonState = WigglyButtonState.idle;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +57,46 @@ class _ProfileWidgetState extends State<ProfileWidget>
 
     tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
       ..addListener(() => setState(() {}));
+  }
+
+  void _openNewPost() async {
+    //set loading state
+    if (mounted) {
+      setState(() => postButtonState = WigglyButtonState.loading);
+    }
+
+    //hold state for user
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      //open post window
+      if (mounted) {
+        final newPost = await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(builder: (context) => const NewPostWidget()),
+        );
+
+        //check if post made
+        if (newPost == true) {
+          //begin content reload
+          _loadContent(true);
+
+          if (mounted) {
+            //show success
+            setState(() => postButtonState = WigglyButtonState.success);
+          }
+
+          //hold state for user
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) {
+              setState(() => postButtonState = WigglyButtonState.idle);
+            }
+          });
+        } else {
+          if (mounted) {
+            //set back to idle
+            setState(() => postButtonState = WigglyButtonState.idle);
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -78,6 +120,9 @@ class _ProfileWidgetState extends State<ProfileWidget>
 
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 70, height: 70, borderRadius: 40);
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
@@ -537,15 +582,25 @@ class _ProfileWidgetState extends State<ProfileWidget>
                         color: Colors.transparent,
                         elevation: 3,
                         shape: const CircleBorder(),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(shape: BoxShape.circle),
-                          child: AppIconButton(
-                            borderRadius: 40,
-                            buttonSize: 70,
-                            fillColor: AppTheme.of(context).primary,
-                            icon: FaIcon(
+                        child: WigglyProgressButton(
+                          state: postButtonState,
+                          onPressed: _openNewPost,
+                          width: buttonOptions.width,
+                          height: buttonOptions.height,
+                          borderRadius: buttonOptions.borderRadius,
+                          wiggleAmplitude: buttonOptions.wiggleAmplitudeFor(
+                            postButtonState,
+                          ),
+                          wiggleCount: buttonOptions.wiggleCount,
+                          wiggleDuration: buttonOptions.wiggleDuration,
+                          morphDuration: buttonOptions.morphDuration,
+                          progressColor: buttonOptions.progressColor,
+                          foregroundColor: buttonOptions.foregroundColor,
+                          successColor: buttonOptions.successColor,
+                          errorColor: buttonOptions.errorColor,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: FaIcon(
                               FaIconData(
                                 const IconData(
                                   /* pencilAlt */ 0xf303,
@@ -556,18 +611,6 @@ class _ProfileWidgetState extends State<ProfileWidget>
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () async {
-                              final bool newPost =
-                                  await Navigator.of(context).push<bool>(
-                                    MaterialPageRoute<bool>(
-                                      builder: (context) => NewPostWidget(),
-                                    ),
-                                  ) as bool;
-
-                              if (newPost == true && mounted) {
-                                _loadContent(true);
-                              }
-                            },
                           ),
                         ),
                       ),

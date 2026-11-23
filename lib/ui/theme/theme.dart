@@ -1,7 +1,82 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart' show WigglyButtonState;
+
+///Shared layout, animation and colour options for the wiggly progress buttons.
+class AppWigglyButtonOptions {
+  const AppWigglyButtonOptions({
+    this.width = 120,
+    this.height = 60,
+    this.borderRadius = 40,
+    this.progressColor = AppTheme.primaryColor,
+    this.foregroundColor = AppTheme.infoColor,
+    this.successColor = AppTheme.primaryColor,
+    this.errorColor = AppTheme.errorColor,
+    this.wiggleAmplitude = 1.8,
+    this.idleWiggleAmplitude = 0,
+    this.wiggleCount = 12,
+    this.wiggleDuration = const Duration(milliseconds: 1600),
+    this.morphDuration = const Duration(milliseconds: 360),
+  });
+
+  final double width;
+  final double height;
+  final double borderRadius;
+  final Color progressColor;
+  final Color foregroundColor;
+  final Color successColor;
+  final Color errorColor;
+  final double wiggleAmplitude;
+
+  /// Amplitude used while the button is idle. Defaults to zero so the button
+  /// stays perfectly still until it is pressed.
+  final double idleWiggleAmplitude;
+
+  final int wiggleCount;
+  final Duration wiggleDuration;
+  final Duration morphDuration;
+
+  AppWigglyButtonOptions copyWith({
+    double? width,
+    double? height,
+    double? borderRadius,
+    Color? progressColor,
+    Color? foregroundColor,
+    Color? successColor,
+    Color? errorColor,
+    double? wiggleAmplitude,
+    double? idleWiggleAmplitude,
+    int? wiggleCount,
+    Duration? wiggleDuration,
+    Duration? morphDuration,
+  }) {
+    return AppWigglyButtonOptions(
+      width: width ?? this.width,
+      height: height ?? this.height,
+      borderRadius: borderRadius ?? this.borderRadius,
+      progressColor: progressColor ?? this.progressColor,
+      foregroundColor: foregroundColor ?? this.foregroundColor,
+      successColor: successColor ?? this.successColor,
+      errorColor: errorColor ?? this.errorColor,
+      wiggleAmplitude: wiggleAmplitude ?? this.wiggleAmplitude,
+      idleWiggleAmplitude: idleWiggleAmplitude ?? this.idleWiggleAmplitude,
+      wiggleCount: wiggleCount ?? this.wiggleCount,
+      wiggleDuration: wiggleDuration ?? this.wiggleDuration,
+      morphDuration: morphDuration ?? this.morphDuration,
+    );
+  }
+
+  /// Amplitude for [state] — idle stays still, active states wiggle.
+  double wiggleAmplitudeFor(WigglyButtonState state) =>
+      state == WigglyButtonState.idle ? idleWiggleAmplitude : wiggleAmplitude;
+}
 
 /// Holds the colours and text styles shared by the Lilypad UI.
 class AppTheme {
+  // Const palette values so shared options can reference them.
+  static const Color primaryColor = Color(0xFF82B349);
+  static const Color infoColor = Colors.white;
+  static const Color errorColor = Colors.redAccent;
+
   AppTheme._();
 
   static final AppTheme _instance = AppTheme._();
@@ -12,12 +87,16 @@ class AppTheme {
   // Colours.
   final Color primaryBackground = const Color(0xFFF7F8F7);
   final Color secondaryBackground = Colors.white;
-  final Color primary = const Color(0xFF82B349);
+  final Color primary = primaryColor;
   final Color alternate = const Color(0xFFE0E3E7);
   final Color primaryText = const Color(0xFF14181B);
   final Color secondaryText = const Color(0xFF57636C);
-  final Color error = Colors.redAccent;
-  final Color info = Colors.white;
+  final Color error = errorColor;
+  final Color info = infoColor;
+
+  /// Shared options for the app's progress buttons.
+  final AppWigglyButtonOptions wigglyButtonOptions =
+      const AppWigglyButtonOptions();
 
   // Typography.
   final TextStyle headlineLarge = const TextStyle(

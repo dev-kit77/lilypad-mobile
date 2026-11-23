@@ -8,10 +8,10 @@ import '../widgets/post.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
-import '../widgets/buttons.dart';
 
 class ViewPostWidget extends StatefulWidget {
   const ViewPostWidget({
@@ -39,6 +39,8 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
 
   Post? updatedPost;
 
+  WigglyButtonState replyButtonState = WigglyButtonState.idle;
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +58,52 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
     );
   }
 
+  void _openNewReply() async {
+    //set loading state
+    if (mounted) {
+      setState(() => replyButtonState = WigglyButtonState.loading);
+    }
+
+    //hold state for user
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      //attempt to create reply
+      if (mounted) {
+        final newReply = await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(
+            builder: (context) => NewReplyWidget(replyingTo: updatedPost!),
+          ),
+        );
+
+        //begin content reload
+        if (newReply == true) {
+          _loadContent(true);
+
+          //show success
+          if (mounted) {
+            setState(() => replyButtonState = WigglyButtonState.success);
+          }
+
+          //hold state for user
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) {
+              setState(() => replyButtonState = WigglyButtonState.idle);
+            }
+          });
+        } else {
+          //set back to idle
+          if (mounted) {
+            setState(() => replyButtonState = WigglyButtonState.idle);
+          }
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final fabOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 70, height: 70, borderRadius: 40);
+
     return Scaffold(
       key: scaffoldKey,
       resizeToAvoidBottomInset: false,
@@ -416,15 +462,25 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                         color: Colors.transparent,
                         elevation: 3,
                         shape: const CircleBorder(),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(shape: BoxShape.circle),
-                          child: AppIconButton(
-                            borderRadius: 40,
-                            buttonSize: 70,
-                            fillColor: AppTheme.of(context).primary,
-                            icon: FaIcon(
+                        child: WigglyProgressButton(
+                          state: replyButtonState,
+                          onPressed: _openNewReply,
+                          width: fabOptions.width,
+                          height: fabOptions.height,
+                          borderRadius: fabOptions.borderRadius,
+                          wiggleAmplitude: fabOptions.wiggleAmplitudeFor(
+                            replyButtonState,
+                          ),
+                          wiggleCount: fabOptions.wiggleCount,
+                          wiggleDuration: fabOptions.wiggleDuration,
+                          morphDuration: fabOptions.morphDuration,
+                          progressColor: fabOptions.progressColor,
+                          foregroundColor: fabOptions.foregroundColor,
+                          successColor: fabOptions.successColor,
+                          errorColor: fabOptions.errorColor,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: FaIcon(
                               FaIconData(
                                 const IconData(
                                   /* pencilAlt */ 0xf303,
@@ -435,20 +491,6 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () async {
-                              final bool newReply =
-                                  await Navigator.of(context).push<bool>(
-                                    MaterialPageRoute<bool>(
-                                      builder: (context) => NewReplyWidget(
-                                        replyingTo: updatedPost!,
-                                      ),
-                                    ),
-                                  ) as bool;
-
-                              if (newReply == true && mounted) {
-                                _loadContent(true);
-                              }
-                            },
                           ),
                         ),
                       ),

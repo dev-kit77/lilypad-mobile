@@ -9,10 +9,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
-import '../widgets/buttons.dart';
 
 class NewReplyWidget extends StatefulWidget {
   const NewReplyWidget({super.key, required this.replyingTo});
@@ -28,6 +28,8 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
   FocusNode? contentFocusNode;
   TextEditingController? contentTextController;
   String? Function(BuildContext, String?)? contentTextControllerValidator;
+
+  WigglyButtonState postButtonState = WigglyButtonState.idle;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -47,8 +49,63 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
     super.dispose();
   }
 
+  void _submitReply() async {
+    //init content
+    final content = contentTextController?.text.trim() ?? '';
+
+    //check if valid entry
+    if (content.isEmpty && mounted) {
+      //show error
+      setState(() => postButtonState = WigglyButtonState.error);
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => postButtonState = WigglyButtonState.idle);
+        }
+      });
+    }
+
+    //set loading state
+    if (mounted) {
+      setState(() => postButtonState = WigglyButtonState.loading);
+    }
+
+    try {
+      //attempt create reply
+      await ContentService.newReply(widget.replyingTo.uuid, content);
+
+      //show success
+      if (mounted) {
+        setState(() => postButtonState = WigglyButtonState.success);
+      }
+
+      //hold state for ui to show
+      Future.delayed(const Duration(seconds: 1), () {
+        //exit back to previous page
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      });
+    } catch (_) {
+      //show error
+      if (mounted) {
+        setState(() => postButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => postButtonState = WigglyButtonState.idle);
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions;
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
@@ -360,77 +417,83 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
                                 ),
                                 Align(
                                   alignment: AlignmentDirectional(1, 0),
-                                  child: AppButton(
-                                    onPressed: () async {
-                                      if (contentTextController != null &&
-                                          contentTextController!.text
-                                              .trim()
-                                              .isNotEmpty) {
-                                        await ContentService.newReply(
-                                          widget.replyingTo.uuid,
-                                          contentTextController!.text.trim(),
-                                        );
-                                      } else {
-                                        return;
-                                      }
-
-                                      if (context.mounted) {
-                                        Navigator.of(context).pop(true);
-                                      }
-                                    },
-                                    text: 'Post',
-                                    icon: FaIcon(
-                                      FaIconData(
-                                        const IconData(
-                                          /* paperPlane */ 0xf1d8,
-                                          fontFamily: 'FontAwesomeRegular',
-                                          fontPackage: 'font_awesome_flutter',
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        buttonOptions.borderRadius,
+                                      ),
+                                    ),
+                                    child: WigglyProgressButton(
+                                      state: postButtonState,
+                                      onPressed: _submitReply,
+                                      width: buttonOptions.width,
+                                      height: buttonOptions.height,
+                                      borderRadius: buttonOptions.borderRadius,
+                                      wiggleAmplitude: buttonOptions
+                                          .wiggleAmplitudeFor(postButtonState),
+                                      wiggleCount: buttonOptions.wiggleCount,
+                                      wiggleDuration:
+                                          buttonOptions.wiggleDuration,
+                                      morphDuration:
+                                          buttonOptions.morphDuration,
+                                      progressColor:
+                                          buttonOptions.progressColor,
+                                      foregroundColor:
+                                          buttonOptions.foregroundColor,
+                                      successColor: buttonOptions.successColor,
+                                      errorColor: buttonOptions.errorColor,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            FaIcon(
+                                              FaIconData(
+                                                const IconData(
+                                                  /* paperPlane */ 0xf1d8,
+                                                  fontFamily:
+                                                      'FontAwesomeRegular',
+                                                  fontPackage:
+                                                      'font_awesome_flutter',
+                                                ),
+                                              ),
+                                              size: 15,
+                                            ),
+                                            Text(
+                                              'Post',
+                                              style: AppTheme.of(context)
+                                                  .titleLarge
+                                                  .override(
+                                                    font:
+                                                        GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                    color: Colors.white,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: AppTheme.of(
+                                                      context,
+                                                    ).titleLarge.fontWeight,
+                                                    fontStyle: AppTheme.of(
+                                                      context,
+                                                    ).titleLarge.fontStyle,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      size: 15,
-                                    ),
-                                    options: AppButtonOptions(
-                                      width: 120,
-                                      height: 52,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                      ),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                          ),
-                                      color: AppTheme.of(context).primary,
-                                      textStyle: AppTheme.of(context).titleLarge
-                                          .override(
-                                            font: GoogleFonts.playfairDisplay(
-                                              fontWeight: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                            fontWeight: AppTheme.of(context)
-                                                .titleLarge
-                                                .fontWeight,
-                                            fontStyle: AppTheme.of(context)
-                                                .titleLarge
-                                                .fontStyle,
-                                          ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(40),
                                     ),
                                   ),
                                 ),

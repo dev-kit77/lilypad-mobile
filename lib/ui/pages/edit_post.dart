@@ -8,10 +8,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
-import '../widgets/buttons.dart';
 
 class EditPostWidget extends StatefulWidget {
   const EditPostWidget({super.key, required this.post});
@@ -31,6 +31,8 @@ class _EditPostWidgetState extends State<EditPostWidget> {
   TextEditingController? contentTextController;
   String? Function(BuildContext, String?)? usernameTextControllerValidator;
 
+  WigglyButtonState updateButtonState = WigglyButtonState.idle;
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -49,8 +51,64 @@ class _EditPostWidgetState extends State<EditPostWidget> {
     super.dispose();
   }
 
+  void _updatePost() async {
+    //init content
+    final content = contentTextController?.text.trim() ?? '';
+
+    //show error if invalid
+    if ((content.isEmpty || content == widget.post.content) && mounted) {
+      //show error
+      setState(() => updateButtonState = WigglyButtonState.error);
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => updateButtonState = WigglyButtonState.idle);
+        }
+      });
+    }
+
+    //set loading state
+    if (mounted) {
+      setState(() => updateButtonState = WigglyButtonState.loading);
+    }
+
+    try {
+      //attempt update post
+      await ContentService.modifyPost(widget.post.uuid, content);
+
+      //show success
+      if (mounted) {
+        setState(() => updateButtonState = WigglyButtonState.success);
+      }
+
+      //hold state for ui to show
+      Future.delayed(const Duration(seconds: 1), () {
+        //exit back to previous with refresh status
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      });
+    } catch (_) {
+      //show error
+      if (mounted) {
+        setState(() => updateButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => updateButtonState = WigglyButtonState.idle);
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 180);
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
@@ -361,81 +419,85 @@ class _EditPostWidgetState extends State<EditPostWidget> {
                                 ),
                                 Align(
                                   alignment: AlignmentDirectional(1, 0),
-                                  child: AppButton(
-                                    onPressed: () async {
-                                      Post? updated;
-
-                                      if (contentTextController != null &&
-                                          contentTextController!.text
-                                              .trim()
-                                              .isNotEmpty &&
-                                          contentTextController!.text !=
-                                              widget.post.content) {
-                                        updated =
-                                            await ContentService.modifyPost(
-                                              widget.post.uuid,
-                                              contentTextController!.text
-                                                  .trim(),
-                                            );
-                                      }
-
-                                      if (updated != null && context.mounted) {
-                                        Navigator.of(context).pop(updated);
-                                      }
-                                    },
-                                    text: 'Update Post',
-                                    icon: FaIcon(
-                                      FaIconData(
-                                        const IconData(
-                                          /* edit */ 0xf044,
-                                          fontFamily: 'FontAwesomeRegular',
-                                          fontPackage: 'font_awesome_flutter',
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        buttonOptions.borderRadius,
+                                      ),
+                                    ),
+                                    child: WigglyProgressButton(
+                                      state: updateButtonState,
+                                      onPressed: _updatePost,
+                                      width: buttonOptions.width,
+                                      height: buttonOptions.height,
+                                      borderRadius: buttonOptions.borderRadius,
+                                      wiggleAmplitude: buttonOptions
+                                          .wiggleAmplitudeFor(
+                                            updateButtonState,
+                                          ),
+                                      wiggleCount: buttonOptions.wiggleCount,
+                                      wiggleDuration:
+                                          buttonOptions.wiggleDuration,
+                                      morphDuration:
+                                          buttonOptions.morphDuration,
+                                      progressColor:
+                                          buttonOptions.progressColor,
+                                      foregroundColor:
+                                          buttonOptions.foregroundColor,
+                                      successColor: buttonOptions.successColor,
+                                      errorColor: buttonOptions.errorColor,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            FaIcon(
+                                              FaIconData(
+                                                const IconData(
+                                                  /* edit */ 0xf044,
+                                                  fontFamily:
+                                                      'FontAwesomeRegular',
+                                                  fontPackage:
+                                                      'font_awesome_flutter',
+                                                ),
+                                              ),
+                                              size: 15,
+                                            ),
+                                            Text(
+                                              'Update Post',
+                                              style: AppTheme.of(context)
+                                                  .titleLarge
+                                                  .override(
+                                                    font:
+                                                        GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .titleLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                    color: Colors.white,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: AppTheme.of(
+                                                      context,
+                                                    ).titleLarge.fontWeight,
+                                                    fontStyle: AppTheme.of(
+                                                      context,
+                                                    ).titleLarge.fontStyle,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      size: 15,
-                                    ),
-                                    options: AppButtonOptions(
-                                      width: 180,
-                                      height: 52,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                      ),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                          ),
-                                      color: AppTheme.of(context).primary,
-                                      textStyle: AppTheme.of(context).titleLarge
-                                          .override(
-                                            font: GoogleFonts.playfairDisplay(
-                                              fontWeight: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                            fontWeight: AppTheme.of(context)
-                                                .titleLarge
-                                                .fontWeight,
-                                            fontStyle: AppTheme.of(context)
-                                                .titleLarge
-                                                .fontStyle,
-                                          ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(40),
                                     ),
                                   ),
                                 ),

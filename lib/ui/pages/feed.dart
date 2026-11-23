@@ -9,12 +9,12 @@ import '../widgets/post.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
 import 'new_post.dart' show NewPostWidget;
 import '../widgets/navbar.dart';
-import '../widgets/buttons.dart';
 
 class FeedWidget extends StatefulWidget {
   const FeedWidget({super.key, this.noCache = false});
@@ -43,6 +43,8 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
   List<Post>? feed;
   List<Post>? newest;
 
+  WigglyButtonState postButtonState = WigglyButtonState.idle;
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +71,46 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
     );
   }
 
+  void _openNewPost() async {
+    //set loading state
+    if (mounted) {
+      setState(() => postButtonState = WigglyButtonState.loading);
+    }
+
+    //hold state for user
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      //open post window
+      if (mounted) {
+        final newPost = await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(builder: (context) => const NewPostWidget()),
+        );
+
+        //check created
+        if (newPost == true) {
+          //begin content reload
+          _loadContent(true);
+
+          //show success
+          if (mounted) {
+            setState(() => postButtonState = WigglyButtonState.success);
+          }
+
+          //hold state for user
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) {
+              setState(() => postButtonState = WigglyButtonState.idle);
+            }
+          });
+        } else {
+          //set back to idle
+          if (mounted) {
+            setState(() => postButtonState = WigglyButtonState.idle);
+          }
+        }
+      }
+    });
+  }
+
   @override
   void dispose() {
     feedTabsController?.dispose();
@@ -78,6 +120,9 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 70, height: 70, borderRadius: 40);
+
     return Scaffold(
       key: scaffoldKey,
       resizeToAvoidBottomInset: false,
@@ -539,15 +584,25 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                         color: Colors.transparent,
                         elevation: 3,
                         shape: const CircleBorder(),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(shape: BoxShape.circle),
-                          child: AppIconButton(
-                            borderRadius: 40,
-                            buttonSize: 70,
-                            fillColor: AppTheme.of(context).primary,
-                            icon: FaIcon(
+                        child: WigglyProgressButton(
+                          state: postButtonState,
+                          onPressed: _openNewPost,
+                          width: buttonOptions.width,
+                          height: buttonOptions.height,
+                          borderRadius: buttonOptions.borderRadius,
+                          wiggleAmplitude: buttonOptions.wiggleAmplitudeFor(
+                            postButtonState,
+                          ),
+                          wiggleCount: buttonOptions.wiggleCount,
+                          wiggleDuration: buttonOptions.wiggleDuration,
+                          morphDuration: buttonOptions.morphDuration,
+                          progressColor: buttonOptions.progressColor,
+                          foregroundColor: buttonOptions.foregroundColor,
+                          successColor: buttonOptions.successColor,
+                          errorColor: buttonOptions.errorColor,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: FaIcon(
                               FaIconData(
                                 const IconData(
                                   /* pencilAlt */ 0xf303,
@@ -558,18 +613,6 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () async {
-                              final bool newPost =
-                                  await Navigator.of(context).push<bool>(
-                                    MaterialPageRoute<bool>(
-                                      builder: (context) => NewPostWidget(),
-                                    ),
-                                  ) as bool;
-
-                              if (newPost == true && mounted) {
-                                _loadContent(true);
-                              }
-                            },
                           ),
                         ),
                       ),

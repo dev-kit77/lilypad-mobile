@@ -3,7 +3,6 @@ import 'package:lilypad/models/user.dart';
 import 'package:lilypad/services/session.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
-import 'package:lilypad/ui/widgets/buttons.dart';
 
 import '../widgets/logo.dart';
 
@@ -11,6 +10,7 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../theme/theme.dart';
 import '../../util/ui.dart';
@@ -48,6 +48,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   bool? darkSwitchValue;
   // State field(s) for Switch widget.
   bool? pushSwitchValue;
+
+  WigglyButtonState logoutButtonState = WigglyButtonState.idle;
+  WigglyButtonState applyButtonState = WigglyButtonState.idle;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -104,8 +107,129 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     );
   }
 
+  void _logOut() async {
+    //set loading state
+    setState(() => logoutButtonState = WigglyButtonState.loading);
+
+    //confirm with user before changing the button state
+    if (!await DialogService.getConfirmation('Log Out', 'Are You Sure?')) {
+      //show error
+      if (mounted) {
+        setState(() => logoutButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      await Future.delayed(
+        const Duration(seconds: 2),
+        () => setState(() => logoutButtonState = WigglyButtonState.idle),
+      );
+
+      //exit
+      return;
+    }
+
+    try {
+      //attempt logout
+      await UserService.logout();
+
+      //show success
+      if (mounted) {
+        setState(() => logoutButtonState = WigglyButtonState.success);
+      }
+
+      //hold state so ui can show
+      await Future.delayed(const Duration(seconds: 1));
+
+      //invalidate clientside cookies
+      await SessionService.invalidate();
+    } catch (_) {
+      //show error
+      if (mounted) {
+        setState(() => logoutButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      await Future.delayed(const Duration(seconds: 2));
+    } finally {
+      if (mounted) {
+        setState(() => logoutButtonState = WigglyButtonState.idle);
+      }
+    }
+  }
+
+  void _applySettings() async {
+    //set loading state
+    setState(() => applyButtonState = WigglyButtonState.loading);
+
+    //confirm with user before changing the button state
+    if (!await DialogService.getConfirmation(
+      'Apply Settings',
+      'Are You Sure?',
+    )) {
+      //show error
+      if (mounted) {
+        setState(() => applyButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      await Future.delayed(
+        const Duration(seconds: 2),
+        () => setState(() => applyButtonState = WigglyButtonState.idle),
+      );
+
+      //exit function
+      return;
+    }
+
+    try {
+      //attempt to update user
+      await UserService.update(
+        username: usernameTextController?.text != ""
+            ? usernameTextController?.text
+            : null,
+        status: statusTextController?.text != ""
+            ? statusTextController?.text
+            : null,
+        bio: bioTextController?.text != "" ? bioTextController?.text : null,
+        anon: anonSwitchValue,
+        dark: darkSwitchValue,
+      );
+
+      //show success
+      if (mounted) {
+        setState(() => applyButtonState = WigglyButtonState.success);
+      }
+
+      //begin content reload
+      _loadContent(true);
+
+      //hold state for user
+      await Future.delayed(const Duration(seconds: 1));
+    } catch (_) {
+      //show error
+      if (mounted) {
+        setState(() => applyButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      await Future.delayed(const Duration(seconds: 2));
+    } finally {
+      if (mounted) {
+        setState(() => applyButtonState = WigglyButtonState.idle);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final buttonOptions = AppTheme.of(context).wigglyButtonOptions
+        .copyWith(width: 180);
+    final fabOptions = buttonOptions.copyWith(
+      width: 70,
+      height: 70,
+      borderRadius: 40,
+    );
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
@@ -1151,89 +1275,100 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                               Row(
                                                 mainAxisSize: MainAxisSize.max,
                                                 children: [
-                                                  AppButton(
-                                                    onPressed: () async {
-                                                      await DialogService.getConfirmation('Log Out', 'Are You Sure?', () async {
-                                                        await UserService.logout();
-                                                        SessionService.invalidate();
-                                                      });
-                                                    },
-                                                    text: 'Log Out',
-                                                    icon: FaIcon(
-                                                      FaIconData(
-                                                        const IconData(
-                                                          /* signOutAlt */ 0xf2f5,
-                                                          fontFamily: 'FontAwesomeSolid',
-                                                          fontPackage: 'font_awesome_flutter',
-                                                        ),
-                                                      ),
-                                                      size: 24,
-                                                    ),
-                                                    options: AppButtonOptions(
-                                                      width: 180,
-                                                      height: 52,
-                                                      padding:
-                                                          EdgeInsetsDirectional.fromSTEB(
-                                                            0,
-                                                            0,
-                                                            0,
-                                                            0,
-                                                          ),
-                                                      iconAlignment:
-                                                          IconAlignment.end,
-                                                      iconPadding:
-                                                          EdgeInsetsDirectional.fromSTEB(
-                                                            0,
-                                                            0,
-                                                            0,
-                                                            0,
-                                                          ),
-                                                      color: AppTheme.of(
-                                                        context,
-                                                      ).error,
-                                                      textStyle:
-                                                          AppTheme.of(
-                                                            context,
-                                                          ).titleLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: Colors.white,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                      elevation: 3,
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            Colors.transparent,
-                                                        width: 1,
-                                                      ),
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    elevation: 3,
+                                                    shape: RoundedRectangleBorder(
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                            40,
+                                                            buttonOptions
+                                                                .borderRadius,
                                                           ),
+                                                    ),
+                                                    child: WigglyProgressButton(
+                                                      state: logoutButtonState,
+                                                      onPressed: _logOut,
+                                                      width:
+                                                          buttonOptions.width,
+                                                      height:
+                                                          buttonOptions.height,
+                                                      borderRadius:
+                                                          buttonOptions
+                                                              .borderRadius,
+                                                      wiggleAmplitude: buttonOptions
+                                                          .wiggleAmplitudeFor(
+                                                            logoutButtonState,
+                                                          ),
+                                                      wiggleCount: buttonOptions
+                                                          .wiggleCount,
+                                                      wiggleDuration:
+                                                          buttonOptions
+                                                              .wiggleDuration,
+                                                      morphDuration:
+                                                          buttonOptions
+                                                              .morphDuration,
+                                                      // Destructive action keeps its red fill.
+                                                      progressColor:
+                                                          buttonOptions
+                                                              .errorColor,
+                                                      foregroundColor:
+                                                          buttonOptions
+                                                              .foregroundColor,
+                                                      successColor:
+                                                          buttonOptions
+                                                              .successColor,
+                                                      errorColor: buttonOptions
+                                                          .errorColor,
+                                                      child: FittedBox(
+                                                        fit: BoxFit.scaleDown,
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Text(
+                                                              'Log Out',
+                                                              style: AppTheme.of(context).titleLarge.override(
+                                                                font: GoogleFonts.playfairDisplay(
+                                                                  fontWeight:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontWeight,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontStyle,
+                                                                ),
+                                                                color: Colors
+                                                                    .white,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontWeight,
+                                                                fontStyle:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontStyle,
+                                                              ),
+                                                            ),
+                                                            FaIcon(
+                                                              FaIconData(
+                                                                const IconData(
+                                                                  /* signOutAlt */ 0xf2f5,
+                                                                  fontFamily: 'FontAwesomeSolid',
+                                                                  fontPackage: 'font_awesome_flutter',
+                                                                ),
+                                                              ),
+                                                              size: 24,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
                                                 ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
@@ -1393,15 +1528,25 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                         color: Colors.transparent,
                         elevation: 3,
                         shape: const CircleBorder(),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(shape: BoxShape.circle),
-                          child: AppIconButton(
-                            borderRadius: 40,
-                            buttonSize: 70,
-                            fillColor: AppTheme.of(context).primary,
-                            icon: FaIcon(
+                        child: WigglyProgressButton(
+                          state: applyButtonState,
+                          onPressed: _applySettings,
+                          width: fabOptions.width,
+                          height: fabOptions.height,
+                          borderRadius: fabOptions.borderRadius,
+                          wiggleAmplitude: fabOptions.wiggleAmplitudeFor(
+                            applyButtonState,
+                          ),
+                          wiggleCount: fabOptions.wiggleCount,
+                          wiggleDuration: fabOptions.wiggleDuration,
+                          morphDuration: fabOptions.morphDuration,
+                          progressColor: fabOptions.progressColor,
+                          foregroundColor: fabOptions.foregroundColor,
+                          successColor: fabOptions.successColor,
+                          errorColor: fabOptions.errorColor,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: FaIcon(
                               FaIconData(
                                 const IconData(
                                   /* save */ 0xf0c7,
@@ -1412,30 +1557,6 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                               color: AppTheme.of(context).info,
                               size: 36,
                             ),
-                            onPressed: () async {
-                              await DialogService.getConfirmation(
-                                'Apply Settings',
-                                'Are You Sure?',
-                                () async {
-                                  await UserService.update(
-                                    username: usernameTextController?.text != ""
-                                        ? usernameTextController?.text
-                                        : null,
-                                    status: statusTextController?.text != ""
-                                        ? statusTextController?.text
-                                        : null,
-                                    bio: bioTextController?.text != ""
-                                        ? bioTextController?.text
-                                        : null,
-                                    anon: anonSwitchValue,
-                                    dark: darkSwitchValue,
-                                  );
-
-                                  //update content
-                                  _loadContent(true);
-                                },
-                              );
-                            },
                           ),
                         ),
                       ),

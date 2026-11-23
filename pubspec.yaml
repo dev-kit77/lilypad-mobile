@@ -20,6 +20,7 @@ dependencies:
   font_awesome_flutter: ^11.0.0
   flip_card: ^0.7.0
   easy_debounce: ^2.0.3
+  wiggly_loaders: ^0.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
