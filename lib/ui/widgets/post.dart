@@ -4,7 +4,7 @@ import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/pages/edit_post.dart';
-import 'package:lilypad/ui/pages/post_view.dart';
+import 'package:lilypad/ui/pages/view_post.dart';
 import 'package:lilypad/ui/theme/theme.dart';
 import 'package:lilypad/ui/widgets/buttons.dart';
 import 'package:lilypad/util/ui.dart';
@@ -92,7 +92,7 @@ class _PostWidgetState extends State<PostWidget> {
                               if (fetchedReplyingTo != null) {
                                 Navigator.of(context).push(
                                   MaterialPageRoute<void>(
-                                    builder: (context) => PostViewWidget(
+                                    builder: (context) => ViewPostWidget(
                                       post: fetchedReplyingTo!,
                                     ),
                                   ),
@@ -358,7 +358,7 @@ class _PostWidgetState extends State<PostWidget> {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (context) => PostViewWidget(
+                        builder: (context) => ViewPostWidget(
                           post: widget.post,
                           replying: fetchedReplyingTo,
                         ),

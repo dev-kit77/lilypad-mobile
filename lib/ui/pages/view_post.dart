@@ -1,5 +1,6 @@
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
+import 'package:lilypad/ui/pages/new_reply.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -11,10 +12,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/theme.dart';
 import '../../util/ui.dart';
 import '../widgets/buttons.dart';
-import 'new_post.dart' show NewPostWidget;
 
-class PostViewWidget extends StatefulWidget {
-  const PostViewWidget({super.key, required this.post, this.replying});
+class ViewPostWidget extends StatefulWidget {
+  const ViewPostWidget({super.key, required this.post, this.replying});
 
   final Post post;
   final Post? replying;
@@ -23,10 +23,10 @@ class PostViewWidget extends StatefulWidget {
   static String routePath = '/postView';
 
   @override
-  State<PostViewWidget> createState() => _PostViewWidgetState();
+  State<ViewPostWidget> createState() => _ViewPostWidgetState();
 }
 
-class _PostViewWidgetState extends State<PostViewWidget> {
+class _ViewPostWidgetState extends State<ViewPostWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -411,8 +411,12 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                               size: 36,
                             ),
                             onPressed: () async {
-                              Navigator.of(context)
-                                  .pushNamed(NewPostWidget.routePath);
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (context) =>
+                                      NewReplyWidget(replyingTo: widget.post),
+                                ),
+                              );
                             },
                           ),
                         ),
