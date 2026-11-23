@@ -120,17 +120,27 @@ class APIService {
           }
         }
 
-        //decode body
-        Map<String, dynamic> resMap = jsonDecode(res.body);
+        //init resmap
+        Map<String, dynamic>? resMap;
+
+        //attemt decode body
+        try {
+          resMap = jsonDecode(res.body);
+        } on FormatException {
+          LogService.err(
+            'Failed to decode json! Response must not be type json',
+            src: 'API Service',
+          );
+        }
 
         //invalidate if user banned
         if ((res.statusCode == 401 && !req.url.path.contains('/email')) ||
-            resMap['error'] == 'USER_BANNED') {
+            resMap?['error'] == 'USER_BANNED') {
           await SessionService.invalidate();
         }
 
         throw APIException(
-          '${resMap['error'] ?? resMap['message']}',
+          '${resMap?['error'] ?? resMap?['message'] ?? {res.statusCode == 401 ? 'Unauthorized' : 'Could not read error from response'}}',
           uri: req.url,
           statusCode: res.statusCode,
         );
