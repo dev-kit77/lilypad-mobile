@@ -1,6 +1,7 @@
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/geolocation.dart';
+import 'package:lilypad/services/user.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -55,14 +56,16 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
 
   void _loadContent(bool refresh) {
     currLocale = GeolocationService.locale;
-    ContentService.fetchFeed(noCache: refresh).then(
-      (f) => {
-        setState(() {
-          refresh = false;
-          feed = f;
-          newest = ContentService.newestFeed;
-        }),
-      },
+    UserService.fetch().then(
+      (u) => ContentService.fetchFeed(noCache: refresh).then(
+        (f) => {
+          setState(() {
+            refresh = false;
+            feed = f;
+            newest = ContentService.newestFeed;
+          }),
+        },
+      ),
     );
   }
 

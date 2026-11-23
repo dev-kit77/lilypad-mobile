@@ -49,6 +49,8 @@ class _ProfileWidgetState extends State<ProfileWidget>
   void initState() {
     super.initState();
 
+    currUser ??= UserService.currentUser;
+
     _loadContent(widget.noCache);
 
     tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
