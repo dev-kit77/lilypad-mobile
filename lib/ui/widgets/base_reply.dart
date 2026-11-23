@@ -5,7 +5,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lilypad/models/post.dart';
 
-import '../../services/log.dart';
 import '../pages/post_view.dart' show PostViewWidget;
 import '../theme/theme.dart';
 import '../../util/ui.dart';
@@ -234,10 +233,7 @@ class _BaseReplyWidgetState extends State<BaseReplyWidget> {
             children: [
               AppButton(
                 onPressed: () {
-                  LogService.dbg(
-                    'upvoteButton pressed ...',
-                    src: 'BaseReplyWidget',
-                  );
+                  ContentService.upvotePost(widget.post.uuid);
                 },
                 text: formatNumber(
                   widget.post.upvotes,
