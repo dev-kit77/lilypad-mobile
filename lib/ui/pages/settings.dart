@@ -1,5 +1,6 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lilypad/models/user.dart';
+import 'package:lilypad/services/session.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/widgets/buttons.dart';
@@ -1135,6 +1136,94 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                   .labelLarge
                                                                   .fontStyle,
                                                         ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  AppButton(
+                                                    onPressed: () async {
+                                                      await UserService.logout();
+                                                      SessionService.invalidate();
+                                                    },
+                                                    text: 'Log Out',
+                                                    icon: FaIcon(
+                                                      FaIconData(
+                                                        const IconData(
+                                                          /* signOutAlt */ 0xf2f5,
+                                                          fontFamily: 'FontAwesomeSolid',
+                                                          fontPackage: 'font_awesome_flutter',
+                                                        ),
+                                                      ),
+                                                      size: 24,
+                                                    ),
+                                                    options: AppButtonOptions(
+                                                      width: 180,
+                                                      height: 52,
+                                                      padding:
+                                                          EdgeInsetsDirectional.fromSTEB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      iconAlignment:
+                                                          IconAlignment.end,
+                                                      iconPadding:
+                                                          EdgeInsetsDirectional.fromSTEB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                      color: AppTheme.of(
+                                                        context,
+                                                      ).error,
+                                                      textStyle:
+                                                          AppTheme.of(
+                                                            context,
+                                                          ).titleLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .titleLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            color: Colors.white,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .titleLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                      elevation: 3,
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Colors.transparent,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            40,
+                                                          ),
+                                                    ),
                                                   ),
                                                 ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
                                               ),
