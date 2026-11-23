@@ -1144,8 +1144,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                 children: [
                                                   AppButton(
                                                     onPressed: () async {
-                                                      await UserService.logout();
-                                                      SessionService.invalidate();
+                                                      await DialogService.getConfirmation('Log Out', 'Are You Sure?', () async {
+                                                        await UserService.logout();
+                                                        SessionService.invalidate();
+                                                      });
                                                     },
                                                     text: 'Log Out',
                                                     icon: FaIcon(
@@ -1407,9 +1409,15 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                 'Are You Sure?',
                                 () async {
                                   await UserService.update(
-                                    username: usernameTextController?.text,
-                                    status: statusTextController?.text,
-                                    bio: bioTextController?.text,
+                                    username: usernameTextController?.text != ""
+                                        ? usernameTextController?.text
+                                        : null,
+                                    status: statusTextController?.text != ""
+                                        ? statusTextController?.text
+                                        : null,
+                                    bio: bioTextController?.text != ""
+                                        ? bioTextController?.text
+                                        : null,
                                     anon: anonSwitchValue,
                                     dark: darkSwitchValue,
                                   );
