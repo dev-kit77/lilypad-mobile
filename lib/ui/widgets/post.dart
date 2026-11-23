@@ -70,7 +70,7 @@ class _PostWidgetState extends State<PostWidget> {
           updatedPost!.user.uuid != null &&
           updatedPost!.user.uuid != UserService.currentUser?.uuid,
       onFlip: () async => {
-        if (updatedPost!.user.uuid != null)
+        if (updatedPost!.user.bio == null && updatedPost!.user.status == null)
           {
             updatedPost!.user = await ContentService.fetchUser(
               updatedPost!.user.uuid!,
