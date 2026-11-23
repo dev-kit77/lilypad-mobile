@@ -4,8 +4,7 @@ import 'package:lilypad/models/user.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/pages/new_post.dart';
-import 'package:lilypad/ui/widgets/user_post.dart';
-import 'package:lilypad/ui/widgets/user_reply.dart';
+import 'package:lilypad/ui/widgets/post.dart';
 
 import '../widgets/buttons.dart';
 import '../widgets/logo.dart';
@@ -293,10 +292,9 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   children:
                                                       userPosts
                                                           ?.map(
-                                                            (p) =>
-                                                                UserPostWidget(
-                                                                  post: p,
-                                                                ),
+                                                            (p) => PostWidget(
+                                                              post: p,
+                                                            ),
                                                           )
                                                           .toList()
                                                           .divide(
@@ -400,10 +398,9 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   children:
                                                       userReplies
                                                           ?.map(
-                                                            (p) =>
-                                                                UserReplyWidget(
-                                                                  post: p,
-                                                                ),
+                                                            (p) => PostWidget(
+                                                              post: p,
+                                                            ),
                                                           )
                                                           .toList()
                                                           .divide(

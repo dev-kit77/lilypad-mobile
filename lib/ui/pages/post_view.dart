@@ -1,10 +1,8 @@
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
-import 'package:lilypad/ui/widgets/user_reply.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
-import '../widgets/reply.dart';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -126,14 +124,10 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                                 ],
                                               ),
                                               LogoWidget(),
-                                              widget.replying == null
-                                                  ? PostWidget(
-                                                      post: widget.post,
-                                                    )
-                                                  : ReplyWidget(
-                                                      post: widget.post,
-                                                      replying: widget.replying,
-                                                    ),
+                                              PostWidget(
+                                                post: widget.post,
+                                                replyingTo: widget.replying,
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -346,15 +340,10 @@ class _PostViewWidgetState extends State<PostViewWidget> {
                                         scrollDirection: Axis.vertical,
                                         children: widget.post.replies
                                             .map(
-                                              (r) => r.user.uuid != null
-                                                  ? ReplyWidget(
-                                                      post: r,
-                                                      replying: widget.post,
-                                                    )
-                                                  : UserReplyWidget(
-                                                      post: r,
-                                                      replying: widget.post,
-                                                    ),
+                                              (r) => PostWidget(
+                                                post: r,
+                                                replyingTo: widget.post,
+                                              ),
                                             )
                                             .toList()
                                             .divide(SizedBox(height: 12)),

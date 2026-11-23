@@ -1,7 +1,6 @@
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/geolocation.dart';
-import 'package:lilypad/ui/widgets/base_post.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -284,15 +283,9 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                     children:
                                                         feed
                                                             ?.map(
-                                                              (p) =>
-                                                                  p.user.uuid !=
-                                                                      null
-                                                                  ? PostWidget(
-                                                                      post: p,
-                                                                    )
-                                                                  : BasePostWidget(
-                                                                      post: p,
-                                                                    ),
+                                                              (p) => PostWidget(
+                                                                post: p,
+                                                              ),
                                                             )
                                                             .toList()
                                                             .divide(
@@ -400,15 +393,9 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                     children:
                                                         newest
                                                             ?.map(
-                                                              (p) =>
-                                                                  p.user.uuid !=
-                                                                      null
-                                                                  ? PostWidget(
-                                                                      post: p,
-                                                                    )
-                                                                  : BasePostWidget(
-                                                                      post: p,
-                                                                    ),
+                                                              (p) => PostWidget(
+                                                                post: p,
+                                                              ),
                                                             )
                                                             .toList()
                                                             .divide(
