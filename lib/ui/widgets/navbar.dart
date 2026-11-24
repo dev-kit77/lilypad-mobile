@@ -44,7 +44,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
       bottom: 0,
       child: Material(
         color: Colors.transparent,
-        elevation: 4,
+        elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24),
