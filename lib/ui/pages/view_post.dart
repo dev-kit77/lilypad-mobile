@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
+import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/ui/pages/new_reply.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -50,12 +54,41 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
     _loadContent(widget.noCache);
   }
 
-  void _loadContent(bool refresh) {
-    ContentService.fetchReplies(updatedPost!.uuid, noCache: refresh).then(
-      (r) => setState(() {
-        updatedPost!.replies = r;
-      }),
-    );
+  void _loadContent(bool refresh) async {
+    try {
+      //attempt fetch replies
+      final List<Post> r = await ContentService.fetchReplies(
+        updatedPost!.uuid,
+        noCache: refresh,
+      );
+
+      if (mounted) {
+        setState(() {
+          updatedPost!.replies = r;
+        });
+      }
+    } on APIException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Feed Error ${e.statusCode}',
+          '${e.message}. \nUnable to fetch User Feed.',
+        );
+      }
+    } on SocketException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Service Error ${e.osError?.errorCode ?? 0}',
+          '${e.message}. \nCannot Connect to API.',
+        );
+      }
+    } on Exception {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Unknown Error.',
+          'Error fetching User Feed.',
+        );
+      }
+    }
   }
 
   void _openNewReply() async {

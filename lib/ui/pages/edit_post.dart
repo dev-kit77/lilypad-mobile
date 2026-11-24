@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
+import 'package:lilypad/services/ui/dialog.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import '../widgets/logo.dart';
 
@@ -75,7 +79,7 @@ class _EditPostWidgetState extends State<EditPostWidget> {
 
     try {
       //attempt update post
-      await ContentService.modifyPost(widget.post.uuid, content);
+      Post p = await ContentService.modifyPost(widget.post.uuid, content);
 
       //show success
       if (mounted) {
@@ -86,7 +90,38 @@ class _EditPostWidgetState extends State<EditPostWidget> {
       Future.delayed(const Duration(seconds: 1), () {
         //exit back to previous with refresh status
         if (mounted) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(p);
+        }
+      });
+    } on APIException catch (e) {
+      DialogService.showAlert('Content Error ${e.statusCode}', e.message);
+
+      //show error
+      if (mounted) {
+        setState(() => updateButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => updateButtonState = WigglyButtonState.idle);
+        }
+      });
+    } on SocketException catch (e) {
+      DialogService.showAlert(
+        'Service Error ${e.osError?.errorCode ?? 0}',
+        e.message,
+      );
+
+      //show error
+      if (mounted) {
+        setState(() => updateButtonState = WigglyButtonState.error);
+      }
+
+      //hold state for user
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => updateButtonState = WigglyButtonState.idle);
         }
       });
     } catch (_) {

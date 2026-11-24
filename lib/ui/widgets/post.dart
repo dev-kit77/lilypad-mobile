@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
+import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/pages/edit_post.dart';
 import 'package:lilypad/ui/pages/view_post.dart';
 import 'package:lilypad/ui/theme/theme.dart';
 import 'package:lilypad/ui/widgets/buttons.dart';
+import 'package:lilypad/util/api_ex.dart';
 import 'package:lilypad/util/ui.dart';
 
 import 'user.dart';
@@ -52,12 +56,44 @@ class _PostWidgetState extends State<PostWidget> {
     fetchedReplyingTo ??= widget.replyingTo;
 
     if (fetchedReplyingTo == null && updatedPost!.replying != null) {
-      ContentService.fetchPost(
-        updatedPost!.replying!,
-        noCache: widget.noCache,
-      ).then((r) => setState(() => fetchedReplyingTo = r));
+      _fetchReplying();
     } else {
       fetchedReplyingTo = widget.replyingTo;
+    }
+  }
+
+  void _fetchReplying() async {
+    try {
+      //attempt update
+      Post r = await ContentService.fetchPost(
+        updatedPost!.replying!,
+        noCache: widget.noCache,
+      );
+
+      if (mounted) {
+        setState(() => fetchedReplyingTo = r);
+      }
+    } on APIException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'User Error ${e.statusCode}',
+          '${e.message}. \nUnable to Create New Post.',
+        );
+      }
+    } on SocketException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Service Error ${e.osError?.errorCode ?? 0}',
+          '${e.message}. \nCannot Connect to API.',
+        );
+      }
+    } on Exception {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Unknown Error.',
+          'Error Creating New Post.',
+        );
+      }
     }
   }
 
@@ -69,16 +105,41 @@ class _PostWidgetState extends State<PostWidget> {
       flipOnTouch:
           updatedPost!.user.uuid != null &&
           updatedPost!.user.uuid != UserService.currentUser?.uuid,
-      onFlip: () async => {
-        if (updatedPost!.user.bio == null && updatedPost!.user.status == null)
-          {
+      onFlip: () async {
+        if (updatedPost!.user.bio == null && updatedPost!.user.status == null) {
+          try {
+            //attempt update
             updatedPost!.user = await ContentService.fetchUser(
               updatedPost!.user.uuid!,
               noCache: widget.noCache,
-            ),
-          },
-
-        flippableCardIsFront = !flippableCardIsFront,
+            );
+          } on APIException catch (e) {
+            if (mounted) {
+              await DialogService.showAlert(
+                'User Error ${e.statusCode}',
+                '${e.message}. \nUnable to Create New Post.',
+              );
+            }
+            return;
+          } on SocketException catch (e) {
+            if (mounted) {
+              await DialogService.showAlert(
+                'Service Error ${e.osError?.errorCode ?? 0}',
+                '${e.message}. \nCannot Connect to API.',
+              );
+            }
+            return;
+          } on Exception {
+            if (mounted) {
+              await DialogService.showAlert(
+                'Unknown Error.',
+                'Error Creating New Post.',
+              );
+            }
+            return;
+          }
+        }
+        flippableCardIsFront = !flippableCardIsFront;
       },
       direction: FlipDirection.VERTICAL,
       speed: 400,
@@ -332,13 +393,41 @@ class _PostWidgetState extends State<PostWidget> {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 AppButton(
-                  onPressed: () {
-                    ContentService.upvotePost(updatedPost!.uuid).then(
-                      (p) => setState(() {
-                        widget.onUpdate?.call(p);
-                        updatedPost = p;
-                      }),
-                    );
+                  onPressed: () async {
+                    try {
+                      //attempt update
+                      Post p = await ContentService.upvotePost(
+                        updatedPost!.uuid,
+                      );
+
+                      if (mounted) {
+                        setState(() {
+                          widget.onUpdate?.call(p);
+                          updatedPost = p;
+                        });
+                      }
+                    } on APIException catch (e) {
+                      if (mounted) {
+                        await DialogService.showAlert(
+                          'User Error ${e.statusCode}',
+                          '${e.message}. \nUnable to Create New Post.',
+                        );
+                      }
+                    } on SocketException catch (e) {
+                      if (mounted) {
+                        await DialogService.showAlert(
+                          'Service Error ${e.osError?.errorCode ?? 0}',
+                          '${e.message}. \nCannot Connect to API.',
+                        );
+                      }
+                    } on Exception {
+                      if (mounted) {
+                        await DialogService.showAlert(
+                          'Unknown Error.',
+                          'Error Creating New Post.',
+                        );
+                      }
+                    }
                   },
                   text: formatNumber(
                     updatedPost!.upvotes,

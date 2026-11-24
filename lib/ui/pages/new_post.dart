@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:lilypad/services/content.dart';
+import 'package:lilypad/services/ui/dialog.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import '../widgets/logo.dart';
 
@@ -71,8 +75,34 @@ class _NewPostWidgetState extends State<NewPostWidget> {
     }
 
     try {
-      //attempt create post
-      await ContentService.newPost(content);
+      try {
+        //attempt create post
+        await ContentService.newPost(content);
+      } on APIException catch (e) {
+        if (mounted) {
+          await DialogService.showAlert(
+            'User Error ${e.statusCode}',
+            '${e.message}. \nUnable to Create New Post.',
+          );
+        }
+        rethrow;
+      } on SocketException catch (e) {
+        if (mounted) {
+          await DialogService.showAlert(
+            'Service Error ${e.osError?.errorCode ?? 0}',
+            '${e.message}. \nCannot Connect to API.',
+          );
+        }
+        rethrow;
+      } on Exception {
+        if (mounted) {
+          await DialogService.showAlert(
+            'Unknown Error.',
+            'Error Creating New Post.',
+          );
+        }
+        rethrow;
+      }
 
       //show success
       if (mounted) {

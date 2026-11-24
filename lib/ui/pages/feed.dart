@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/geolocation.dart';
+import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -49,26 +53,108 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    //fetch content
-    _loadContent(widget.noCache);
-
     feedTabsController = TabController(vsync: this, length: 2, initialIndex: 0)
       ..addListener(() => setState(() {}));
+
+    //wait for the first frame so dialogs have a navigator context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadContent(widget.noCache);
+      }
+    });
   }
 
-  void _loadContent(bool refresh) {
+  Future<void> _loadContent(bool refresh) async {
+    //keep the header in sync with the current area
     currLocale = GeolocationService.locale;
-    UserService.fetch().then(
-      (u) => ContentService.fetchFeed(noCache: refresh).then(
-        (f) => {
-          setState(() {
-            refresh = false;
-            feed = f;
-            newest = ContentService.newestFeed;
-          }),
-        },
-      ),
-    );
+
+    if (!GeolocationService.initalized) {
+      if (mounted) {
+        setState(() {
+          feed = null;
+          newest = null;
+        });
+      }
+      if (mounted) {
+        await DialogService.showAlert(
+          'Geolocation Error',
+          'Geolocation is not enabled. \nLilypad requires location services to show you posts.',
+        );
+      }
+      return;
+    }
+
+    try {
+      //attempt fetch current user
+      await UserService.fetch(noCache: refresh);
+    } on APIException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'User Error ${e.statusCode}',
+          '${e.message}. \nUnable to fetch Current User.',
+        );
+      }
+    } on SocketException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Service Error ${e.osError?.errorCode ?? 0}',
+          '${e.message}. \nCannot Connect to API.',
+        );
+      }
+    } on Exception {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Unknown Error.',
+          'Error fetching Current User.',
+        );
+      }
+    }
+
+    try {
+      //attempt fetch feed
+      final List<Post> f = await ContentService.fetchFeed(noCache: refresh);
+      if (mounted) {
+        setState(() {
+          feed = f;
+          newest = ContentService.newestFeed;
+        });
+      }
+    } on APIException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Feed Error ${e.statusCode}',
+          '${e.message}. \nUnable to fetch Current Feed.',
+        );
+      }
+    } on SocketException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Service Error ${e.osError?.errorCode ?? 0}',
+          '${e.message}. \nCannot Connect to API.',
+        );
+      }
+    } on Exception {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Unknown Error.',
+          'Error fetching Current Feed.',
+        );
+      }
+    }
+  }
+
+  /// Re-read the location and reload the feed.
+  Future<void> _retry() async {
+    try {
+      await GeolocationService.forceUpdate();
+    } catch (e) {
+      await DialogService.showAlert(
+        'Geolocation Error',
+        'Unable to refresh location.',
+      );
+      return;
+    }
+    await _loadContent(true);
   }
 
   void _openNewPost() async {
@@ -353,39 +439,72 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                         [],
                                                   ),
                                                   feed == null
-                                                      ? Text(
-                                                          'Could Not Fetch Posts.',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTheme.of(context).titleLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
+                                                      ? Column(
+                                                          children: [
+                                                            Text(
+                                                              'Could Not Fetch Posts.',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: AppTheme.of(context).titleLarge.override(
+                                                                font: GoogleFonts.playfairDisplay(
+                                                                  fontWeight:
+                                                                      AppTheme.of(
                                                                         context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
+                                                                      ).titleLarge.fontWeight,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
                                                                         context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontStyle,
+                                                                      ).titleLarge.fontStyle,
+                                                                ),
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontWeight,
+                                                                fontStyle:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontStyle,
+                                                              ),
                                                             ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
+                                                            TextButton(
+                                                              onPressed: _retry,
+                                                              child: Text(
+                                                                'Retry',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: AppTheme.of(context).labelLarge.override(
+                                                                  font: GoogleFonts.playfairDisplay(
+                                                                    fontWeight:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontWeight,
+                                                                    fontStyle:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontStyle,
+                                                                  ),
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).labelLarge.fontWeight,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).labelLarge.fontStyle,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         )
                                                       : Text(
                                                           'You\'re all caught up!',
@@ -463,39 +582,72 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                         [],
                                                   ),
                                                   newest == null
-                                                      ? Text(
-                                                          'Could Not Fetch Posts.',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTheme.of(context).titleLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
+                                                      ? Column(
+                                                          children: [
+                                                            Text(
+                                                              'Could Not Fetch Posts.',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: AppTheme.of(context).titleLarge.override(
+                                                                font: GoogleFonts.playfairDisplay(
+                                                                  fontWeight:
+                                                                      AppTheme.of(
                                                                         context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
+                                                                      ).titleLarge.fontWeight,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
                                                                         context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontStyle,
+                                                                      ).titleLarge.fontStyle,
+                                                                ),
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontWeight,
+                                                                fontStyle:
+                                                                    AppTheme.of(
+                                                                          context,
+                                                                        )
+                                                                        .titleLarge
+                                                                        .fontStyle,
+                                                              ),
                                                             ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
+                                                            TextButton(
+                                                              onPressed: _retry,
+                                                              child: Text(
+                                                                'Retry',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: AppTheme.of(context).labelLarge.override(
+                                                                  font: GoogleFonts.playfairDisplay(
+                                                                    fontWeight:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontWeight,
+                                                                    fontStyle:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontStyle,
+                                                                  ),
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).labelLarge.fontWeight,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
+                                                                        context,
+                                                                      ).labelLarge.fontStyle,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         )
                                                       : Text(
                                                           'You\'re all caught up!',

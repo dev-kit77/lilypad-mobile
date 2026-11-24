@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lilypad/models/user.dart';
 import 'package:lilypad/services/session.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
+import 'package:lilypad/util/api_ex.dart';
 
 import '../widgets/logo.dart';
 
@@ -91,20 +94,41 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     super.dispose();
   }
 
-  void _loadContent(bool refresh) {
-    UserService.fetch(noCache: refresh).then(
-      (u) => {
-        setState(() {
-          currUser = u;
-          anonSwitchValue = u.anon;
-          usernameTextController!.text = u.username;
-          statusTextController!.text = u.status ?? '';
-          bioTextController!.text = u.bio ?? '';
-          darkSwitchValue = u.dark;
-          refresh = false;
-        }),
-      },
-    );
+  void _loadContent(bool refresh) async {
+    try {
+      //attempt fetch current user
+      CurrentUser u = await UserService.fetch(noCache: refresh);
+      setState(() {
+        currUser = u;
+        anonSwitchValue = u.anon;
+        usernameTextController!.text = u.username;
+        statusTextController!.text = u.status ?? '';
+        bioTextController!.text = u.bio ?? '';
+        darkSwitchValue = u.dark;
+        refresh = false;
+      });
+    } on APIException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'User Error ${e.statusCode}',
+          '${e.message}. \nUnable to fetch Current User.',
+        );
+      }
+    } on SocketException catch (e) {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Service Error ${e.osError?.errorCode ?? 0}',
+          '${e.message}. \nCannot Connect to API.',
+        );
+      }
+    } on Exception {
+      if (mounted) {
+        await DialogService.showAlert(
+          'Unknown Error.',
+          'Error fetching Current User.',
+        );
+      }
+    }
   }
 
   void _logOut() async {
