@@ -47,14 +47,17 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = <Widget>[];
+
     if (icon != null) {
       content.add(
         Padding(padding: options.iconPadding ?? EdgeInsets.zero, child: icon),
       );
     }
+
     if (text != null && text!.isNotEmpty) {
       content.add(Text(text!, style: options.textStyle));
     }
+
     final children = options.iconAlignment == IconAlignment.end
         ? content.reversed.toList()
         : content;
@@ -77,51 +80,8 @@ class AppButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 5,
           children: children,
-        ),
-      ),
-    );
-  }
-}
-
-/// A circular/rounded icon button used in the UI.
-class AppIconButton extends StatelessWidget {
-  const AppIconButton({
-    super.key,
-    this.borderColor,
-    this.borderRadius = 8,
-    this.borderWidth = 1,
-    this.buttonSize = 48,
-    this.fillColor,
-    this.icon,
-    this.onPressed,
-  });
-
-  final Color? borderColor;
-  final double borderRadius;
-  final double borderWidth;
-  final double buttonSize;
-  final Color? fillColor;
-  final Widget? icon;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: buttonSize,
-      height: buttonSize,
-      child: Material(
-        color: fillColor ?? Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
-          side: borderColor == null
-              ? BorderSide.none
-              : BorderSide(color: borderColor!, width: borderWidth),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onPressed,
-          child: Center(child: icon ?? const SizedBox.shrink()),
         ),
       ),
     );
