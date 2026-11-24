@@ -28,6 +28,71 @@ class ContentService {
     return sorted;
   }
 
+  static void _refreshFeed() {
+    //get current location
+    final Map<String, double?> currLocation = GeolocationService.location;
+
+    //check location ready
+    if (currLocation.values.contains(null)) {
+      LogService.err('Location Service not ready.', src: 'Content Service');
+    } else {
+      //retrieve feed cache if any
+      final List<String>? feedCache = CacheService.fetch(
+        ContentRequestBuilder.feedSpatial(
+          currLocation['lat']!,
+          currLocation['lon']!,
+        ).url.toString(),
+      ) as List<String>?;
+
+      //check feed cache to see if we have a pre-prepared feed
+      if (feedCache != null) {
+        final List<Post> cacheFeed = <Post>[];
+
+        for (String id in feedCache) {
+          //get post in feed from cache
+          final Post? cachedPost = CacheService.fetch(id) as Post?;
+
+          //add post to feed if found
+          if (cachedPost != null) {
+            cacheFeed.add(cachedPost);
+          }
+        }
+
+        //update feed var in case of updated posts in cache
+        _feed = List.from(cacheFeed);
+      }
+    }
+
+    //retrieve feed cache if any
+    List<String>? userCache = CacheService.fetch(
+      UserRequestBuilder.getContent().url.toString(),
+    ) as List<String>?;
+
+    //check feed cache to see if we have a pre-prepared feed
+    if (userCache != null) {
+      final List<Post> cachePosts = <Post>[];
+      final List<Post> cacheReplies = <Post>[];
+
+      for (String id in userCache) {
+        //get post in feed from cache
+        final Post? cachePost = CacheService.fetch(id) as Post?;
+
+        //add post to feed if found
+        if (cachePost != null) {
+          if (cachePost.replying == null) {
+            cachePosts.add(cachePost);
+          } else {
+            cacheReplies.add(cachePost);
+          }
+        }
+      }
+
+      //update user feed vars
+      _userPosts = List.from(cachePosts);
+      _userReplies = List.from(cacheReplies);
+    }
+  }
+
   /// Retrieves the nearby content feed for the current location.
   ///
   /// GET /api/feed-spatial?lat=&lon=
@@ -41,7 +106,7 @@ class ContentService {
   /// Expected 500: { error: "INTERNAL_SERVER" }.
   static Future<List<Post>> fetchFeed({bool noCache = false}) async {
     //get current location
-    Map<String, double?> currLocation = GeolocationService.location;
+    final Map<String, double?> currLocation = GeolocationService.location;
 
     //check location ready
     if (currLocation.values.contains(null)) {
@@ -50,18 +115,34 @@ class ContentService {
     }
 
     //build request with location
-    Request req = ContentRequestBuilder.feedSpatial(
+    final Request req = ContentRequestBuilder.feedSpatial(
       currLocation['lat']!,
       currLocation['lon']!,
     );
 
     //retrieve feed cache if any
-    List<Post>? feedCache =
-        CacheService.fetch(req.url.toString()) as List<Post>?;
+    final List<String>? feedCache =
+        CacheService.fetch(req.url.toString()) as List<String>?;
 
     //check feed cache to see if we have a pre-prepared feed
     if (feedCache != null && noCache == false) {
-      return feedCache;
+      final List<Post> cacheFeed = <Post>[];
+
+      for (String id in feedCache) {
+        //get post in feed from cache
+        final Post? cachedPost = CacheService.fetch(id) as Post?;
+
+        //add post to feed if found
+        if (cachedPost != null) {
+          cacheFeed.add(cachedPost);
+        }
+      }
+
+      //update feed var in case of updated posts in cache
+      _feed = List.from(cacheFeed);
+
+      //return cached feed
+      return cacheFeed;
     }
 
     //init response var
@@ -76,10 +157,18 @@ class ContentService {
     }
 
     //parse the response from the api
-    List<Post> newFeed = _parseFeed(res)['posts']!;
+    final List<Post> newFeed = _parseFeed(res)['posts']!;
 
-    //cache our new feed data
-    CacheService.store(o: newFeed, key: req.url.toString());
+    //init list of uuid
+    final List<String> postList = <String>[];
+
+    //add all uuids to list
+    for (Post p in newFeed) {
+      postList.add(p.uuid);
+    }
+
+    //store list of post uuid
+    CacheService.store(o: postList, key: req.url.toString());
 
     //init feed variable
     _feed = List.from(newFeed);
@@ -150,6 +239,9 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
+    //update post in feed
+    _refreshFeed();
+
     //cache our new feed data
     CacheService.store(o: fetchedPost);
 
@@ -197,6 +289,9 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
+    //update post in feed
+    _refreshFeed();
+
     //cache our new feed data
     CacheService.store(o: fetchedPost);
 
@@ -234,6 +329,9 @@ class ContentService {
     //remove cache of original inaccurate post
     CacheService.free(postId);
 
+    //update post in feed
+    _refreshFeed();
+
     //cache our new post data
     CacheService.store(o: fetchedPost);
 
@@ -268,6 +366,9 @@ class ContentService {
 
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
+
+    //update post in feed
+    _refreshFeed();
 
     //cache our new feed data
     CacheService.store(o: fetchedPost);
@@ -336,6 +437,9 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
+    //update post in feed
+    _refreshFeed();
+
     //cache our new feed data
     CacheService.store(o: fetchedPost);
 
@@ -358,12 +462,25 @@ class ContentService {
     Request req = ContentRequestBuilder.getReplies(postId);
 
     //retrieve feed cache if any
-    List<Post>? replyCache =
-        CacheService.fetch(req.url.toString()) as List<Post>?;
+    final List<String>? replyCache =
+        CacheService.fetch(req.url.toString()) as List<String>?;
 
-    //check cache to see if we have a pre-prepared post with replies
+    //check feed cache to see if we have a pre-prepared feed
     if (replyCache != null && noCache == false) {
-      return replyCache;
+      final List<Post> cacheFeed = <Post>[];
+
+      for (String id in replyCache) {
+        //get post in feed from cache
+        final Post? cachedPost = CacheService.fetch(id) as Post?;
+
+        //add post to feed if found
+        if (cachedPost != null) {
+          cacheFeed.add(cachedPost);
+        }
+      }
+
+      //return cached feed
+      return cacheFeed;
     }
 
     //init response var
@@ -382,8 +499,20 @@ class ContentService {
       jsonDecode(res.body)['replies'].map((p) => Post.fromMap(p)),
     );
 
-    //cache our new feed data
-    CacheService.store(o: replies, key: req.url.toString());
+    //init list of uuid
+    final List<String> postList = <String>[];
+
+    //add all replies to cache and uuids to list
+    for (Post r in replies) {
+      //add reply to cache
+      CacheService.store(o: r);
+
+      //add uuid to list
+      postList.add(r.uuid);
+    }
+
+    //store list of post uuid
+    CacheService.store(o: postList, key: req.url.toString());
 
     //return new feed separate from one stored in cache
     return List.from(replies);
@@ -445,12 +574,34 @@ class ContentService {
     Request req = UserRequestBuilder.getContent();
 
     //retrieve feed cache if any
-    Map<String, List<Post>>? userCache =
-        CacheService.fetch(req.url.toString()) as Map<String, List<Post>>?;
+    List<String>? userCache =
+        CacheService.fetch(req.url.toString()) as List<String>?;
 
     //check feed cache to see if we have a pre-prepared feed
     if (userCache != null && noCache == false) {
-      return userCache;
+      final List<Post> cachePosts = <Post>[];
+      final List<Post> cacheReplies = <Post>[];
+
+      for (String id in userCache) {
+        //get post in feed from cache
+        final Post? cachePost = CacheService.fetch(id) as Post?;
+
+        //add post to feed if found
+        if (cachePost != null) {
+          if (cachePost.replying == null) {
+            cachePosts.add(cachePost);
+          } else {
+            cacheReplies.add(cachePost);
+          }
+        }
+      }
+
+      //update feed var in case of updated posts in cache
+      _userPosts = List.from(cachePosts);
+      _userReplies = List.from(cacheReplies);
+
+      //return cached feed
+      return {'posts': cachePosts, 'replies': cacheReplies};
     }
 
     //init response var
@@ -468,11 +619,18 @@ class ContentService {
     List<Post> newUserPosts = _parseFeed(res)['posts']!;
     List<Post> newUserReplies = _parseFeed(res)['replies']!;
 
-    //cache our new feed data
-    CacheService.store(
-      o: {'posts': newUserPosts, 'replies': newUserReplies},
-      key: req.url.toString(),
-    );
+    //init list of uuid
+    final List<String> postList = <String>[];
+
+    //add all uuids to list
+    for (List list in [newUserPosts, newUserReplies]) {
+      for (Post p in list) {
+        postList.add(p.uuid);
+      }
+    }
+
+    //store list of posts in cache
+    CacheService.store(o: postList, key: req.url.toString());
 
     //init feed variable
     _userPosts = List.from(newUserPosts);

@@ -164,10 +164,11 @@ void main() {
 
       const String feedKey =
           'http://localhost:3000/api/feed-spatial?lat=51.5074&lon=-0.1278';
-      final List<Post>? cachedFeed = CacheService.fetch(feedKey) as List<Post>?;
+      final List<String>? cachedFeed =
+          CacheService.fetch(feedKey) as List<String>?;
 
       expect(cachedFeed, isNotNull);
-      expect(cachedFeed!.map((Post p) => p.uuid), equals(<String>['root']));
+      expect(cachedFeed, equals(<String>['root']));
       expect(CacheService.fetch('root'), same(feed.single));
       expect(CacheService.fetch('reply'), isA<Post>());
     });
@@ -770,13 +771,13 @@ void main() {
         equals(<String>['reply-2', 'reply-1']),
       );
 
-      final List<Post>? cached =
-          CacheService.fetch(recorded.request.url.toString()) as List<Post>?;
+      final List<String>? cached =
+          CacheService.fetch(recorded.request.url.toString()) as List<String>?;
       expect(cached, isNotNull);
-      expect(
-        cached!.map((Post p) => p.uuid),
-        equals(<String>['reply-2', 'reply-1']),
-      );
+      expect(cached, equals(<String>['reply-2', 'reply-1']));
+      for (final Post reply in replies) {
+        expect(CacheService.fetch(reply.uuid), same(reply));
+      }
     });
 
     test('returns cached replies without contacting the server', () async {
@@ -1010,13 +1011,15 @@ void main() {
         expect(content['replies'], hasLength(1));
         expect(content['replies']!.single.uuid, equals('reply'));
 
-        final Map<String, List<Post>>? cached = CacheService.fetch(
+        final List<String>? cached = CacheService.fetch(
           recorded.request.url.toString(),
-        ) as Map<String, List<Post>>?;
+        ) as List<String>?;
         expect(cached, isNotNull);
-        expect(cached!['posts']!.single.uuid, equals('root'));
-        expect(cached['replies']!.single.uuid, equals('reply'));
-        expect(CacheService.fetch('reply'), isA<Post>());
+        expect(cached, equals(<String>['root', 'reply']));
+        expect((CacheService.fetch('root') as Post).uuid, equals('root'));
+        final Post cachedReply = CacheService.fetch('reply') as Post;
+        expect(cachedReply.uuid, equals('reply'));
+        expect(cachedReply.replying, equals('root'));
       },
     );
 
