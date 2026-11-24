@@ -515,7 +515,8 @@ class _PostWidgetState extends State<PostWidget> {
                   ),
                 ),
                 Offstage(
-                  offstage: updatedPost!.uuid == UserService.currentUser?.uuid,
+                  offstage:
+                      updatedPost!.user.uuid != UserService.currentUser?.uuid,
                   child: AppButton(
                     onPressed: () async {
                       final Post? updated = await Navigator.of(context)
