@@ -341,8 +341,7 @@ class _LandingWidgetState extends State<LandingWidget>
                                             child: Text(
                                               'The Local Social Media.',
                                               textAlign: TextAlign.start,
-                                              style: AppTheme.of(context)
-                                                  .titleMedium
+                                              style: AppTheme.of(context).title
                                                   .override(
                                                     font:
                                                         GoogleFonts.playfairDisplay(
@@ -350,22 +349,20 @@ class _LandingWidgetState extends State<LandingWidget>
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .titleMedium
+                                                                  .title
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontStyle,
+                                                                context,
+                                                              ).title.fontStyle,
                                                         ),
                                                     letterSpacing: 0.0,
                                                     fontWeight: AppTheme.of(
                                                       context,
-                                                    ).titleMedium.fontWeight,
+                                                    ).title.fontWeight,
                                                     fontStyle: AppTheme.of(
                                                       context,
-                                                    ).titleMedium.fontStyle,
+                                                    ).title.fontStyle,
                                                   ),
                                             ),
                                           ),
@@ -395,43 +392,43 @@ class _LandingWidgetState extends State<LandingWidget>
                                   labelColor: AppTheme.of(context).primaryText,
                                   unselectedLabelColor: AppTheme.of(context)
                                       .secondaryText,
-                                  labelStyle: AppTheme.of(context).displaySmall
+                                  labelStyle: AppTheme.of(context).header
                                       .override(
                                         font: GoogleFonts.playfairDisplay(
                                           fontWeight: AppTheme.of(context)
-                                              .displaySmall
+                                              .header
                                               .fontWeight,
                                           fontStyle: AppTheme.of(context)
-                                              .displaySmall
+                                              .header
                                               .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
                                         fontWeight: AppTheme.of(context)
-                                            .displaySmall
+                                            .header
                                             .fontWeight,
                                         fontStyle: AppTheme.of(context)
-                                            .displaySmall
+                                            .header
                                             .fontStyle,
                                         lineHeight: 1,
                                       ),
                                   unselectedLabelStyle: AppTheme.of(context)
-                                      .displaySmall
+                                      .header
                                       .override(
                                         font: GoogleFonts.playfairDisplay(
                                           fontWeight: AppTheme.of(context)
-                                              .displaySmall
+                                              .header
                                               .fontWeight,
                                           fontStyle: AppTheme.of(context)
-                                              .displaySmall
+                                              .header
                                               .fontStyle,
                                         ),
                                         fontSize: 32,
                                         letterSpacing: 0.0,
                                         fontWeight: AppTheme.of(context)
-                                            .displaySmall
+                                            .header
                                             .fontWeight,
                                         fontStyle: AppTheme.of(context)
-                                            .displaySmall
+                                            .header
                                             .fontStyle,
                                         lineHeight: 1.5,
                                       ),
@@ -820,19 +817,19 @@ class _LandingWidgetState extends State<LandingWidget>
                                                       children: [
                                                         Text(
                                                           'Sign In',
-                                                          style: AppTheme.of(context).titleMedium.override(
+                                                          style: AppTheme.of(context).title.override(
                                                             font: GoogleFonts.playfairDisplay(
                                                               fontWeight:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontWeight,
                                                               fontStyle:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontStyle,
                                                             ),
                                                             color: Colors.white,
@@ -841,13 +838,13 @@ class _LandingWidgetState extends State<LandingWidget>
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontStyle,
                                                           ),
                                                         ),

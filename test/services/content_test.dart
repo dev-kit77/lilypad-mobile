@@ -688,7 +688,7 @@ void main() {
   group('upvotePost', () {
     test('upvotes a post and caches the updated version', () async {
       api.queueJson(<String, Object>{
-        'post': postJson(id: 'post-1', upvotes: 3),
+        'post': postJson(id: 'post-1', upvotes: 3, upvoted: true),
       });
 
       final Post post = await withApi(
@@ -704,6 +704,7 @@ void main() {
       expect(recorded.body, isEmpty);
 
       expect(post.upvotes, equals(3));
+      expect(post.upvoted, isTrue);
       expect(CacheService.fetch('post-1'), same(post));
     });
 

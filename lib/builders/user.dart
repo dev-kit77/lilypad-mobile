@@ -41,7 +41,9 @@ class UserRequestBuilder {
   /// PUT /api/user
   ///
   /// Body:  { username?: string (1-100); status?: string (1-100);
-  ///             bio?: string (1-100); settings?: { dark?: boolean; anon?: boolean } }
+  ///             bio?: string (1-100);
+  ///             settings?: { dark?: boolean; anon?: boolean;
+  ///                          pushNotifications?: boolean; useSysTheme?: boolean } }
   ///           at least one field required.
   /// Auth:     session
   static Request updateUser({
@@ -50,6 +52,8 @@ class UserRequestBuilder {
     String? bio,
     bool? dark,
     bool? anon,
+    bool? pushNotifications,
+    bool? useSysTheme,
   }) {
     //init request
     Request r = Request('PUT', APIService.getUri(path: 'user'));
@@ -66,8 +70,16 @@ class UserRequestBuilder {
       "username": ?username,
       "status": ?status,
       "bio": ?bio,
-      if (dark != null || anon != null)
-        "settings": <String, bool>{"dark": ?dark, "anon": ?anon},
+      if (dark != null ||
+          anon != null ||
+          pushNotifications != null ||
+          useSysTheme != null)
+        "settings": <String, bool>{
+          "dark": ?dark,
+          "anon": ?anon,
+          "pushNotifications": ?pushNotifications,
+          "useSysTheme": ?useSysTheme,
+        },
     });
 
     return r;

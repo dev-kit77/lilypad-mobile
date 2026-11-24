@@ -6,8 +6,13 @@
 // settings: t.Object({
 //   dark: t.Boolean(),
 //   anon: t.Boolean(),
+//   pushNotifications: t.Boolean(),
+//   useSysTheme: t.Boolean(),
 // }),
 import 'dart:convert';
+
+bool _settingBool(Map<String, Object?> settings, String key) =>
+    settings[key]?.toString().toLowerCase() == 'true';
 
 class User {
   final String? _uuid;
@@ -59,6 +64,8 @@ class User {
 class CurrentUser extends User {
   bool _dark;
   bool _anon;
+  bool push;
+  bool sysTheme;
 
   CurrentUser({
     required super.uuid,
@@ -67,6 +74,8 @@ class CurrentUser extends User {
     super.bio,
     this._dark = false,
     this._anon = false,
+    this.push = false,
+    this.sysTheme = false,
   });
 
   factory CurrentUser.fromJson(String json) {
@@ -78,8 +87,10 @@ class CurrentUser extends User {
       username: userMap['username'] as String,
       status: userMap['status'] as String?,
       bio: userMap['bio'] as String?,
-      dark: (settings['dark'].toString().toLowerCase() == 'true'),
-      anon: (settings['anon'].toString().toLowerCase() == 'true'),
+      dark: _settingBool(settings, 'dark'),
+      anon: _settingBool(settings, 'anon'),
+      push: _settingBool(settings, 'pushNotifications'),
+      sysTheme: _settingBool(settings, 'useSysTheme'),
     );
   }
 
@@ -91,8 +102,10 @@ class CurrentUser extends User {
       username: userMap['username'] as String,
       status: userMap['status'] as String?,
       bio: userMap['bio'] as String?,
-      dark: (settings['dark'].toString().toLowerCase() == 'true'),
-      anon: (settings['anon'].toString().toLowerCase() == 'true'),
+      dark: _settingBool(settings, 'dark'),
+      anon: _settingBool(settings, 'anon'),
+      push: _settingBool(settings, 'pushNotifications'),
+      sysTheme: _settingBool(settings, 'useSysTheme'),
     );
   }
 
@@ -101,6 +114,8 @@ class CurrentUser extends User {
     Map<String, Object?> settings = <String, Object?>{
       "dark": _dark,
       "anon": _anon,
+      "pushNotifications": push,
+      "useSysTheme": sysTheme,
     };
 
     return <String, Object?>{
@@ -115,4 +130,6 @@ class CurrentUser extends User {
   String get uuid => _uuid!;
   bool get dark => _dark;
   bool get anon => _anon;
+  bool get pushNotifications => push;
+  bool get useSysTheme => sysTheme;
 }

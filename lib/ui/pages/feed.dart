@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:lilypad/models/post.dart';
+import 'package:lilypad/models/user.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/geolocation.dart';
 import 'package:lilypad/services/ui/dialog.dart';
@@ -86,7 +87,10 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
 
     try {
       //attempt fetch current user
-      await UserService.fetch(noCache: refresh);
+      final CurrentUser u = await UserService.fetch(noCache: refresh);
+
+      //sync the theme with the current user's saved preference
+      AppTheme.applyUserPreference(u.dark);
     } on APIException catch (e) {
       if (mounted) {
         await DialogService.showAlert(
@@ -301,24 +305,23 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                 Text(
                                   currLocale ?? '',
                                   textAlign: TextAlign.start,
-                                  style: AppTheme.of(context).titleMedium
-                                      .override(
-                                        font: GoogleFonts.playfairDisplay(
-                                          fontWeight: AppTheme.of(context)
-                                              .titleMedium
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .titleMedium
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .titleMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleMedium
-                                            .fontStyle,
-                                      ),
+                                  style: AppTheme.of(context).title.override(
+                                    font: GoogleFonts.playfairDisplay(
+                                      fontWeight: AppTheme.of(context)
+                                          .title
+                                          .fontWeight,
+                                      fontStyle: AppTheme.of(context)
+                                          .title
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: AppTheme.of(context)
+                                        .title
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .title
+                                        .fontStyle,
+                                  ),
                                 ),
                               ],
                             ),
@@ -368,23 +371,21 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                   .fontStyle,
                                             ),
                                         unselectedLabelStyle:
-                                            AppTheme.of(
-                                              context,
-                                            ).titleMedium.override(
+                                            AppTheme.of(context).title.override(
                                               font: GoogleFonts.playfairDisplay(
                                                 fontWeight: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontWeight,
                                                 fontStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontWeight,
                                               fontStyle: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontStyle,
                                             ),
                                         indicatorColor: AppTheme.of(context)

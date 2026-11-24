@@ -18,27 +18,27 @@ class _LogoWidgetState extends State<LogoWidget> {
       children: [
         Text(
           'lilypad',
-          style: AppTheme.of(context).headlineLarge.override(
+          style: AppTheme.of(context).headline.override(
             font: GoogleFonts.asset(
-              fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-              fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+              fontWeight: AppTheme.of(context).headline.fontWeight,
+              fontStyle: AppTheme.of(context).headline.fontStyle,
             ),
             letterSpacing: 0.0,
-            fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-            fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+            fontWeight: AppTheme.of(context).headline.fontWeight,
+            fontStyle: AppTheme.of(context).headline.fontStyle,
           ),
         ),
         Text(
           '.',
-          style: AppTheme.of(context).headlineLarge.override(
+          style: AppTheme.of(context).headline.override(
             font: GoogleFonts.asset(
-              fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-              fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+              fontWeight: AppTheme.of(context).headline.fontWeight,
+              fontStyle: AppTheme.of(context).headline.fontStyle,
             ),
             color: AppTheme.of(context).primary,
             letterSpacing: 0.0,
-            fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-            fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+            fontWeight: AppTheme.of(context).headline.fontWeight,
+            fontStyle: AppTheme.of(context).headline.fontStyle,
           ),
         ),
       ],

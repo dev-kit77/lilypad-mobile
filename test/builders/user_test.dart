@@ -75,6 +75,28 @@ void main() {
     expect(r.encoding, equals(utf8));
   });
 
+  test(
+    'build update user put request with notification and theme settings',
+    () {
+      Request r = UserRequestBuilder.updateUser(
+        pushNotifications: true,
+        useSysTheme: false,
+      );
+      expect(r.method, equals('PUT'));
+      expect(r.url.toString(), equals('http://localhost:3000/api/user'));
+      expect(
+        jsonDecode(r.body),
+        equals(<String, Object?>{
+          "settings": <String, bool>{
+            "pushNotifications": true,
+            "useSysTheme": false,
+          },
+        }),
+      );
+      expect(r.encoding, equals(utf8));
+    },
+  );
+
   test('build update user put request with a profile field and a setting', () {
     Request r = UserRequestBuilder.updateUser(
       bio: "i am a lilypad",

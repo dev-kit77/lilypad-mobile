@@ -32,6 +32,7 @@ void main() {
       created: DateTime.parse("2026-01-01T12:00:00.000Z"),
       updated: DateTime.parse("2026-01-02T12:00:00.000Z"),
       upvotes: 5,
+      upvoted: true,
       replying: "this is another uuid",
       noReplies: 2,
       distance: 1.5,
@@ -42,6 +43,7 @@ void main() {
     expect(post.created, equals(DateTime.parse("2026-01-01T12:00:00.000Z")));
     expect(post.updated, equals(DateTime.parse("2026-01-02T12:00:00.000Z")));
     expect(post.upvotes, equals(5));
+    expect(post.upvoted, isTrue);
     expect(post.replying, equals("this is another uuid"));
     expect(post.noReplies, equals(2));
     expect(post.distance, equals(1.5));
@@ -56,6 +58,7 @@ void main() {
       "time": "2026-01-01T12:00:00.000Z",
       "updated": "2026-01-02T12:00:00.000Z",
       "upvotes": 3,
+      "upvoted": true,
       "replyingTo": "this is another uuid",
       "replyCount": 2,
       "distanceKm": 1.5,
@@ -67,6 +70,7 @@ void main() {
     expect(post.created, equals(DateTime.parse("2026-01-01T12:00:00.000Z")));
     expect(post.updated, equals(DateTime.parse("2026-01-02T12:00:00.000Z")));
     expect(post.upvotes, equals(3));
+    expect(post.upvoted, isTrue);
     expect(post.replying, equals("this is another uuid"));
     expect(post.noReplies, equals(2));
     expect(post.distance, equals(1.5));
@@ -88,6 +92,7 @@ void main() {
     expect(post.created, equals(DateTime.parse("2026-01-01T12:00:00.000Z")));
     expect(post.updated, isNull);
     expect(post.upvotes, equals(0));
+    expect(post.upvoted, isFalse);
     expect(post.replies, isEmpty);
     expect(post.replying, isNull);
     expect(post.noReplies, equals(0));
@@ -109,6 +114,7 @@ void main() {
       "time": "2026-01-03T12:00:00.000Z",
       "updated": "2026-01-04T12:00:00.000Z",
       "upvotes": 7,
+      "upvoted": true,
       "replyCount": 4,
       "distanceKm": 2.5,
     }));
@@ -118,6 +124,7 @@ void main() {
     expect(post.created, equals(DateTime.parse("2026-01-03T12:00:00.000Z")));
     expect(post.updated, equals(DateTime.parse("2026-01-04T12:00:00.000Z")));
     expect(post.upvotes, equals(7));
+    expect(post.upvoted, isTrue);
     expect(post.noReplies, equals(4));
     expect(post.distance, equals(2.5));
   });
@@ -175,6 +182,7 @@ void main() {
       "time": "2026-01-01T12:00:00.000Z",
       "updated": "2026-01-02T12:00:00.000Z",
       "upvotes": 3,
+      "upvoted": true,
       "replyingTo": "this is another uuid",
       "replyCount": 2,
       "distanceKm": 1.5,
@@ -186,6 +194,7 @@ void main() {
     expect(post.created, equals(DateTime.parse("2026-01-01T12:00:00.000Z")));
     expect(post.updated, equals(DateTime.parse("2026-01-02T12:00:00.000Z")));
     expect(post.upvotes, equals(3));
+    expect(post.upvoted, isTrue);
     expect(post.replying, equals("this is another uuid"));
     expect(post.noReplies, equals(2));
     expect(post.distance, equals(1.5));

@@ -32,11 +32,13 @@ void main() {
       bio: "this is kit",
       dark: false,
       anon: false,
+      push: true,
+      sysTheme: false,
     );
     expect(
       usr.toString(),
       equals(
-        '{"username":"kit","status":"my body is ready","bio":"this is kit","settings":{"dark":false,"anon":false}}',
+        '{"username":"kit","status":"my body is ready","bio":"this is kit","settings":{"dark":false,"anon":false,"pushNotifications":true,"useSysTheme":false}}',
       ),
     );
   });
@@ -67,12 +69,17 @@ void main() {
       "username": "ewan",
       "status": "i am NOT eating a sandwiches",
       "bio": "general crazed lunatic",
-      "settings": <String, Object?>{"dark": "false", "anon": "true"},
+      "settings": <String, Object?>{
+        "dark": "false",
+        "anon": "true",
+        "pushNotifications": "true",
+        "useSysTheme": "false",
+      },
     });
     expect(
       usr.toString(),
       equals(
-        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true}}',
+        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"pushNotifications":true,"useSysTheme":false}}',
       ),
     );
   });
@@ -85,12 +92,14 @@ void main() {
   });
 
   test('init other user from json', () {
-    User usr = User.fromJson(jsonEncode(<String, Object?>{
-      "userId": "this is a uuid",
-      "username": "aiden",
-      "status": "i am eating a sandwiches",
-      "bio": "xbox nerd",
-    }));
+    User usr = User.fromJson(
+      jsonEncode(<String, Object?>{
+        "userId": "this is a uuid",
+        "username": "aiden",
+        "status": "i am eating a sandwiches",
+        "bio": "xbox nerd",
+      }),
+    );
     expect(
       usr.toString(),
       equals(
@@ -100,17 +109,24 @@ void main() {
   });
 
   test('init current user from json', () {
-    User usr = CurrentUser.fromJson(jsonEncode(<String, Object?>{
-      "userId": "this is a uuid",
-      "username": "ewan",
-      "status": "i am NOT eating a sandwiches",
-      "bio": "general crazed lunatic",
-      "settings": <String, Object?>{"dark": "false", "anon": "true"},
-    }));
+    User usr = CurrentUser.fromJson(
+      jsonEncode(<String, Object?>{
+        "userId": "this is a uuid",
+        "username": "ewan",
+        "status": "i am NOT eating a sandwiches",
+        "bio": "general crazed lunatic",
+        "settings": <String, Object?>{
+          "dark": "false",
+          "anon": "true",
+          "pushNotifications": "false",
+          "useSysTheme": "true",
+        },
+      }),
+    );
     expect(
       usr.toString(),
       equals(
-        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true}}',
+        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"pushNotifications":false,"useSysTheme":true}}',
       ),
     );
   });

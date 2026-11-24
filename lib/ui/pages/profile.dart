@@ -261,7 +261,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                 'Your Profile.',
                                                 textAlign: TextAlign.start,
                                                 style: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .override(
                                                       font:
                                                           GoogleFonts.playfairDisplay(
@@ -269,22 +269,22 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontStyle,
                                                           ),
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontWeight,
+                                                      ).title.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontStyle,
+                                                      ).title.fontStyle,
                                                     ),
                                               ),
                                             ),
@@ -343,23 +343,21 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   .fontStyle,
                                             ),
                                         unselectedLabelStyle:
-                                            AppTheme.of(
-                                              context,
-                                            ).titleMedium.override(
+                                            AppTheme.of(context).title.override(
                                               font: GoogleFonts.playfairDisplay(
                                                 fontWeight: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontWeight,
                                                 fontStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontWeight,
                                               fontStyle: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontStyle,
                                             ),
                                         indicatorColor: AppTheme.of(context)

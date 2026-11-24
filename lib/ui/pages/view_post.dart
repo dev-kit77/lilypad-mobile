@@ -329,22 +329,22 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                       child: Text(
                                         'Replies to ',
                                         textAlign: TextAlign.start,
-                                        style: AppTheme.of(context).titleMedium
+                                        style: AppTheme.of(context).title
                                             .override(
                                               font: GoogleFonts.playfairDisplay(
                                                 fontWeight: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontWeight,
                                                 fontStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontWeight,
                                               fontStyle: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontStyle,
                                             ),
                                       ),
@@ -359,22 +359,22 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                       child: Text(
                                         updatedPost!.user.username,
                                         textAlign: TextAlign.start,
-                                        style: AppTheme.of(context).titleMedium
+                                        style: AppTheme.of(context).title
                                             .override(
                                               font: GoogleFonts.playfairDisplay(
                                                 fontWeight: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontWeight,
                                                 fontStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontWeight,
                                               fontStyle: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontStyle,
                                             ),
                                       ),
@@ -389,22 +389,22 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                       child: Text(
                                         '.',
                                         textAlign: TextAlign.start,
-                                        style: AppTheme.of(context).titleMedium
+                                        style: AppTheme.of(context).title
                                             .override(
                                               font: GoogleFonts.playfairDisplay(
                                                 fontWeight: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontWeight,
                                                 fontStyle: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontWeight,
                                               fontStyle: AppTheme.of(context)
-                                                  .titleMedium
+                                                  .title
                                                   .fontStyle,
                                             ),
                                       ),

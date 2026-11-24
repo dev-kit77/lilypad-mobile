@@ -47,9 +47,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   FocusNode? bioFocusNode;
   TextEditingController? bioTextController;
   String? Function(BuildContext, String?)? bioTextControllerValidator;
-  // State field(s) for Switch widget.
+  // State fields for Switch widgets.
+  bool? sysThemeSwitchValue;
   bool? darkSwitchValue;
-  // State field(s) for Switch widget.
   bool? pushSwitchValue;
 
   WigglyButtonState logoutButtonState = WigglyButtonState.idle;
@@ -76,6 +76,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     bioFocusNode ??= FocusNode();
 
     anonSwitchValue = false;
+    sysThemeSwitchValue = false;
     darkSwitchValue = false;
     pushSwitchValue = false;
   }
@@ -98,13 +99,25 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     try {
       //attempt fetch current user
       CurrentUser u = await UserService.fetch(noCache: refresh);
+
+      //sync the theme with the current user's saved preference
+      if (sysThemeSwitchValue == true) {
+        AppTheme.resetToSystem();
+      } else {
+        AppTheme.applyUserPreference(u.dark);
+      }
+
       setState(() {
         currUser = u;
         anonSwitchValue = u.anon;
         usernameTextController!.text = u.username;
         statusTextController!.text = u.status ?? '';
         bioTextController!.text = u.bio ?? '';
-        darkSwitchValue = u.dark;
+        pushSwitchValue = u.push;
+        sysThemeSwitchValue = u.sysTheme;
+        darkSwitchValue = sysThemeSwitchValue!
+            ? ThemeMode.system.isDark
+            : u.dark;
         refresh = false;
       });
     } on APIException catch (e) {
@@ -219,6 +232,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         dark: darkSwitchValue,
       );
 
+      CurrentUser? u = UserService.currentUser;
+
+      //sync the theme with the confirmed server value
+      if (u != null) {
+        AppTheme.applyUserPreference(
+          u.sysTheme ? ThemeMode.system.isDark : u.dark,
+        );
+      }
       //show success
       if (mounted) {
         setState(() => applyButtonState = WigglyButtonState.success);
@@ -338,7 +359,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                 'Your Settings.',
                                                 textAlign: TextAlign.start,
                                                 style: AppTheme.of(context)
-                                                    .titleMedium
+                                                    .title
                                                     .override(
                                                       font:
                                                           GoogleFonts.playfairDisplay(
@@ -346,22 +367,22 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontStyle,
                                                           ),
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontWeight,
+                                                      ).title.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).titleMedium.fontStyle,
+                                                      ).title.fontStyle,
                                                     ),
                                               ),
                                             ),
@@ -421,20 +442,20 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                   Text(
                                                     'Profile Settings',
                                                     style: AppTheme.of(context)
-                                                        .displaySmall
+                                                        .header
                                                         .override(
                                                           font: GoogleFonts.playfairDisplay(
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .displaySmall
+                                                                    .header
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .displaySmall
+                                                                    .header
                                                                     .fontStyle,
                                                           ),
                                                           letterSpacing: 0.0,
@@ -442,13 +463,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .displaySmall
+                                                                  .header
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .displaySmall
+                                                                  .header
                                                                   .fontStyle,
                                                         ),
                                                   ),
@@ -464,21 +485,22 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       'Here you can update your User profile.',
                                                       textAlign:
                                                           TextAlign.start,
-                                                      style: AppTheme.of(context)
-                                                          .titleMedium
-                                                          .override(
+                                                      style:
+                                                          AppTheme.of(
+                                                            context,
+                                                          ).title.override(
                                                             font: GoogleFonts.playfairDisplay(
                                                               fontWeight:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontWeight,
                                                               fontStyle:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontStyle,
                                                             ),
                                                             letterSpacing: 0.0,
@@ -486,13 +508,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .titleMedium
+                                                                    .title
                                                                     .fontStyle,
                                                           ),
                                                     ),
@@ -511,8 +533,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       );
                                                     },
                                                     activeThumbColor:
-                                                        AppTheme.of(context)
-                                                            .primary,
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
                                                     activeTrackColor:
                                                         AppTheme.of(context)
                                                             .primary,
@@ -1114,25 +1137,30 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                               Text(
                                                 'App Settings',
                                                 style: AppTheme.of(context)
-                                                    .displaySmall
+                                                    .header
                                                     .override(
-                                                      font: GoogleFonts.playfairDisplay(
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .displaySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(context)
-                                                                .displaySmall
-                                                                .fontStyle,
-                                                      ),
+                                                      font:
+                                                          GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .header
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .header
+                                                                    .fontStyle,
+                                                          ),
                                                       letterSpacing: 0.0,
                                                       fontWeight: AppTheme.of(
                                                         context,
-                                                      ).displaySmall.fontWeight,
+                                                      ).header.fontWeight,
                                                       fontStyle: AppTheme.of(
                                                         context,
-                                                      ).displaySmall.fontStyle,
+                                                      ).header.fontStyle,
                                                     ),
                                               ),
                                               Padding(
@@ -1147,30 +1175,27 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                   'Change how your app responds.',
                                                   textAlign: TextAlign.start,
                                                   style: AppTheme.of(context)
-                                                      .titleMedium
+                                                      .title
                                                       .override(
                                                         font: GoogleFonts.playfairDisplay(
                                                           fontWeight:
                                                               AppTheme.of(
                                                                     context,
                                                                   )
-                                                                  .titleMedium
+                                                                  .title
                                                                   .fontWeight,
                                                           fontStyle:
                                                               AppTheme.of(
-                                                                    context,
-                                                                  )
-                                                                  .titleMedium
-                                                                  .fontStyle,
+                                                                context,
+                                                              ).title.fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .titleMedium
-                                                                .fontWeight,
+                                                        fontWeight: AppTheme.of(
+                                                          context,
+                                                        ).title.fontWeight,
                                                         fontStyle: AppTheme.of(
                                                           context,
-                                                        ).titleMedium.fontStyle,
+                                                        ).title.fontStyle,
                                                       ),
                                                 ),
                                               ),
@@ -1178,16 +1203,88 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                 mainAxisSize: MainAxisSize.max,
                                                 children: [
                                                   Switch.adaptive(
-                                                    value: darkSwitchValue!,
+                                                    value: sysThemeSwitchValue!,
                                                     onChanged: (newValue) async {
                                                       setState(
-                                                        () => darkSwitchValue =
-                                                            newValue,
+                                                        () =>
+                                                            sysThemeSwitchValue =
+                                                                newValue,
                                                       );
                                                     },
                                                     activeThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
+                                                    activeTrackColor:
                                                         AppTheme.of(context)
                                                             .primary,
+                                                    inactiveTrackColor:
+                                                        AppTheme.of(context)
+                                                            .alternate,
+                                                    inactiveThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
+                                                  ),
+                                                  Text(
+                                                    'Use System Theme',
+                                                    style: AppTheme.of(context)
+                                                        .labelLarge
+                                                        .override(
+                                                          font: GoogleFonts.playfairDisplay(
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                  ),
+                                                ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Switch.adaptive(
+                                                    value: sysThemeSwitchValue!
+                                                        ? ThemeMode
+                                                              .system
+                                                              .isDark
+                                                        : darkSwitchValue!,
+                                                    onChanged:
+                                                        sysThemeSwitchValue!
+                                                        ? null
+                                                        : (newValue) async {
+                                                            setState(
+                                                              () =>
+                                                                  darkSwitchValue =
+                                                                      newValue,
+                                                            );
+                                                          },
+                                                    activeThumbColor:
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
                                                     activeTrackColor:
                                                         AppTheme.of(context)
                                                             .primary,
@@ -1247,8 +1344,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       );
                                                     },
                                                     activeThumbColor:
-                                                        AppTheme.of(context)
-                                                            .primary,
+                                                        AppTheme.of(
+                                                          context,
+                                                        ).secondaryBackground,
                                                     activeTrackColor:
                                                         AppTheme.of(context)
                                                             .primary,
@@ -1425,19 +1523,19 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                       children: [
                                                         Text(
                                                           'App Info',
-                                                          style: AppTheme.of(context).displaySmall.override(
+                                                          style: AppTheme.of(context).header.override(
                                                             font: GoogleFonts.playfairDisplay(
                                                               fontWeight:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .displaySmall
+                                                                      .header
                                                                       .fontWeight,
                                                               fontStyle:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .displaySmall
+                                                                      .header
                                                                       .fontStyle,
                                                             ),
                                                             letterSpacing: 0.0,
@@ -1445,13 +1543,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .displaySmall
+                                                                    .header
                                                                     .fontWeight,
                                                             fontStyle:
                                                                 AppTheme.of(
                                                                       context,
                                                                     )
-                                                                    .displaySmall
+                                                                    .header
                                                                     .fontStyle,
                                                           ),
                                                         ),
@@ -1467,19 +1565,19 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                             'Lilypad Client Version 0.90\nCopyright 2026 Kit Cochrane\nAll Rights Reserved',
                                                             textAlign:
                                                                 TextAlign.start,
-                                                            style: AppTheme.of(context).titleMedium.override(
+                                                            style: AppTheme.of(context).title.override(
                                                               font: GoogleFonts.playfairDisplay(
                                                                 fontWeight:
                                                                     AppTheme.of(
                                                                           context,
                                                                         )
-                                                                        .titleMedium
+                                                                        .title
                                                                         .fontWeight,
                                                                 fontStyle:
                                                                     AppTheme.of(
                                                                           context,
                                                                         )
-                                                                        .titleMedium
+                                                                        .title
                                                                         .fontStyle,
                                                               ),
                                                               letterSpacing:
@@ -1488,13 +1586,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontWeight,
                                                               fontStyle:
                                                                   AppTheme.of(
                                                                         context,
                                                                       )
-                                                                      .titleMedium
+                                                                      .title
                                                                       .fontStyle,
                                                             ),
                                                           ),

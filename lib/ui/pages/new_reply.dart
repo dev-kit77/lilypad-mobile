@@ -294,24 +294,23 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
                               child: Text(
                                 'New Reply.',
                                 textAlign: TextAlign.start,
-                                style: AppTheme.of(context).titleMedium
-                                    .override(
-                                      font: GoogleFonts.playfairDisplay(
-                                        fontWeight: AppTheme.of(context)
-                                            .titleMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleMedium
-                                            .fontStyle,
-                                      ),
-                                      letterSpacing: 0.0,
-                                      fontWeight: AppTheme.of(context)
-                                          .titleMedium
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .titleMedium
-                                          .fontStyle,
-                                    ),
+                                style: AppTheme.of(context).title.override(
+                                  font: GoogleFonts.playfairDisplay(
+                                    fontWeight: AppTheme.of(context)
+                                        .title
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .title
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: AppTheme.of(context)
+                                      .title
+                                      .fontWeight,
+                                  fontStyle: AppTheme.of(context)
+                                      .title
+                                      .fontStyle,
+                                ),
                               ),
                             ),
                           ],

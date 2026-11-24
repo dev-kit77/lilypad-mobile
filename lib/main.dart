@@ -57,6 +57,7 @@ void sessionInvalidCallback() async {
   ContentService.clear();
   UserService.clear();
   CacheService.clear();
+  AppTheme.resetToSystem();
 
   await DialogService.showAlert('Session Logout', 'You have been logged out.');
 
@@ -80,35 +81,40 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     LogService.log('Building Core App...', src: 'MainApp');
 
-    return MaterialApp(
-      navigatorKey: AppGlobal.navigatorKey,
-      initialRoute: SessionService.activeSession
-          ? FeedWidget.routePath
-          : LandingWidget.routePath,
-      theme: AppTheme.of(context).themeData,
-      routes: {LandingWidget.routePath: (_) => const LandingWidget()},
-      onGenerateRoute: (settings) {
-        final noCache = _noCacheFromRoute(settings);
-        if (settings.name == FeedWidget.routePath) {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => FeedWidget(noCache: noCache),
-          );
-        }
-        if (settings.name == ProfileWidget.routePath) {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => ProfileWidget(noCache: noCache),
-          );
-        }
-        if (settings.name == SettingsWidget.routePath) {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => SettingsWidget(noCache: noCache),
-          );
-        }
-        return null;
-      },
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeMode,
+      builder: (_, mode, _) => MaterialApp(
+        navigatorKey: AppGlobal.navigatorKey,
+        initialRoute: SessionService.activeSession
+            ? FeedWidget.routePath
+            : LandingWidget.routePath,
+        theme: AppTheme.light().themeData,
+        darkTheme: AppTheme.dark().themeData,
+        themeMode: mode,
+        routes: {LandingWidget.routePath: (_) => const LandingWidget()},
+        onGenerateRoute: (settings) {
+          final noCache = _noCacheFromRoute(settings);
+          if (settings.name == FeedWidget.routePath) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => FeedWidget(noCache: noCache),
+            );
+          }
+          if (settings.name == ProfileWidget.routePath) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => ProfileWidget(noCache: noCache),
+            );
+          }
+          if (settings.name == SettingsWidget.routePath) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => SettingsWidget(noCache: noCache),
+            );
+          }
+          return null;
+        },
+      ),
     );
   }
 }
