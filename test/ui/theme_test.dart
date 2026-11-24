@@ -48,7 +48,7 @@ void main() {
     expect(light.isDark, isFalse);
     expect(dark.isDark, isTrue);
 
-    expect(dark.primaryBackground, Colors.black);
+    expect(dark.primaryBackground, const Color(0xFF1C2024));
     expect(dark.primaryText, isNot(light.primaryText));
     expect(dark.headline.color, dark.primaryText);
     expect(dark.labelLarge.color, dark.secondaryText);
