@@ -21,55 +21,75 @@ class _UserWidgetState extends State<UserWidget> {
       clipBehavior: Clip.antiAliasWithSaveLayer,
       color: AppTheme.of(context).secondaryBackground,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  widget.user.username,
-                  style: AppTheme.of(context).bodyLarge.override(
-                    font: GoogleFonts.playfairDisplay(
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    widget.user.username,
+                    style: AppTheme.of(context).bodyLarge.override(
+                      font: GoogleFonts.playfairDisplay(
+                        fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                        fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
+                      ),
+                      letterSpacing: 0.0,
                       fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
                       fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                     ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
-                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                   ),
-                ),
-                Text(
-                  widget.user.status ?? 'I am on lilypad',
-                  style: AppTheme.of(context).bodySmall.override(
-                    font: GoogleFonts.playfairDisplay(
+                  Text(
+                    widget.user.status ?? 'I am on lilypad',
+                    style: AppTheme.of(context).bodySmall.override(
+                      font: GoogleFonts.playfairDisplay(
+                        fontWeight: AppTheme.of(context).bodySmall.fontWeight,
+                        fontStyle: AppTheme.of(context).bodySmall.fontStyle,
+                      ),
+                      letterSpacing: 0.0,
                       fontWeight: AppTheme.of(context).bodySmall.fontWeight,
                       fontStyle: AppTheme.of(context).bodySmall.fontStyle,
                     ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTheme.of(context).bodySmall.fontWeight,
-                    fontStyle: AppTheme.of(context).bodySmall.fontStyle,
                   ),
-                ),
-                Text(
-                  widget.user.bio ?? 'lilypad User',
-                  style: AppTheme.of(context).bodyMedium.override(
-                    font: GoogleFonts.playfairDisplay(
-                      fontWeight: AppTheme.of(context).bodyMedium.fontWeight,
-                      fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTheme.of(context).bodyMedium.fontWeight,
-                    fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                  Wrap(
+                    spacing: 0,
+                    runSpacing: 0,
+                    alignment: WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.start,
+                    direction: Axis.horizontal,
+                    runAlignment: WrapAlignment.start,
+                    verticalDirection: VerticalDirection.down,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Text(
+                        widget.user.bio ?? 'lilypad User',
+                        style: AppTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.playfairDisplay(
+                            fontWeight: AppTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: AppTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: AppTheme.of(context)
+                              .bodyMedium
+                              .fontWeight,
+                          fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ].divide(SizedBox(height: 4)),
+                ].divide(SizedBox(height: 4)),
+              ),
             ),
           ),
         ],
