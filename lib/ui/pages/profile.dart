@@ -61,6 +61,21 @@ class _ProfileWidgetState extends State<ProfileWidget>
       ..addListener(() => setState(() {}));
   }
 
+  void _syncPost(Post p) {
+    if (mounted && userPosts != null && userReplies != null) {
+      setState(() {
+        //for both lists
+        for (final list in <List<Post>?>[userPosts, userReplies]) {
+          //find indexes where post ids equal
+          final i = list?.indexWhere((e) => e.uuid == p.uuid) ?? -1;
+
+          //replace if found
+          if (i >= 0) list![i] = p;
+        }
+      });
+    }
+  }
+
   void _openNewPost() async {
     //set loading state
     if (mounted) {
@@ -403,6 +418,8 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                             ?.map(
                                                               (p) => PostWidget(
                                                                 post: p,
+                                                                onUpdate:
+                                                                    _syncPost,
                                                               ),
                                                             )
                                                             .toList()
@@ -549,6 +566,8 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                             ?.map(
                                                               (p) => PostWidget(
                                                                 post: p,
+                                                                onUpdate:
+                                                                    _syncPost,
                                                               ),
                                                             )
                                                             .toList()

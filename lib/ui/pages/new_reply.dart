@@ -68,6 +68,7 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
           setState(() => postButtonState = WigglyButtonState.idle);
         }
       });
+      return;
     }
 
     //set loading state
@@ -75,10 +76,16 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
       setState(() => postButtonState = WigglyButtonState.loading);
     }
 
+    //init new reply
+    Post? newReply;
+
     try {
       try {
         //attempt create reply
-        await ContentService.newReply(widget.replyingTo.uuid, content);
+        newReply = await ContentService.newReply(
+          widget.replyingTo.uuid,
+          content,
+        );
       } on APIException catch (e) {
         if (mounted) {
           await DialogService.showAlert(
@@ -114,7 +121,7 @@ class _NewReplyWidgetState extends State<NewReplyWidget> {
       Future.delayed(const Duration(seconds: 1), () {
         //exit back to previous page
         if (mounted) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(newReply != null);
         }
       });
     } catch (_) {

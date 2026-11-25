@@ -63,9 +63,7 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
       );
 
       if (mounted) {
-        setState(() {
-          updatedPost!.replies = r;
-        });
+        setState(() => updatedPost = updatedPost!.copyWith(replies: r));
       }
     } on APIException catch (e) {
       if (mounted) {
@@ -130,6 +128,22 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
         }
       }
     });
+  }
+
+  void _syncPost(Post p) {
+    if (mounted && updatedPost!.replies.isNotEmpty) {
+      //find indexes where post ids equal
+      final i = updatedPost!.replies.indexWhere((r) => r.uuid == p.uuid);
+
+      //replace immutably if found
+      if (i >= 0) {
+        setState(() {
+          final replies = List<Post>.from(updatedPost!.replies);
+          replies[i] = p;
+          updatedPost = updatedPost!.copyWith(replies: replies);
+        });
+      }
+    }
   }
 
   @override
@@ -223,10 +237,12 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                                 post: updatedPost!,
                                                 replyingTo: widget.replying,
                                                 onUpdate: (p) {
+                                                  _syncPost(p);
                                                   setState(() {
-                                                    p.replies =
-                                                        updatedPost!.replies;
-                                                    updatedPost = p;
+                                                    updatedPost = p.copyWith(
+                                                      replies:
+                                                          updatedPost!.replies,
+                                                    );
                                                   });
                                                 },
                                                 noCache: true,
@@ -446,6 +462,7 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                               (r) => PostWidget(
                                                 post: r,
                                                 replyingTo: updatedPost!,
+                                                onUpdate: _syncPost,
                                                 noCache: widget.noCache,
                                               ),
                                             )

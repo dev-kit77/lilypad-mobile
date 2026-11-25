@@ -62,6 +62,17 @@ class _PostWidgetState extends State<PostWidget> {
     }
   }
 
+  @override
+  void didUpdateWidget(covariant PostWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.post, oldWidget.post)) {
+      updatedPost = widget.post;
+    }
+    if (!identical(widget.replyingTo, oldWidget.replyingTo)) {
+      fetchedReplyingTo = widget.replyingTo;
+    }
+  }
+
   void _fetchReplying() async {
     try {
       //attempt update
@@ -109,10 +120,15 @@ class _PostWidgetState extends State<PostWidget> {
         if (updatedPost!.user.bio == null && updatedPost!.user.status == null) {
           try {
             //attempt update
-            updatedPost!.user = await ContentService.fetchUser(
+            final fetchedUser = await ContentService.fetchUser(
               updatedPost!.user.uuid!,
               noCache: widget.noCache,
             );
+            if (mounted) {
+              setState(
+                () => updatedPost = updatedPost!.copyWith(user: fetchedUser),
+              );
+            }
           } on APIException catch (e) {
             if (mounted) {
               await DialogService.showAlert(
@@ -139,6 +155,7 @@ class _PostWidgetState extends State<PostWidget> {
             return;
           }
         }
+
         flippableCardIsFront = !flippableCardIsFront;
       },
       direction: FlipDirection.VERTICAL,
@@ -147,7 +164,7 @@ class _PostWidgetState extends State<PostWidget> {
         clipBehavior: Clip.antiAliasWithSaveLayer,
         color: AppTheme.of(context).secondaryBackground,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -163,16 +180,27 @@ class _PostWidgetState extends State<PostWidget> {
                   children: [
                     updatedPost!.replying != null
                         ? GestureDetector(
-                            onTap: () {
+                            onTap: () async {
                               if (fetchedReplyingTo != null) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (context) => ViewPostWidget(
-                                      post: fetchedReplyingTo!,
-                                      noCache: widget.noCache,
-                                    ),
-                                  ),
-                                );
+                                Post? updated = await Navigator.of(context)
+                                    .push<Post>(
+                                      MaterialPageRoute<Post>(
+                                        builder: (context) => ViewPostWidget(
+                                          post: fetchedReplyingTo!,
+                                          noCache: widget.noCache,
+                                        ),
+                                      ),
+                                    );
+
+                                if (updated != null &&
+                                    updated != fetchedReplyingTo &&
+                                    updated.uuid == fetchedReplyingTo!.uuid &&
+                                    mounted) {
+                                  setState(() {
+                                    fetchedReplyingTo = updated;
+                                  });
+                                  widget.onUpdate?.call(updated);
+                                }
                               }
                             },
                             child: Row(
@@ -434,14 +462,25 @@ class _PostWidgetState extends State<PostWidget> {
                     formatType: NumberFormatType.compact,
                   ),
                   icon: FaIcon(
-                    FaIconData(
-                      const IconData(
-                        /* arrowAltCircleUp */ 0xf35b,
-                        fontFamily: 'FontAwesomeRegular',
-                        fontPackage: 'font_awesome_flutter',
-                      ),
-                    ),
-                    size: 20,
+                    updatedPost!.upvoted
+                        ? FaIconData(
+                            const IconData(
+                              /* solidArrowAltCircleUp */ 0xf35b,
+                              fontFamily: 'FontAwesomeSolid',
+                              fontPackage: 'font_awesome_flutter',
+                            ),
+                          )
+                        : FaIconData(
+                            const IconData(
+                              /* arrowAltCircleUp */ 0xf35b,
+                              fontFamily: 'FontAwesomeRegular',
+                              fontPackage: 'font_awesome_flutter',
+                            ),
+                          ),
+                    size: 24,
+                    color: updatedPost!.upvoted
+                        ? AppTheme.of(context).primary
+                        : AppTheme.of(context).secondaryText,
                   ),
                   options: AppButtonOptions(
                     height: 30,
@@ -475,10 +514,14 @@ class _PostWidgetState extends State<PostWidget> {
                       ),
                     );
 
-                    if (updated != updatedPost! && mounted) {
+                    if (updated != null &&
+                        updated != updatedPost &&
+                        updated.uuid == updatedPost!.uuid &&
+                        mounted) {
                       setState(() {
                         updatedPost = updated;
                       });
+                      widget.onUpdate?.call(updated);
                     }
                   },
                   text: formatNumber(
@@ -493,7 +536,7 @@ class _PostWidgetState extends State<PostWidget> {
                         fontPackage: 'font_awesome_flutter',
                       ),
                     ),
-                    size: 20,
+                    size: 24,
                   ),
                   options: AppButtonOptions(
                     height: 30,
@@ -529,9 +572,9 @@ class _PostWidgetState extends State<PostWidget> {
 
                       if (updated != null && mounted) {
                         setState(() {
-                          widget.onUpdate?.call(updated);
                           updatedPost = updated;
                         });
+                        widget.onUpdate?.call(updated);
                       }
                     },
                     icon: FaIcon(
@@ -542,7 +585,7 @@ class _PostWidgetState extends State<PostWidget> {
                           fontPackage: 'font_awesome_flutter',
                         ),
                       ),
-                      size: 15,
+                      size: 24,
                     ),
                     options: AppButtonOptions(
                       height: 30,

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:lilypad/models/post.dart';
 import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/util/api_ex.dart';
@@ -67,6 +68,7 @@ class _NewPostWidgetState extends State<NewPostWidget> {
           setState(() => postButtonState = WigglyButtonState.idle);
         }
       });
+      return;
     }
 
     //set loading state
@@ -74,10 +76,12 @@ class _NewPostWidgetState extends State<NewPostWidget> {
       setState(() => postButtonState = WigglyButtonState.loading);
     }
 
+    Post? newPost;
+
     try {
       try {
         //attempt create post
-        await ContentService.newPost(content);
+        newPost = await ContentService.newPost(content);
       } on APIException catch (e) {
         if (mounted) {
           await DialogService.showAlert(
@@ -113,7 +117,7 @@ class _NewPostWidgetState extends State<NewPostWidget> {
       Future.delayed(const Duration(seconds: 1), () {
         //exit back to previous page
         if (mounted) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(newPost != null);
         }
       });
     } catch (_) {

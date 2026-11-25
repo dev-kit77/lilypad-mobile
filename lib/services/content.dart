@@ -19,16 +19,99 @@ class ContentService {
 
   ///getter for newestFeed. returns a new list containing all items from the feed sorted by updated if exists or creation
   static List<Post> get newestFeed {
+    //no sorting needed if empty
+    if (_feed.isEmpty) return <Post>[];
+
+    //create sorted list from feed
     final List<Post> sorted = List.from(_feed);
     sorted.sort((Post a, Post b) {
       final DateTime aDate = a.updated ?? a.created;
       final DateTime bDate = b.updated ?? b.created;
       return bDate.compareTo(aDate);
     });
+
     return sorted;
   }
 
-  static void _refreshFeed() {
+  //helper to update the post tree
+  static void _upsertToRoot(Post p) {
+    if (p.replying != null) {
+      Post? parent = CacheService.fetch(p.replying!) as Post?;
+      Post newParent;
+
+      if (parent == null) {
+        return;
+      } else {
+        //create list to append
+        List<Post> appended = List.from(parent.replies);
+
+        //remove old reply
+        appended.removeWhere((o) => p.uuid == o.uuid);
+
+        //append new reply
+        appended.add(p);
+
+        //create new parent
+        newParent = parent.copyWith(replies: appended);
+
+        //overwrite old post reply data
+        CacheService.store(o: newParent);
+      }
+
+      //update parent ref up chain
+      _upsertToRoot(newParent);
+    } else {
+      return;
+    }
+  }
+
+  //helper to update the post tree
+  static void _deleteToRoot(Post p) {
+    //delete from parents
+    if (p.replying != null) {
+      Post? parent = CacheService.fetch(p.replying!) as Post?;
+      Post newParent;
+
+      if (parent == null) {
+        return;
+      } else {
+        //create list to append
+        List<Post> removal = List.from(parent.replies);
+
+        //check if reply is being removed
+        final bool hasChild = removal.any((o) => o.uuid == p.uuid);
+
+        if (hasChild) {
+          //remove old reply if there
+          removal.removeWhere((o) => p.uuid == o.uuid);
+        }
+
+        //create new parent
+        newParent = parent.copyWith(
+          replies: removal,
+          noReplies: hasChild && parent.noReplies > 0
+              ? parent.noReplies - 1
+              : parent.noReplies,
+        );
+
+        //overwrite old post reply data
+        CacheService.store(o: newParent);
+      }
+
+      //update parent ref up chain
+      _upsertToRoot(newParent);
+    } else {
+      return;
+    }
+  }
+
+  //method to refresh the feed from cache can include a new post
+  //include adds that post into the returned feed cache
+  //ignore ignores the missing post id provided to it and removes it from the feed cache
+  static bool refreshFromCache({Post? include, String? ignore}) {
+    //init success
+    bool success = true;
+
     //get current location
     final Map<String, double?> currLocation = GeolocationService.location;
 
@@ -36,42 +119,73 @@ class ContentService {
     if (currLocation.values.contains(null)) {
       LogService.err('Location Service not ready.', src: 'Content Service');
     } else {
+      final feedUrl = ContentRequestBuilder.feedSpatial(
+        currLocation['lat']!,
+        currLocation['lon']!,
+      ).url.toString();
+
       //retrieve feed cache if any
-      final List<String>? feedCache = CacheService.fetch(
-        ContentRequestBuilder.feedSpatial(
-          currLocation['lat']!,
-          currLocation['lon']!,
-        ).url.toString(),
-      ) as List<String>?;
+      final List<String>? feedCache =
+          CacheService.fetch(feedUrl) as List<String>?;
 
       //check feed cache to see if we have a pre-prepared feed
       if (feedCache != null) {
-        final List<Post> cacheFeed = <Post>[];
+        //init check val
+        bool feedValid = true;
+
+        //init post holder
+        final List<Post> cacheFeed = include != null && include.replying == null
+            ? <Post>[include]
+            : <Post>[];
+
+        //init list of uuid
+        final List<String> postList =
+            include != null && include.replying == null
+            ? <String>[include.uuid]
+            : <String>[];
 
         for (String id in feedCache) {
           //get post in feed from cache
-          final Post? cachedPost = CacheService.fetch(id) as Post?;
+          Post? cachedPost = CacheService.fetch(id) as Post?;
 
           //add post to feed if found
           if (cachedPost != null) {
+            //add post
             cacheFeed.add(cachedPost);
+            postList.add(id);
+          } else if (id != ignore) {
+            feedValid = false;
+            break;
           }
         }
 
-        //update feed var in case of updated posts in cache
-        _feed = List.from(cacheFeed);
+        if (feedValid) {
+          //store list of post uuid
+          CacheService.store(o: postList, key: feedUrl);
+
+          //update feed var in case of updated posts in cache
+          _feed = cacheFeed;
+        } else {
+          success = feedValid;
+        }
       }
     }
 
+    //build request
+    String usrContentUrl = UserRequestBuilder.getContent().url.toString();
+
     //retrieve feed cache if any
-    List<String>? userCache = CacheService.fetch(
-      UserRequestBuilder.getContent().url.toString(),
-    ) as List<String>?;
+    List<String>? userCache =
+        CacheService.fetch(usrContentUrl) as List<String>?;
 
     //check feed cache to see if we have a pre-prepared feed
     if (userCache != null) {
+      bool userValid = true;
       final List<Post> cachePosts = <Post>[];
       final List<Post> cacheReplies = <Post>[];
+
+      //init list of uuid
+      final List<String> postList = <String>[];
 
       for (String id in userCache) {
         //get post in feed from cache
@@ -79,18 +193,45 @@ class ContentService {
 
         //add post to feed if found
         if (cachePost != null) {
+          //add to cache
           if (cachePost.replying == null) {
             cachePosts.add(cachePost);
           } else {
             cacheReplies.add(cachePost);
           }
+
+          //add to updated post list
+          postList.add(id);
+        } else if (id != ignore) {
+          userValid = false;
         }
       }
+      if (userValid == true) {
+        //add include to user posts
+        if (include != null) {
+          if (include.replying == null) {
+            cachePosts.add(include);
+          } else {
+            cacheReplies.add(include);
+          }
 
-      //update user feed vars
-      _userPosts = List.from(cachePosts);
-      _userReplies = List.from(cacheReplies);
+          //add to updated post list
+          postList.add(include.uuid);
+        }
+
+        //store list of post uuid
+        CacheService.store(o: postList, key: usrContentUrl);
+
+        //update feed var in case of updated posts in cache
+        _userPosts = cachePosts;
+        _userReplies = cacheReplies;
+      } else {
+        success = userValid;
+      }
     }
+
+    //refresh success
+    return success;
   }
 
   /// Retrieves the nearby content feed for the current location.
@@ -139,10 +280,10 @@ class ContentService {
       }
 
       //update feed var in case of updated posts in cache
-      _feed = List.from(cacheFeed);
+      _feed = cacheFeed;
 
       //return cached feed
-      return cacheFeed;
+      return List.from(_feed);
     }
 
     //init response var
@@ -171,7 +312,7 @@ class ContentService {
     CacheService.store(o: postList, key: req.url.toString());
 
     //init feed variable
-    _feed = List.from(newFeed);
+    _feed = newFeed;
 
     //return new feed separate from one stored in cache
     return List.from(_feed);
@@ -192,17 +333,61 @@ class ContentService {
       for (Post reply in replies) reply.uuid: reply,
     };
 
-    //cache each post as we have a nice collection of all the data we need
-    allByID.forEach((key, val) => CacheService.store(o: val, key: key));
-
-    //loop for all replies and link to bound posts
+    //index each reply by its parent, ignoring orphaned replies
+    Map<String, List<Post>> childrenByParent = <String, List<Post>>{};
     for (Post reply in replies) {
-      allByID[reply.replying]?.linkReply(reply);
+      String? parentID = reply.replying;
+      if (parentID != null && allByID.containsKey(parentID)) {
+        childrenByParent.putIfAbsent(parentID, () => <Post>[]).add(reply);
+      }
     }
+
+    //posts are immutable, so build linked copies bottom-up and memoize them
+    Map<String, Post> linkedByID = <String, Post>{};
+
+    Post link(String id, Set<String> visiting) {
+      //guard if post is already linked
+      Post? linked = linkedByID[id];
+      if (linked != null) return linked;
+
+      //get post from id map
+      Post post = allByID[id]!;
+
+      //guard against malformed reply chains that point back to an already added ancestor
+      if (!visiting.add(id)) return post;
+
+      //recursively link childrens replies
+      List<Post> children = (childrenByParent[id] ?? const <Post>[])
+          .map((Post child) => link(child.uuid, visiting))
+          .toList();
+
+      //remove id from
+      visiting.remove(id);
+
+      //linked to new copy with replies
+      linked = post.copyWith(replies: children);
+
+      //replace in list
+      linkedByID[id] = linked;
+
+      //return back up the chain
+      return linked;
+    }
+
+    //link all posts to each other
+    List<Post> linkedPosts = posts
+        .map((Post p) => link(p.uuid, <String>{}))
+        .toList();
+    List<Post> linkedReplies = replies
+        .map((Post r) => link(r.uuid, <String>{}))
+        .toList();
+
+    //cache the fully linked posts so cached post retain their reply trees
+    linkedByID.forEach((key, val) => CacheService.store(o: val, key: key));
 
     //return posts list as stem of tree and replies so user replies can be separated as these may not have accompaning post
     //replies could contain orphaned replies but these should be discarded in main feed
-    return {'posts': posts, 'replies': replies};
+    return {'posts': linkedPosts, 'replies': linkedReplies};
   }
 
   /// Retrieves a single post by its ID.
@@ -239,14 +424,23 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
-    //update post in feed
-    _refreshFeed();
+    //fetch previous copy for cached replies
+    Post? oldPost = CacheService.fetch(fetchedPost.uuid) as Post?;
 
-    //cache our new feed data
-    CacheService.store(o: fetchedPost);
+    //create new post with cached replies
+    Post newPost = fetchedPost.copyWith(replies: oldPost?.replies ?? <Post>[]);
+
+    //propagate updates back to root post
+    _upsertToRoot(newPost);
+
+    //cache our new post data
+    CacheService.store(o: newPost);
+
+    //update post in feed
+    refreshFromCache();
 
     //return new feed separate from one stored in cache
-    return fetchedPost;
+    return newPost;
   }
 
   /// Creates a new root post at the current location.
@@ -289,11 +483,11 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
-    //update post in feed
-    _refreshFeed();
-
-    //cache our new feed data
+    //cache our new post data
     CacheService.store(o: fetchedPost);
+
+    //update post in feed
+    refreshFromCache(include: fetchedPost);
 
     //return new feed separate from one stored in cache
     return fetchedPost;
@@ -326,16 +520,44 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
-    //remove cache of original inaccurate post
-    CacheService.free(postId);
-
-    //update post in feed
-    _refreshFeed();
-
     //cache our new post data
     CacheService.store(o: fetchedPost);
 
-    //return new feed separate from one stored in cache
+    //fetch previous copy for cached replies
+    Post? oldPost = CacheService.fetch(postId) as Post?;
+
+    //if in cache
+    if (oldPost != null) {
+      //create list to append
+      List<Post> appended = List.from(oldPost.replies);
+
+      //remove old reply
+      appended.removeWhere((o) => fetchedPost.uuid == o.uuid);
+
+      final bool alreadyLinked = oldPost.replies.any(
+        (r) => r.uuid == fetchedPost.uuid,
+      );
+
+      //append new reply
+      appended.add(fetchedPost);
+
+      //create new parent
+      final Post newParent = oldPost.copyWith(
+        replies: appended,
+        noReplies: oldPost.noReplies + (alreadyLinked ? 0 : 1),
+      );
+
+      //overwrite old post reply data
+      CacheService.store(o: newParent);
+
+      //update post tree
+      _upsertToRoot(newParent);
+    }
+
+    //update post in feed
+    refreshFromCache(include: fetchedPost);
+
+    //return new reply
     return fetchedPost;
   }
 
@@ -367,14 +589,24 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
-    //update post in feed
-    _refreshFeed();
+    //fetch previous copy for cached replies
+    Post? oldPost = CacheService.fetch(fetchedPost.uuid) as Post?;
 
-    //cache our new feed data
-    CacheService.store(o: fetchedPost);
+    //create post with cached replies
+    Post newPost = fetchedPost.copyWith(replies: oldPost?.replies ?? <Post>[]);
+
+    //update post tree
+    _upsertToRoot(newPost);
+
+    //cache our new post data
+    CacheService.store(o: newPost);
+
+    //update post in feed
+
+    refreshFromCache();
 
     //return new feed separate from one stored in cache
-    return fetchedPost;
+    return newPost;
   }
 
   /// Deletes a post authored by the current user.
@@ -404,8 +636,21 @@ class ContentService {
     //check status is ok
     bool status = jsonDecode(res.body)['status'] == 'OK';
 
-    //cache our new feed data
-    CacheService.free(postId);
+    if (status) {
+      //get deleted post
+      Post? oldPost = CacheService.fetch(postId) as Post?;
+
+      //check recieved
+      if (oldPost != null) {
+        _deleteToRoot(oldPost);
+      }
+
+      //cache our new feed data
+      CacheService.free(postId);
+
+      //update feed
+      refreshFromCache(ignore: postId);
+    }
 
     //return new feed separate from one stored in cache
     return status;
@@ -437,14 +682,21 @@ class ContentService {
     //parse the response from the api
     Post fetchedPost = Post.fromMap(jsonDecode(res.body)['post']);
 
-    //update post in feed
-    _refreshFeed();
+    //fetch previous copy for cached replies
+    Post? oldPost = CacheService.fetch(fetchedPost.uuid) as Post?;
 
-    //cache our new feed data
-    CacheService.store(o: fetchedPost);
+    Post newPost = fetchedPost.copyWith(replies: oldPost?.replies ?? <Post>[]);
+
+    //cache our new post data
+    CacheService.store(o: newPost);
+
+    _upsertToRoot(newPost);
+
+    //update post in feed
+    refreshFromCache();
 
     //return new feed separate from one stored in cache
-    return fetchedPost;
+    return newPost;
   }
 
   /// Retrieves replies to the post identified by [postId].
@@ -501,11 +753,24 @@ class ContentService {
 
     //init list of uuid
     final List<String> postList = <String>[];
+    final List<Post> newReplies = <Post>[];
 
     //add all replies to cache and uuids to list
     for (Post r in replies) {
-      //add reply to cache
-      CacheService.store(o: r);
+      //fetch previous copy for cached replies
+      Post? oldPost = CacheService.fetch(r.uuid) as Post?;
+
+      //create new post with cached replies
+      Post newPost = r.copyWith(replies: oldPost?.replies ?? <Post>[]);
+
+      //propagate updates back to root post
+      _upsertToRoot(newPost);
+
+      //cache our new post data
+      CacheService.store(o: newPost);
+
+      //append to new post
+      newReplies.add(newPost);
 
       //add uuid to list
       postList.add(r.uuid);
@@ -515,7 +780,7 @@ class ContentService {
     CacheService.store(o: postList, key: req.url.toString());
 
     //return new feed separate from one stored in cache
-    return List.from(replies);
+    return newReplies;
   }
 
   /// Retrieves public profile data for the user identified by [userId].
@@ -597,11 +862,14 @@ class ContentService {
       }
 
       //update feed var in case of updated posts in cache
-      _userPosts = List.from(cachePosts);
-      _userReplies = List.from(cacheReplies);
+      _userPosts = cachePosts;
+      _userReplies = cacheReplies;
 
       //return cached feed
-      return {'posts': cachePosts, 'replies': cacheReplies};
+      return {
+        'posts': List.from(_userPosts),
+        'replies': List.from(_userReplies),
+      };
     }
 
     //init response var
@@ -616,8 +884,11 @@ class ContentService {
     }
 
     //parse the response from the api
-    List<Post> newUserPosts = _parseFeed(res)['posts']!;
-    List<Post> newUserReplies = _parseFeed(res)['replies']!;
+    Map<String, List<Post>> feed = _parseFeed(res);
+
+    //get lists of posts and replies
+    List<Post> newUserPosts = feed['posts']!;
+    List<Post> newUserReplies = feed['replies']!;
 
     //init list of uuid
     final List<String> postList = <String>[];
@@ -633,14 +904,21 @@ class ContentService {
     CacheService.store(o: postList, key: req.url.toString());
 
     //init feed variable
-    _userPosts = List.from(newUserPosts);
-    _userReplies = List.from(newUserReplies);
+    _userPosts = newUserPosts;
+    _userReplies = newUserReplies;
 
     //return new feed separate from one stored in cache
     return {'posts': List.from(_userPosts), 'replies': List.from(_userReplies)};
   }
 
-  static DateTime? get latest => _feed.first.updated ?? _feed.first.created;
+  static DateTime? get latest {
+    if (_feed.isNotEmpty) {
+      final latestPost = newestFeed.first;
+      return latestPost.updated ?? latestPost.created;
+    } else {
+      return null;
+    }
+  }
 
   static void clear() {
     _feed.clear();

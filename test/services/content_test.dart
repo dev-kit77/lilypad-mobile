@@ -68,6 +68,28 @@ void main() {
     );
   }
 
+  Post cachedTreePost({
+    required String uuid,
+    String content = 'cached content',
+    String? replying,
+    int noReplies = 0,
+    int upvotes = 0,
+    bool upvoted = false,
+    List<Post> replies = const <Post>[],
+  }) {
+    return Post(
+      uuid: uuid,
+      content: content,
+      user: User(uuid: 'user-1', username: 'kit'),
+      created: DateTime.utc(2026, 1, 1),
+      upvotes: upvotes,
+      upvoted: upvoted,
+      replying: replying,
+      noReplies: noReplies,
+      replies: replies,
+    );
+  }
+
   void queueHttpError(
     int statusCode, {
     String? error,
@@ -444,7 +466,7 @@ void main() {
   });
 
   group('newReply', () {
-    test('creates a reply and invalidates the cached parent', () async {
+    test('creates a reply and appends it to the cached parent', () async {
       CacheService.store(o: cachedPost(uuid: 'parent'));
       api.queueJson(<String, Object>{
         'post': postJson(
@@ -473,7 +495,11 @@ void main() {
         equals(<String, String>{'content': 'hello back'}),
       );
 
-      expect(CacheService.fetch('parent'), isNull);
+      final Post parent = CacheService.fetch('parent')! as Post;
+      expect(parent.uuid, equals('parent'));
+      expect(parent.replies.map((p) => p.uuid), contains(reply.uuid));
+      expect(parent.replies.single, same(reply));
+      expect(parent.noReplies, equals(1));
       expect(reply.uuid, equals('reply-1'));
       expect(CacheService.fetch('reply-1'), same(reply));
     });
@@ -1076,6 +1102,236 @@ void main() {
         withApi(ContentService.fetchUserContent),
         throwsA(isA<SocketException>()),
       );
+    });
+  });
+
+  group('post state', () {
+    test('editing a reply replaces the cached copy in its ancestor tree',
+        () async {
+      final Post nested = cachedTreePost(uuid: 'nested', replying: 'reply');
+      final Post reply = cachedTreePost(
+        uuid: 'reply',
+        replying: 'root',
+        noReplies: 1,
+        replies: <Post>[nested],
+      );
+      final Post root = cachedTreePost(
+        uuid: 'root',
+        noReplies: 1,
+        replies: <Post>[reply],
+      );
+      CacheService.store(o: root);
+      CacheService.store(o: reply);
+      CacheService.store(o: nested);
+
+      api.queueJson(<String, Object>{
+        'post': postJson(
+          id: 'reply',
+          replyingTo: 'root',
+          content: 'edited reply',
+          replyCount: 1,
+        ),
+      });
+
+      final Post updated = await withApi(
+        () => ContentService.modifyPost('reply', 'edited reply'),
+      );
+
+      final Post cachedRoot = CacheService.fetch('root')! as Post;
+      expect(cachedRoot.replies, hasLength(1));
+      expect(cachedRoot.replies.single.uuid, equals('reply'));
+      expect(cachedRoot.replies.single.content, equals('edited reply'));
+      expect(cachedRoot.replies.single.replies.single.uuid, equals('nested'));
+      expect(cachedRoot.noReplies, equals(1));
+      expect(CacheService.fetch('reply'), same(updated));
+    });
+
+    test('upvoting a reply updates the ancestor tree without duplicating it',
+        () async {
+      final Post reply = cachedTreePost(uuid: 'reply', replying: 'root');
+      CacheService.store(
+        o: cachedTreePost(
+          uuid: 'root',
+          noReplies: 1,
+          replies: <Post>[reply],
+        ),
+      );
+      CacheService.store(o: reply);
+
+      api.queueJson(<String, Object>{
+        'post': postJson(
+          id: 'reply',
+          replyingTo: 'root',
+          upvotes: 3,
+          upvoted: true,
+        ),
+      });
+
+      final Post updated = await withApi(
+        () => ContentService.upvotePost('reply'),
+      );
+
+      final Post cachedRoot = CacheService.fetch('root')! as Post;
+      expect(cachedRoot.replies, hasLength(1));
+      expect(cachedRoot.replies.single.upvotes, equals(3));
+      expect(cachedRoot.replies.single.upvoted, isTrue);
+      expect(cachedRoot.noReplies, equals(1));
+      expect(CacheService.fetch('reply'), same(updated));
+    });
+
+    test('deleting a reply removes it from the ancestor tree and decrements '
+        'the parent count', () async {
+      final Post reply = cachedTreePost(uuid: 'reply', replying: 'root');
+      CacheService.store(
+        o: cachedTreePost(
+          uuid: 'root',
+          noReplies: 1,
+          replies: <Post>[reply],
+        ),
+      );
+      CacheService.store(o: reply);
+      api.queueJson(<String, String>{'status': 'OK'});
+
+      final bool removed = await withApi(
+        () => ContentService.removePost('reply'),
+      );
+
+      expect(removed, isTrue);
+      final Post cachedRoot = CacheService.fetch('root')! as Post;
+      expect(cachedRoot.replies, isEmpty);
+      expect(cachedRoot.noReplies, equals(0));
+      expect(CacheService.fetch('reply'), isNull);
+    });
+
+    test('does not duplicate an already cached reply when incrementing the '
+        'count', () async {
+      final Post existing = cachedTreePost(
+        uuid: 'reply-1',
+        replying: 'parent',
+        content: 'old reply',
+      );
+      CacheService.store(
+        o: cachedTreePost(
+          uuid: 'parent',
+          noReplies: 1,
+          replies: <Post>[existing],
+        ),
+      );
+
+      api.queueJson(<String, Object>{
+        'post': postJson(
+          id: 'reply-1',
+          replyingTo: 'parent',
+          content: 'hello back',
+        ),
+      });
+
+      await withApi(() => ContentService.newReply('parent', 'hello back'));
+
+      final Post parent = CacheService.fetch('parent')! as Post;
+      expect(parent.replies, hasLength(1));
+      expect(parent.replies.single.uuid, equals('reply-1'));
+      expect(parent.noReplies, equals(1));
+    });
+
+    test('keeps a newly created root post in the cached feed', () async {
+      await givenLocation();
+      api.queueJson(<String, Object>{
+        'posts': <Object>[postJson(id: 'root')],
+        'replies': <Object>[],
+      });
+      await withApi(ContentService.fetchFeed);
+
+      api.queueJson(<String, Object>{
+        'post': postJson(id: 'new-post'),
+      });
+      await withApi(() => ContentService.newPost('hello'));
+
+      final List<Post> feed = await withApi(ContentService.fetchFeed);
+
+      expect(
+        feed.map((Post p) => p.uuid),
+        equals(<String>['new-post', 'root']),
+      );
+      expect(api.requests, hasLength(2));
+    });
+
+    test('does not add a new reply to the cached root feed', () async {
+      await givenLocation();
+      api.queueJson(<String, Object>{
+        'posts': <Object>[postJson(id: 'root')],
+        'replies': <Object>[],
+      });
+      await withApi(ContentService.fetchFeed);
+
+      api.queueJson(<String, Object>{
+        'post': postJson(id: 'reply-1', replyingTo: 'root'),
+      });
+      await withApi(() => ContentService.newReply('root', 'hello back'));
+
+      final List<Post> feed = await withApi(ContentService.fetchFeed);
+
+      expect(feed, hasLength(1));
+      expect(feed.single.uuid, equals('root'));
+      expect(
+        feed.single.replies.map((Post p) => p.uuid),
+        equals(<String>['reply-1']),
+      );
+      expect(api.requests, hasLength(2));
+    });
+
+    test('adds a new reply to cached user content without a feed cache',
+        () async {
+      api.queueJson(<String, Object>{
+        'posts': <Object>[postJson(id: 'root')],
+        'replies': <Object>[],
+      });
+      await withApi(ContentService.fetchUserContent);
+
+      api.queueJson(<String, Object>{
+        'post': postJson(id: 'reply-1', replyingTo: 'root'),
+      });
+      await withApi(() => ContentService.newReply('root', 'hello back'));
+
+      final Map<String, List<Post>> content = await withApi(
+        ContentService.fetchUserContent,
+      );
+
+      expect(
+        content['posts']!.map((Post p) => p.uuid),
+        equals(<String>['root']),
+      );
+      expect(
+        content['replies']!.map((Post p) => p.uuid),
+        equals(<String>['reply-1']),
+      );
+      expect(api.requests, hasLength(2));
+    });
+
+    test('fetchReplies preserves cached nested replies', () async {
+      final Post nested = cachedTreePost(uuid: 'nested', replying: 'reply-1');
+      CacheService.store(
+        o: cachedTreePost(
+          uuid: 'reply-1',
+          replying: 'root',
+          noReplies: 1,
+          replies: <Post>[nested],
+        ),
+      );
+
+      api.queueJson(<String, Object>{
+        'replies': <Object>[
+          postJson(id: 'reply-1', replyingTo: 'root', replyCount: 1),
+        ],
+      });
+
+      final List<Post> replies = await withApi(
+        () => ContentService.fetchReplies('root', noCache: true),
+      );
+
+      expect(replies, hasLength(1));
+      expect(replies.single.replies.single.uuid, equals('nested'));
+      expect(CacheService.fetch('reply-1'), same(replies.single));
     });
   });
 }

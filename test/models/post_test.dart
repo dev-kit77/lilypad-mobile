@@ -106,7 +106,7 @@ void main() {
       user: User(username: "Anonymous"),
       created: DateTime.parse("2026-01-01T12:00:00.000Z"),
     );
-    post.refreshFromJson(jsonEncode(<String, Object?>{
+    post = post.refreshFromJson(jsonEncode(<String, Object?>{
       "id": "this is a uuid",
       "content": "i am NOT eating a sandwiches",
       "userID": "this is a user uuid",
@@ -143,10 +143,39 @@ void main() {
       created: DateTime.parse("2026-01-01T12:01:00.000Z"),
       replying: "this is a uuid",
     );
-    post.linkReply(reply);
+    post = post.withReply(reply);
     expect(post.replies, hasLength(1));
     expect(post.replies.first.uuid, equals("this is a reply uuid"));
     expect(post.replies.first.replying, equals("this is a uuid"));
+  });
+
+  test('posts are immutable', () {
+    Post original = Post(
+      uuid: "this is a uuid",
+      content: "hello world",
+      user: User(username: "Anonymous"),
+      created: DateTime.parse("2026-01-01T12:00:00.000Z"),
+    );
+    Post reply = Post(
+      uuid: "this is a reply uuid",
+      content: "hello back",
+      user: User(username: "oli"),
+      created: DateTime.parse("2026-01-01T12:01:00.000Z"),
+      replying: original.uuid,
+    );
+
+    Post edited = original.copyWith(content: "edited");
+    Post linked = original.withReply(reply);
+    List<Post> source = <Post>[reply];
+    Post linkedFromSource = original.copyWith(replies: source);
+    source.clear();
+
+    expect(original.content, equals("hello world"));
+    expect(edited.content, equals("edited"));
+    expect(original.replies, isEmpty);
+    expect(linked.replies, hasLength(1));
+    expect(linkedFromSource.replies, hasLength(1));
+    expect(() => original.replies.add(reply), throwsUnsupportedError);
   });
 
   test('post distance can be null', () {

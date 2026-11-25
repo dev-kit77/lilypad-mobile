@@ -147,6 +147,21 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
     }
   }
 
+  void _syncPost(Post p) {
+    if (mounted && feed != null) {
+      setState(() {
+        //find indexes where post ids equal
+        final i = feed?.indexWhere((e) => e.uuid == p.uuid) ?? -1;
+
+        //replace if found
+        if (i >= 0) feed![i] = p;
+
+        //resort newest
+        newest = ContentService.newestFeed;
+      });
+    }
+  }
+
   /// Re-read the location and reload the feed.
   Future<void> _retry() async {
     try {
@@ -429,6 +444,8 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                             ?.map(
                                                               (p) => PostWidget(
                                                                 post: p,
+                                                                onUpdate:
+                                                                    _syncPost,
                                                               ),
                                                             )
                                                             .toList()
@@ -572,6 +589,8 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                             ?.map(
                                                               (p) => PostWidget(
                                                                 post: p,
+                                                                onUpdate:
+                                                                    _syncPost,
                                                               ),
                                                             )
                                                             .toList()
