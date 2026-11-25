@@ -9,6 +9,7 @@ import 'package:lilypad/services/user.dart';
 import 'package:lilypad/ui/pages/new_post.dart';
 import 'package:lilypad/ui/widgets/post.dart';
 import 'package:lilypad/util/api_ex.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/user.dart';
@@ -49,13 +50,17 @@ class _ProfileWidgetState extends State<ProfileWidget>
   List<Post>? userPosts;
   List<Post>? userReplies;
 
+  bool loadingUser = true;
+  bool loadingPosts = true;
+
   WigglyButtonState postButtonState = WigglyButtonState.idle;
 
   @override
   void initState() {
     super.initState();
 
-    _loadContent(widget.noCache);
+    _loadUser(widget.noCache);
+    _loadPost(widget.noCache);
 
     tabBarController = TabController(vsync: this, length: 2, initialIndex: 0)
       ..addListener(() => setState(() {}));
@@ -87,13 +92,21 @@ class _ProfileWidgetState extends State<ProfileWidget>
       //open post window
       if (mounted) {
         final newPost = await Navigator.of(context).push<bool>(
-          MaterialPageRoute<bool>(builder: (context) => const NewPostWidget()),
+          PageTransition<bool>(
+            type: PageTransitionType.fade,
+            duration: const Duration(milliseconds: 300),
+            reverseDuration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+            opaque: true,
+            settings: RouteSettings(name: NewPostWidget.routePath),
+            child: const NewPostWidget(),
+          ),
         );
 
         //check if post made
         if (newPost == true) {
           //begin content reload
-          _loadContent(true);
+          _loadPost(true);
 
           if (mounted) {
             //show success
@@ -123,12 +136,16 @@ class _ProfileWidgetState extends State<ProfileWidget>
     super.dispose();
   }
 
-  void _loadContent(bool refresh) async {
+  Future<void> _loadUser(bool refresh) async {
     try {
+      setState(() {
+        loadingUser = true;
+      });
       //attempt fetch current user
       CurrentUser u = await UserService.fetch(noCache: refresh);
       setState(() {
         currUser = u;
+        loadingUser = false;
       });
     } on APIException catch (e) {
       if (mounted) {
@@ -152,8 +169,14 @@ class _ProfileWidgetState extends State<ProfileWidget>
         );
       }
     }
+  }
 
+  Future<void> _loadPost(bool refresh) async {
     try {
+      setState(() {
+        loadingPosts = true;
+      });
+
       //attempt fetch feed
       final postMap = await ContentService.fetchUserContent(noCache: refresh);
 
@@ -161,6 +184,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
         setState(() {
           userPosts = postMap['posts']!;
           userReplies = postMap['replies']!;
+          loadingPosts = false;
         });
       }
     } on APIException catch (e) {
@@ -467,7 +491,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                             ),
                                                             TextButton(
                                                               onPressed: () =>
-                                                                  _loadContent(
+                                                                  _loadPost(
                                                                     true,
                                                                   ),
                                                               child: Text(
@@ -615,7 +639,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                             ),
                                                             TextButton(
                                                               onPressed: () =>
-                                                                  _loadContent(
+                                                                  _loadPost(
                                                                     true,
                                                                   ),
                                                               child: Text(

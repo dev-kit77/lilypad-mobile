@@ -23,6 +23,8 @@ class NewReplyWidget extends StatefulWidget {
 
   final Post replyingTo;
 
+  static String routePath = '/newReply';
+
   @override
   State<NewReplyWidget> createState() => _NewReplyWidgetState();
 }

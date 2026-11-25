@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../pages/feed.dart' show FeedWidget;
 import '../pages/profile.dart' show ProfileWidget;
@@ -23,16 +24,61 @@ class NavBarWidget extends StatefulWidget {
 }
 
 class _NavBarWidgetState extends State<NavBarWidget> {
+  PageTransition<void> _route({
+    required BuildContext context,
+    required String routeName,
+    required PageTransitionType type,
+    required Widget child,
+  }) {
+    return PageTransition<void>(
+      type: type,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInBack,
+      opaque: true,
+      settings: RouteSettings(name: routeName),
+      childCurrent: context.currentRoute,
+      child: child,
+    );
+  }
+
   Future<void> _navigate(BuildContext context, int index) async {
     if (index == widget.selectedIndex) return;
+
+    // Tabs sit on a horizontal axis: Profile is left of the feed, Settings
+    // right of it. Slide the destination in from the side we came from so the
+    // trip back to the feed keeps the matching direction. `reverseType` cannot
+    // do this: the package never reads it, and each page gets a fresh nav bar
+    // whose `lastTransition` is always null.
     final route = switch (index) {
-      0 => ProfileWidget.routePath,
-      1 => FeedWidget.routePath,
-      2 => SettingsWidget.routePath,
+      0 => _route(
+        context: context,
+        routeName: ProfileWidget.routePath,
+        type: PageTransitionType.leftToRight,
+        child: const ProfileWidget(),
+      ),
+      1 => _route(
+        context: context,
+        routeName: FeedWidget.routePath,
+        type: switch (widget.selectedIndex) {
+          0 => PageTransitionType.leftToRight,
+          2 => PageTransitionType.rightToLeft,
+          _ => PageTransitionType.fade,
+        },
+        child: const FeedWidget(),
+      ),
+      2 => _route(
+        context: context,
+        routeName: SettingsWidget.routePath,
+        type: PageTransitionType.rightToLeft,
+        child: const SettingsWidget(),
+      ),
       _ => null,
     };
+
+    // Replace instead of pushing so tab hops do not stack duplicate pages and
+    // nav bars on top of each other.
     if (route != null) {
-      await Navigator.of(context).pushNamed(route);
+      await Navigator.of(context).pushReplacement(route);
     }
   }
 

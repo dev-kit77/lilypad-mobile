@@ -18,6 +18,7 @@ import 'user.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:page_transition/page_transition.dart';
 
 /// Component to take post data in and display
 class PostWidget extends StatefulWidget {
@@ -184,8 +185,18 @@ class _PostWidgetState extends State<PostWidget> {
                               if (fetchedReplyingTo != null) {
                                 Post? updated = await Navigator.of(context)
                                     .push<Post>(
-                                      MaterialPageRoute<Post>(
-                                        builder: (context) => ViewPostWidget(
+                                      PageTransition<Post>(
+                                        type: PageTransitionType.fade,
+                                        duration: Duration(milliseconds: 300),
+                                        reverseDuration: Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        curve: Curves.easeIn,
+                                        opaque: true,
+                                        settings: RouteSettings(
+                                          name: ViewPostWidget.routePath,
+                                        ),
+                                        child: ViewPostWidget(
                                           post: fetchedReplyingTo!,
                                           noCache: widget.noCache,
                                         ),
@@ -505,8 +516,14 @@ class _PostWidgetState extends State<PostWidget> {
                 AppButton(
                   onPressed: () async {
                     Post? updated = await Navigator.of(context).push<Post>(
-                      MaterialPageRoute<Post>(
-                        builder: (context) => ViewPostWidget(
+                      PageTransition<Post>(
+                        type: PageTransitionType.fade,
+                        duration: Duration(milliseconds: 300),
+                        reverseDuration: Duration(milliseconds: 300),
+                        curve: Curves.easeIn,
+                        opaque: true,
+                        settings: RouteSettings(name: ViewPostWidget.routePath),
+                        child: ViewPostWidget(
                           post: updatedPost!,
                           replying: fetchedReplyingTo,
                           noCache: widget.noCache,
@@ -564,9 +581,16 @@ class _PostWidgetState extends State<PostWidget> {
                     onPressed: () async {
                       final Post? updated = await Navigator.of(context)
                           .push<Post>(
-                            MaterialPageRoute<Post>(
-                              builder: (context) =>
-                                  EditPostWidget(post: updatedPost!),
+                            PageTransition<Post>(
+                              type: PageTransitionType.fade,
+                              duration: Duration(milliseconds: 300),
+                              reverseDuration: Duration(milliseconds: 300),
+                              curve: Curves.easeIn,
+                              opaque: true,
+                              settings: RouteSettings(
+                                name: EditPostWidget.routePath,
+                              ),
+                              child: EditPostWidget(post: updatedPost!),
                             ),
                           );
 

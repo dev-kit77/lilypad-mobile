@@ -7,6 +7,7 @@ import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/util/api_ex.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:wiggly_loaders/wiggly_loaders.dart';
 
 import '../../util/ui.dart';
@@ -161,7 +162,17 @@ class _LandingWidgetState extends State<LandingWidget>
       //hold state for ui to show
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
-          Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+          Navigator.of(context).pushReplacement(
+            PageTransition<void>(
+              type: PageTransitionType.fade,
+              duration: const Duration(milliseconds: 300),
+              reverseDuration: const Duration(milliseconds: 300),
+              curve: Curves.easeIn,
+              opaque: true,
+              settings: RouteSettings(name: FeedWidget.routePath),
+              child: const FeedWidget(),
+            ),
+          );
         }
       });
     } else {
@@ -238,7 +249,17 @@ class _LandingWidgetState extends State<LandingWidget>
       //hold state for ui to show
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          Navigator.of(context).popAndPushNamed(FeedWidget.routePath);
+          Navigator.of(context).pushReplacement(
+            PageTransition<void>(
+              type: PageTransitionType.fade,
+              duration: const Duration(milliseconds: 300),
+              reverseDuration: const Duration(milliseconds: 300),
+              curve: Curves.easeIn,
+              opaque: true,
+              settings: RouteSettings(name: FeedWidget.routePath),
+              child: const FeedWidget(),
+            ),
+          );
         }
       });
     } else {

@@ -57,6 +57,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  bool loading = true;
+
   CurrentUser? currUser;
 
   @override
@@ -97,6 +99,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
 
   void _loadContent(bool refresh) async {
     try {
+      setState(() {
+        loading = true;
+      });
+
       //attempt fetch current user
       CurrentUser u = await UserService.fetch(noCache: refresh);
 
@@ -119,6 +125,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
             ? ThemeMode.system.isDark
             : u.dark;
         refresh = false;
+        loading = false;
       });
     } on APIException catch (e) {
       if (mounted) {
@@ -220,7 +227,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
 
     try {
       //attempt to update user
-      await UserService.update(
+      CurrentUser u = await UserService.update(
         username: usernameTextController?.text != ""
             ? usernameTextController?.text
             : null,
@@ -232,16 +239,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         dark: darkSwitchValue,
       );
 
-      CurrentUser? u = UserService.currentUser;
-
       //sync the theme with the confirmed server value
-      if (u != null) {
+      if (mounted) {
         AppTheme.applyUserPreference(
           u.sysTheme ? ThemeMode.system.isDark : u.dark,
         );
-      }
-      //show success
-      if (mounted) {
+
+        //show success
         setState(() => applyButtonState = WigglyButtonState.success);
       }
 

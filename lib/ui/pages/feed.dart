@@ -7,6 +7,7 @@ import 'package:lilypad/services/geolocation.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/util/api_ex.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -49,6 +50,8 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
   List<Post>? newest;
 
   WigglyButtonState postButtonState = WigglyButtonState.idle;
+
+  bool loadingPosts = true;
 
   @override
   void initState() {
@@ -115,12 +118,17 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
     }
 
     try {
+      setState(() {
+        loadingPosts = true;
+      });
+
       //attempt fetch feed
       final List<Post> f = await ContentService.fetchFeed(noCache: refresh);
       if (mounted) {
         setState(() {
           feed = f;
           newest = ContentService.newestFeed;
+          loadingPosts = false;
         });
       }
     } on APIException catch (e) {
@@ -187,7 +195,15 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
       //open post window
       if (mounted) {
         final newPost = await Navigator.of(context).push<bool>(
-          MaterialPageRoute<bool>(builder: (context) => const NewPostWidget()),
+          PageTransition(
+            type: PageTransitionType.fade,
+            duration: Duration(milliseconds: 300),
+            reverseDuration: Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+            opaque: true,
+            childCurrent: widget,
+            child: const NewPostWidget(),
+          ),
         );
 
         //check created
@@ -424,48 +440,119 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                   12,
                                                   0,
                                                 ),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  ListView(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                          vertical: 12,
-                                                        ),
+                                            child: loadingPosts
+                                                ? CircularProgressIndicator()
+                                                : SingleChildScrollView(
                                                     primary: false,
-                                                    shrinkWrap: true,
-                                                    scrollDirection:
-                                                        Axis.vertical,
-                                                    //TODO: Add Sorting of feed
-                                                    children:
-                                                        feed
-                                                            ?.map(
-                                                              (p) => PostWidget(
-                                                                post: p,
-                                                                onUpdate:
-                                                                    _syncPost,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        ListView(
+                                                          padding:
+                                                              EdgeInsets.symmetric(
+                                                                vertical: 12,
                                                               ),
-                                                            )
-                                                            .toList()
-                                                            .divide(
-                                                              SizedBox(
-                                                                height: 12,
-                                                              ),
-                                                            ) ??
-                                                        [],
-                                                  ),
-                                                  feed == null
-                                                      ? Column(
-                                                          children: [
-                                                            Text(
-                                                              'Could Not Fetch Posts.',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: AppTheme.of(context).titleLarge.override(
-                                                                font: GoogleFonts.playfairDisplay(
+                                                          primary: false,
+                                                          shrinkWrap: true,
+                                                          scrollDirection:
+                                                              Axis.vertical,
+                                                          //TODO: Add Sorting of feed
+                                                          children:
+                                                              feed
+                                                                  ?.map(
+                                                                    (
+                                                                      p,
+                                                                    ) => PostWidget(
+                                                                      post: p,
+                                                                      onUpdate:
+                                                                          _syncPost,
+                                                                    ),
+                                                                  )
+                                                                  .toList()
+                                                                  .divide(
+                                                                    SizedBox(
+                                                                      height:
+                                                                          12,
+                                                                    ),
+                                                                  ) ??
+                                                              [],
+                                                        ),
+                                                        feed == null
+                                                            ? Column(
+                                                                children: [
+                                                                  Text(
+                                                                    'Could Not Fetch Posts.',
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: AppTheme.of(context).titleLarge.override(
+                                                                      font: GoogleFonts.playfairDisplay(
+                                                                        fontWeight: AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontWeight,
+                                                                        fontStyle: AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontStyle,
+                                                                      ),
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight: AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontStyle,
+                                                                    ),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        _retry,
+                                                                    child: Text(
+                                                                      'Retry',
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: AppTheme.of(context).labelLarge.override(
+                                                                        font: GoogleFonts.playfairDisplay(
+                                                                          fontWeight: AppTheme.of(
+                                                                            context,
+                                                                          ).labelLarge.fontWeight,
+                                                                          fontStyle: AppTheme.of(
+                                                                            context,
+                                                                          ).labelLarge.fontStyle,
+                                                                        ),
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontWeight,
+                                                                        fontStyle: AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontStyle,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              )
+                                                            : Text(
+                                                                'You\'re all caught up!',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: AppTheme.of(context).titleLarge.override(
+                                                                  font: GoogleFonts.playfairDisplay(
+                                                                    fontWeight:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontWeight,
+                                                                    fontStyle:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontStyle,
+                                                                  ),
+                                                                  letterSpacing:
+                                                                      0.0,
                                                                   fontWeight:
                                                                       AppTheme.of(
                                                                         context,
@@ -475,92 +562,10 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                                         context,
                                                                       ).titleLarge.fontStyle,
                                                                 ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    AppTheme.of(
-                                                                          context,
-                                                                        )
-                                                                        .titleLarge
-                                                                        .fontWeight,
-                                                                fontStyle:
-                                                                    AppTheme.of(
-                                                                          context,
-                                                                        )
-                                                                        .titleLarge
-                                                                        .fontStyle,
                                                               ),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: _retry,
-                                                              child: Text(
-                                                                'Retry',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: AppTheme.of(context).labelLarge.override(
-                                                                  font: GoogleFonts.playfairDisplay(
-                                                                    fontWeight:
-                                                                        AppTheme.of(
-                                                                          context,
-                                                                        ).labelLarge.fontWeight,
-                                                                    fontStyle:
-                                                                        AppTheme.of(
-                                                                          context,
-                                                                        ).labelLarge.fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).labelLarge.fontWeight,
-                                                                  fontStyle:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).labelLarge.fontStyle,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        )
-                                                      : Text(
-                                                          'You\'re all caught up!',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTheme.of(context).titleLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                        ),
-                                                ].addToEnd(SizedBox(height: 12)),
-                                              ),
-                                            ),
+                                                      ].addToEnd(SizedBox(height: 12)),
+                                                    ),
+                                                  ),
                                           ),
                                           Padding(
                                             padding:
@@ -570,47 +575,118 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                   12,
                                                   0,
                                                 ),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  ListView(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                          vertical: 12,
-                                                        ),
+                                            child: loadingPosts
+                                                ? CircularProgressIndicator()
+                                                : SingleChildScrollView(
                                                     primary: false,
-                                                    shrinkWrap: true,
-                                                    scrollDirection:
-                                                        Axis.vertical,
-                                                    children:
-                                                        newest
-                                                            ?.map(
-                                                              (p) => PostWidget(
-                                                                post: p,
-                                                                onUpdate:
-                                                                    _syncPost,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        ListView(
+                                                          padding:
+                                                              EdgeInsets.symmetric(
+                                                                vertical: 12,
                                                               ),
-                                                            )
-                                                            .toList()
-                                                            .divide(
-                                                              SizedBox(
-                                                                height: 12,
-                                                              ),
-                                                            ) ??
-                                                        [],
-                                                  ),
-                                                  newest == null
-                                                      ? Column(
-                                                          children: [
-                                                            Text(
-                                                              'Could Not Fetch Posts.',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: AppTheme.of(context).titleLarge.override(
-                                                                font: GoogleFonts.playfairDisplay(
+                                                          primary: false,
+                                                          shrinkWrap: true,
+                                                          scrollDirection:
+                                                              Axis.vertical,
+                                                          children:
+                                                              newest
+                                                                  ?.map(
+                                                                    (
+                                                                      p,
+                                                                    ) => PostWidget(
+                                                                      post: p,
+                                                                      onUpdate:
+                                                                          _syncPost,
+                                                                    ),
+                                                                  )
+                                                                  .toList()
+                                                                  .divide(
+                                                                    SizedBox(
+                                                                      height:
+                                                                          12,
+                                                                    ),
+                                                                  ) ??
+                                                              [],
+                                                        ),
+                                                        newest == null
+                                                            ? Column(
+                                                                children: [
+                                                                  Text(
+                                                                    'Could Not Fetch Posts.',
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: AppTheme.of(context).titleLarge.override(
+                                                                      font: GoogleFonts.playfairDisplay(
+                                                                        fontWeight: AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontWeight,
+                                                                        fontStyle: AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontStyle,
+                                                                      ),
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight: AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                        context,
+                                                                      ).titleLarge.fontStyle,
+                                                                    ),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        _retry,
+                                                                    child: Text(
+                                                                      'Retry',
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: AppTheme.of(context).labelLarge.override(
+                                                                        font: GoogleFonts.playfairDisplay(
+                                                                          fontWeight: AppTheme.of(
+                                                                            context,
+                                                                          ).labelLarge.fontWeight,
+                                                                          fontStyle: AppTheme.of(
+                                                                            context,
+                                                                          ).labelLarge.fontStyle,
+                                                                        ),
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontWeight,
+                                                                        fontStyle: AppTheme.of(
+                                                                          context,
+                                                                        ).labelLarge.fontStyle,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              )
+                                                            : Text(
+                                                                'You\'re all caught up!',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: AppTheme.of(context).titleLarge.override(
+                                                                  font: GoogleFonts.playfairDisplay(
+                                                                    fontWeight:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontWeight,
+                                                                    fontStyle:
+                                                                        AppTheme.of(
+                                                                          context,
+                                                                        ).titleLarge.fontStyle,
+                                                                  ),
+                                                                  letterSpacing:
+                                                                      0.0,
                                                                   fontWeight:
                                                                       AppTheme.of(
                                                                         context,
@@ -620,92 +696,10 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                                         context,
                                                                       ).titleLarge.fontStyle,
                                                                 ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    AppTheme.of(
-                                                                          context,
-                                                                        )
-                                                                        .titleLarge
-                                                                        .fontWeight,
-                                                                fontStyle:
-                                                                    AppTheme.of(
-                                                                          context,
-                                                                        )
-                                                                        .titleLarge
-                                                                        .fontStyle,
                                                               ),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: _retry,
-                                                              child: Text(
-                                                                'Retry',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: AppTheme.of(context).labelLarge.override(
-                                                                  font: GoogleFonts.playfairDisplay(
-                                                                    fontWeight:
-                                                                        AppTheme.of(
-                                                                          context,
-                                                                        ).labelLarge.fontWeight,
-                                                                    fontStyle:
-                                                                        AppTheme.of(
-                                                                          context,
-                                                                        ).labelLarge.fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).labelLarge.fontWeight,
-                                                                  fontStyle:
-                                                                      AppTheme.of(
-                                                                        context,
-                                                                      ).labelLarge.fontStyle,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        )
-                                                      : Text(
-                                                          'You\'re all caught up!',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: AppTheme.of(context).titleLarge.override(
-                                                            font: GoogleFonts.playfairDisplay(
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                        context,
-                                                                      )
-                                                                      .titleLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                      context,
-                                                                    )
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                        ),
-                                                ].addToEnd(SizedBox(height: 12)),
-                                              ),
-                                            ),
+                                                      ].addToEnd(SizedBox(height: 12)),
+                                                    ),
+                                                  ),
                                           ),
                                         ],
                                       ),

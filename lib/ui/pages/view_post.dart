@@ -5,6 +5,8 @@ import 'package:lilypad/services/content.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/ui/pages/new_reply.dart';
 import 'package:lilypad/util/api_ex.dart';
+import 'package:lilypad/util/navigation.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../widgets/logo.dart';
 import '../widgets/post.dart';
@@ -100,8 +102,14 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
       //attempt to create reply
       if (mounted) {
         final newReply = await Navigator.of(context).push<bool>(
-          MaterialPageRoute<bool>(
-            builder: (context) => NewReplyWidget(replyingTo: updatedPost!),
+          PageTransition<bool>(
+            type: PageTransitionType.fade,
+            duration: const Duration(milliseconds: 300),
+            reverseDuration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+            opaque: true,
+            settings: RouteSettings(name: NewReplyWidget.routePath),
+            child: NewReplyWidget(replyingTo: updatedPost!),
           ),
         );
 
@@ -260,7 +268,10 @@ class _ViewPostWidgetState extends State<ViewPostWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    Navigator.of(context).pop(updatedPost);
+                                    Navigator.of(context).popUntilWithResult(
+                                      isTabRootRoute,
+                                      updatedPost,
+                                    );
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(),
