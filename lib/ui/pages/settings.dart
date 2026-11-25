@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:lilypad/services/session.dart';
 import 'package:lilypad/services/ui/dialog.dart';
 import 'package:lilypad/services/user.dart';
 import 'package:lilypad/util/api_ex.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../widgets/logo.dart';
 
@@ -1527,6 +1529,53 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                     ),
                                                   ),
                                                 ].divide(SizedBox(width: 12)).around(SizedBox(width: 12)),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  final directory =
+                                                      await getApplicationDocumentsDirectory();
+                                                  Map<String, Object?> usrFile =
+                                                      await UserService.fetchGdprSar();
+                                                  final file = await File(
+                                                    '${directory.path}/gdpr_sar.txt',
+                                                  ).create();
+                                                  file.writeAsString(
+                                                    jsonEncode(usrFile),
+                                                  );
+                                                  await DialogService.showAlert(
+                                                    'Saved GDPR SAR',
+                                                    'This can be located at ${file.path}',
+                                                  );
+                                                },
+                                                child: Text(
+                                                  'Download Userdata',
+                                                  textAlign: TextAlign.center,
+                                                  style: AppTheme.of(context)
+                                                      .labelLarge
+                                                      .override(
+                                                        font: GoogleFonts.playfairDisplay(
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                    context,
+                                                                  )
+                                                                  .labelLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontWeight,
+                                                        fontStyle: AppTheme.of(
+                                                          context,
+                                                        ).labelLarge.fontStyle,
+                                                      ),
+                                                ),
                                               ),
                                             ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
                                           ),
