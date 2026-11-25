@@ -22,7 +22,8 @@ dependencies:
   easy_debounce: ^2.0.3
   wiggly_loaders: ^0.9.0
   page_transition: ^2.2.2
-  push: ^3.3.3
+  flutter_local_notifications: ^23.0.4
+  path_provider: ^2.1.6
 dev_dependencies:
   flutter_test:
     sdk: flutter

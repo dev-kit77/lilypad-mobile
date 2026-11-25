@@ -3,11 +3,20 @@ import 'package:material_ui/material_ui.dart';
 
 import 'dart:io';
 
+import 'package:lilypad/services/log.dart';
 import 'package:lilypad/util/global.dart';
 
 class DialogService {
   static Future<void> showAlert(String title, String msg) async {
-    final context = AppGlobal.navigatorKey.currentContext!;
+    // The navigator may not be mounted yet during startup/session invalidation.
+    final context = AppGlobal.navigatorKey.currentContext;
+    if (context == null) {
+      LogService.warn(
+        'Navigator not ready, skipping alert: $title - $msg',
+        src: 'Dialog Service',
+      );
+      return;
+    }
 
     return await showDialog(
       context: context,
@@ -18,7 +27,15 @@ class DialogService {
   /// Shows a confirmation dialog and returns true only when the user taps
   /// "Yes". Cancelling or dismissing the dialog returns false.
   static Future<bool> getConfirmation(String title, String msg) async {
-    final context = AppGlobal.navigatorKey.currentContext!;
+    // Never treat a missing navigator as a confirmation.
+    final context = AppGlobal.navigatorKey.currentContext;
+    if (context == null) {
+      LogService.warn(
+        'Navigator not ready, skipping confirmation: $title - $msg',
+        src: 'Dialog Service',
+      );
+      return false;
+    }
 
     final bool? confirmed = await showDialog<bool>(
       context: context,

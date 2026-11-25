@@ -49,7 +49,7 @@ class BackgroundService {
 
           //check for null feed and if new latest is after previous
           if (newLatest != null && lastUpdate.isBefore(newLatest)) {
-            NotificationService.push(
+            NotificationService.newPosts(
               'New Posts in ${GeolocationService.locale}',
             );
           }
