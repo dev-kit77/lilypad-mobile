@@ -107,7 +107,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       CurrentUser u = await UserService.fetch(noCache: refresh);
 
       //sync the theme with the current user's saved preference
-      if (sysThemeSwitchValue == true) {
+      if (u.sysTheme) {
         AppTheme.resetToSystem();
       } else {
         AppTheme.applyUserPreference(u.dark);
@@ -121,9 +121,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         bioTextController!.text = u.bio ?? '';
         pushSwitchValue = u.push;
         sysThemeSwitchValue = u.sysTheme;
-        darkSwitchValue = sysThemeSwitchValue!
-            ? ThemeMode.system.isDark
-            : u.dark;
+        darkSwitchValue = u.dark;
         refresh = false;
         loading = false;
       });
@@ -237,13 +235,17 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         bio: bioTextController?.text != "" ? bioTextController?.text : null,
         anon: anonSwitchValue,
         dark: darkSwitchValue,
+        push: pushSwitchValue,
+        sysTheme: sysThemeSwitchValue,
       );
 
       //sync the theme with the confirmed server value
       if (mounted) {
-        AppTheme.applyUserPreference(
-          u.sysTheme ? ThemeMode.system.isDark : u.dark,
-        );
+        if (u.sysTheme) {
+          AppTheme.resetToSystem();
+        } else {
+          AppTheme.applyUserPreference(u.dark);
+        }
 
         //show success
         setState(() => applyButtonState = WigglyButtonState.success);

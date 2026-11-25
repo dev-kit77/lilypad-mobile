@@ -116,7 +116,7 @@ class UserService {
   ///
   /// Expected 200: { user: UserData }
   ///   e.g. { user: { userId, username, status?, bio?,
-  ///                  settings: { dark, anon, pushNotifications, useSysTheme } } }
+  ///                  settings: { dark, anon, push, sysTheme } } }
   /// Expected 401: no session / unknown session user.
   /// Expected 403: { error: "USER_BANNED" } (active ban).
   /// Expected 404: { error: "INVALID_USER" }.
@@ -168,7 +168,7 @@ class UserService {
   ///   { username?: string (1-100); status?: string (1-100);
   ///     bio?: string (1-100);
   ///     settings?: { dark?: boolean; anon?: boolean;
-  ///                  pushNotifications?: boolean; useSysTheme?: boolean } }
+  ///                  push?: boolean; sysTheme?: boolean } }
   /// Auth:     session
   ///
   /// Expected 200: { user: UserData } (updated values)
@@ -182,8 +182,8 @@ class UserService {
     String? bio,
     bool? dark,
     bool? anon,
-    bool? pushNotifications,
-    bool? useSysTheme,
+    bool? push,
+    bool? sysTheme,
   }) async {
     //build request
     Request req = UserRequestBuilder.updateUser(
@@ -192,8 +192,8 @@ class UserService {
       bio: bio,
       dark: dark,
       anon: anon,
-      pushNotifications: pushNotifications,
-      useSysTheme: useSysTheme,
+      push: push,
+      sysTheme: sysTheme,
     );
 
     //init response var
@@ -328,8 +328,8 @@ class UserService {
           bio: _user!.bio,
           anon: _user!.anon,
           dark: _user!.dark,
-          push: _user!.pushNotifications,
-          sysTheme: _user!.useSysTheme,
+          push: _user!.push,
+          sysTheme: _user!.sysTheme,
         )
       : null;
 

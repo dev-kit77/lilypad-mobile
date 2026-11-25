@@ -6,8 +6,8 @@
 // settings: t.Object({
 //   dark: t.Boolean(),
 //   anon: t.Boolean(),
-//   pushNotifications: t.Boolean(),
-//   useSysTheme: t.Boolean(),
+//   push: t.Boolean(),
+//   sysTheme: t.Boolean(),
 // }),
 import 'dart:convert';
 
@@ -89,8 +89,8 @@ class CurrentUser extends User {
       bio: userMap['bio'] as String?,
       dark: _settingBool(settings, 'dark'),
       anon: _settingBool(settings, 'anon'),
-      push: _settingBool(settings, 'pushNotifications'),
-      sysTheme: _settingBool(settings, 'useSysTheme'),
+      push: _settingBool(settings, 'push'),
+      sysTheme: _settingBool(settings, 'sysTheme'),
     );
   }
 
@@ -104,8 +104,8 @@ class CurrentUser extends User {
       bio: userMap['bio'] as String?,
       dark: _settingBool(settings, 'dark'),
       anon: _settingBool(settings, 'anon'),
-      push: _settingBool(settings, 'pushNotifications'),
-      sysTheme: _settingBool(settings, 'useSysTheme'),
+      push: _settingBool(settings, 'push'),
+      sysTheme: _settingBool(settings, 'sysTheme'),
     );
   }
 
@@ -114,8 +114,8 @@ class CurrentUser extends User {
     Map<String, Object?> settings = <String, Object?>{
       "dark": _dark,
       "anon": _anon,
-      "pushNotifications": push,
-      "useSysTheme": sysTheme,
+      "push": push,
+      "sysTheme": sysTheme,
     };
 
     return <String, Object?>{
@@ -130,6 +130,4 @@ class CurrentUser extends User {
   String get uuid => _uuid!;
   bool get dark => _dark;
   bool get anon => _anon;
-  bool get pushNotifications => push;
-  bool get useSysTheme => sysTheme;
 }

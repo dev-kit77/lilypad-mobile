@@ -78,19 +78,13 @@ void main() {
   test(
     'build update user put request with notification and theme settings',
     () {
-      Request r = UserRequestBuilder.updateUser(
-        pushNotifications: true,
-        useSysTheme: false,
-      );
+      Request r = UserRequestBuilder.updateUser(push: true, sysTheme: false);
       expect(r.method, equals('PUT'));
       expect(r.url.toString(), equals('http://localhost:3000/api/user'));
       expect(
         jsonDecode(r.body),
         equals(<String, Object?>{
-          "settings": <String, bool>{
-            "pushNotifications": true,
-            "useSysTheme": false,
-          },
+          "settings": <String, bool>{"push": true, "sysTheme": false},
         }),
       );
       expect(r.encoding, equals(utf8));

@@ -34,8 +34,8 @@ void main() {
     String? bio,
     bool dark = false,
     bool anon = false,
-    bool pushNotifications = false,
-    bool useSysTheme = false,
+    bool push = false,
+    bool sysTheme = false,
   }) => <String, Object?>{
     'userId': id,
     'username': username,
@@ -44,8 +44,8 @@ void main() {
     'settings': <String, Object?>{
       'dark': dark,
       'anon': anon,
-      'pushNotifications': pushNotifications,
-      'useSysTheme': useSysTheme,
+      'push': push,
+      'sysTheme': sysTheme,
     },
   };
 
@@ -314,8 +314,8 @@ void main() {
           bio: 'i am a lilypad',
           dark: true,
           anon: false,
-          pushNotifications: true,
-          useSysTheme: true,
+          push: true,
+          sysTheme: true,
         ),
       });
 
@@ -335,8 +335,8 @@ void main() {
       expect(user.bio, equals('i am a lilypad'));
       expect(user.dark, isTrue);
       expect(user.anon, isFalse);
-      expect(user.pushNotifications, isTrue);
-      expect(user.useSysTheme, isTrue);
+      expect(user.push, isTrue);
+      expect(user.sysTheme, isTrue);
       expect(CacheService.fetch('user-1'), same(user));
     });
 
@@ -345,16 +345,16 @@ void main() {
         'user': currentUserJson(
           id: 'user-1',
           username: 'kit',
-          pushNotifications: true,
-          useSysTheme: true,
+          push: true,
+          sysTheme: true,
         ),
       });
 
       await withApi(UserService.fetch);
 
       final CurrentUser current = UserService.currentUser!;
-      expect(current.pushNotifications, isTrue);
-      expect(current.useSysTheme, isTrue);
+      expect(current.push, isTrue);
+      expect(current.sysTheme, isTrue);
     });
 
     test('returns the cached user on subsequent calls', () async {
@@ -425,8 +425,8 @@ void main() {
           bio: 'i am a lilypad',
           dark: true,
           anon: true,
-          pushNotifications: true,
-          useSysTheme: true,
+          push: true,
+          sysTheme: true,
         ),
       });
 
@@ -437,8 +437,8 @@ void main() {
           bio: 'i am a lilypad',
           dark: true,
           anon: true,
-          pushNotifications: true,
-          useSysTheme: true,
+          push: true,
+          sysTheme: true,
         ),
       );
 
@@ -461,8 +461,8 @@ void main() {
           'settings': <String, bool>{
             'dark': true,
             'anon': true,
-            'pushNotifications': true,
-            'useSysTheme': true,
+            'push': true,
+            'sysTheme': true,
           },
         }),
       );
@@ -472,8 +472,8 @@ void main() {
       expect(user.bio, equals('i am a lilypad'));
       expect(user.dark, isTrue);
       expect(user.anon, isTrue);
-      expect(user.pushNotifications, isTrue);
-      expect(user.useSysTheme, isTrue);
+      expect(user.push, isTrue);
+      expect(user.sysTheme, isTrue);
       expect(CacheService.fetch('user-1'), same(user));
     });
 

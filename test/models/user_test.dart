@@ -38,7 +38,7 @@ void main() {
     expect(
       usr.toString(),
       equals(
-        '{"username":"kit","status":"my body is ready","bio":"this is kit","settings":{"dark":false,"anon":false,"pushNotifications":true,"useSysTheme":false}}',
+        '{"username":"kit","status":"my body is ready","bio":"this is kit","settings":{"dark":false,"anon":false,"push":true,"sysTheme":false}}',
       ),
     );
   });
@@ -72,14 +72,14 @@ void main() {
       "settings": <String, Object?>{
         "dark": "false",
         "anon": "true",
-        "pushNotifications": "true",
-        "useSysTheme": "false",
+        "push": "true",
+        "sysTheme": "false",
       },
     });
     expect(
       usr.toString(),
       equals(
-        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"pushNotifications":true,"useSysTheme":false}}',
+        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"push":true,"sysTheme":false}}',
       ),
     );
   });
@@ -118,15 +118,15 @@ void main() {
         "settings": <String, Object?>{
           "dark": "false",
           "anon": "true",
-          "pushNotifications": "false",
-          "useSysTheme": "true",
+          "push": "false",
+          "sysTheme": "true",
         },
       }),
     );
     expect(
       usr.toString(),
       equals(
-        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"pushNotifications":false,"useSysTheme":true}}',
+        '{"username":"ewan","status":"i am NOT eating a sandwiches","bio":"general crazed lunatic","settings":{"dark":false,"anon":true,"push":false,"sysTheme":true}}',
       ),
     );
   });
