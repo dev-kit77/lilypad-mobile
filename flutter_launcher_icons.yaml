@@ -1,0 +1,18 @@
+flutter_icons:
+    image_path: "/Users/kit/Documents/Projects/Lilypad/lilypad-mobile/logo.png"
+    adaptive_icon_background: "#FFEDECEC"
+    ios: true
+    remove_alpha_ios: true
+    background_color_ios: "#FFEDECEC"
+    web:
+      generate: true
+      image_path: "icon.png"
+      background_color: "#FFEDECEC"
+    windows:
+      generate: true
+      image_path: "icon.png"
+      background_color: "#FFEDECEC"
+    macos:
+      generate: true
+      image_path: "icon.png"
+      background_color: "#FFEDECEC"
