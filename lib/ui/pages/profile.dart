@@ -143,6 +143,14 @@ class _ProfileWidgetState extends State<ProfileWidget>
       });
       //attempt fetch current user
       CurrentUser u = await UserService.fetch(noCache: refresh);
+
+      //sync the theme with the current user's saved preference
+      if (u.sysTheme) {
+        AppTheme.resetToSystem();
+      } else {
+        AppTheme.applyUserPreference(u.dark);
+      }
+
       setState(() {
         currUser = u;
         loadingUser = false;

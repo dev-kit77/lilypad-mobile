@@ -93,7 +93,11 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
       final CurrentUser u = await UserService.fetch(noCache: refresh);
 
       //sync the theme with the current user's saved preference
-      AppTheme.applyUserPreference(u.dark);
+      if (u.sysTheme) {
+        AppTheme.resetToSystem();
+      } else {
+        AppTheme.applyUserPreference(u.dark);
+      }
     } on APIException catch (e) {
       if (mounted) {
         await DialogService.showAlert(
@@ -576,7 +580,12 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                   0,
                                                 ),
                                             child: loadingPosts
-                                                ? CircularProgressIndicator()
+                                                ? SizedBox(
+                                                    width: 50,
+                                                    height: 50,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
                                                 : SingleChildScrollView(
                                                     primary: false,
                                                     child: Column(
