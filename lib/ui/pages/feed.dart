@@ -370,7 +370,7 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                 0,
                                 0,
                                 0,
-                                120,
+                                112,
                               ),
                               child: Container(
                                 width: double.infinity,
@@ -611,7 +611,7 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsGeometry.only(
-                                                                bottom: 120,
+                                                                bottom: 112,
                                                               ),
                                                         ),
                                                       ].addToEnd(SizedBox(height: 12)),
@@ -797,7 +797,7 @@ class _FeedWidgetState extends State<FeedWidget> with TickerProviderStateMixin {
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsGeometry.only(
-                                                                bottom: 120,
+                                                                bottom: 112,
                                                               ),
                                                         ),
                                                       ].addToEnd(SizedBox(height: 12)),

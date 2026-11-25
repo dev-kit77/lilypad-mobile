@@ -354,7 +354,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                 0,
                                 0,
                                 0,
-                                120,
+                                112,
                               ),
                               child: Container(
                                 width: double.infinity,
@@ -611,7 +611,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   Padding(
                                                     padding:
                                                         EdgeInsetsGeometry.only(
-                                                          bottom: 120,
+                                                          bottom: 112,
                                                         ),
                                                   ),
                                                 ].addToEnd(SizedBox(height: 12)),
@@ -806,7 +806,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                   Padding(
                                                     padding:
                                                         EdgeInsetsGeometry.only(
-                                                          bottom: 120,
+                                                          bottom: 112,
                                                         ),
                                                   ),
                                                 ].addToEnd(SizedBox(height: 12)),

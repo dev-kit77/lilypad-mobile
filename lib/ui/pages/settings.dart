@@ -1633,7 +1633,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsGeometry.only(
-                                                                bottom: 120,
+                                                                bottom: 112,
                                                               ),
                                                         ),
                                                       ].divide(SizedBox(height: 12)).addToEnd(SizedBox(height: 12)),
