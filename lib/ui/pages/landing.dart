@@ -523,6 +523,12 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 autofillHints: [
                                                   AutofillHints.email,
                                                 ],
+                                                onTapOutside: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
+                                                onFieldSubmitted: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
                                                 obscureText: false,
                                                 decoration: InputDecoration(
                                                   labelText: 'Email',
@@ -653,6 +659,12 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 autofillHints: [
                                                   AutofillHints.password,
                                                 ],
+                                                onTapOutside: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
+                                                onFieldSubmitted: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
                                                 obscureText:
                                                     !passwordVisibilitySignIn,
                                                 decoration: InputDecoration(
@@ -941,6 +953,12 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 validator: _usernameValidate,
                                                 enabled: true,
                                                 obscureText: false,
+                                                onTapOutside: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
+                                                onFieldSubmitted: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
                                                 decoration: InputDecoration(
                                                   labelText: 'Username',
                                                   labelStyle:
@@ -1085,6 +1103,12 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 autofillHints: [
                                                   AutofillHints.email,
                                                 ],
+                                                onTapOutside: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
+                                                onFieldSubmitted: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
                                                 obscureText: false,
                                                 decoration: InputDecoration(
                                                   labelText: 'Email',
@@ -1220,6 +1244,12 @@ class _LandingWidgetState extends State<LandingWidget>
                                                 autofillHints: [
                                                   AutofillHints.password,
                                                 ],
+                                                onTapOutside: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
+                                                onFieldSubmitted: (_) =>
+                                                    FocusScope.of(context)
+                                                        .unfocus(),
                                                 obscureText:
                                                     !passwordVisibilitySignUp,
                                                 decoration: InputDecoration(

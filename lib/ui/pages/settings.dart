@@ -150,6 +150,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   }
 
   void _logOut() async {
+    //dismiss the keyboard before opening a confirmation dialog
+    FocusScope.of(context).unfocus();
+
     //set loading state
     setState(() => logoutButtonState = WigglyButtonState.loading);
 
@@ -200,6 +203,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   }
 
   void _applySettings() async {
+    //dismiss the keyboard before opening a confirmation dialog
+    FocusScope.of(context).unfocus();
+
     //set loading state
     setState(() => applyButtonState = WigglyButtonState.loading);
 
@@ -600,7 +606,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                             usernameTextController,
                                                         focusNode:
                                                             usernameFocusNode,
-                                                        autofocus: true,
+                                                        onTapOutside: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
+                                                        onFieldSubmitted: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
                                                         enabled: true,
                                                         obscureText: false,
                                                         decoration: InputDecoration(
@@ -769,7 +782,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 () {},
                                                               ),
                                                             ),
-                                                        autofocus: true,
+                                                        onTapOutside: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
+                                                        onFieldSubmitted: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
                                                         enabled: true,
                                                         obscureText: false,
                                                         decoration: InputDecoration(
@@ -958,7 +978,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                                                                 () {},
                                                               ),
                                                             ),
-                                                        autofocus: true,
+                                                        onTapOutside: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
+                                                        onFieldSubmitted: (_) =>
+                                                            FocusScope.of(
+                                                              context,
+                                                            ).unfocus(),
                                                         enabled: true,
                                                         obscureText: false,
                                                         decoration: InputDecoration(
