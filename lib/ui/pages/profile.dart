@@ -354,7 +354,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                 0,
                                 0,
                                 0,
-                                90,
+                                120,
                               ),
                               child: Container(
                                 width: double.infinity,
@@ -567,6 +567,53 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .fontStyle,
                                                           ),
                                                         ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        _loadPost(true),
+                                                    child: Text(
+                                                      'Refresh',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style:
+                                                          AppTheme.of(
+                                                            context,
+                                                          ).labelLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsetsGeometry.only(
+                                                          bottom: 120,
+                                                        ),
+                                                  ),
                                                 ].addToEnd(SizedBox(height: 12)),
                                               ),
                                             ),
@@ -715,6 +762,53 @@ class _ProfileWidgetState extends State<ProfileWidget>
                                                                     .fontStyle,
                                                           ),
                                                         ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        _loadPost(true),
+                                                    child: Text(
+                                                      'Refresh',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style:
+                                                          AppTheme.of(
+                                                            context,
+                                                          ).labelLarge.override(
+                                                            font: GoogleFonts.playfairDisplay(
+                                                              fontWeight:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(
+                                                                        context,
+                                                                      )
+                                                                      .labelLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(
+                                                                      context,
+                                                                    )
+                                                                    .labelLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsetsGeometry.only(
+                                                          bottom: 120,
+                                                        ),
+                                                  ),
                                                 ].addToEnd(SizedBox(height: 12)),
                                               ),
                                             ),
